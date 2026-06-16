@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DepositType {
+  FIXED
+  PERCENT
+}
+
+enum BookingStatus {
+  PENDING_DEPOSIT
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  description   String
+  priceCents    Int
+  depositType   DepositType
+  depositValue  Int
+  totalQuantity Int            @default(1)
+  isAvailable   Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookings      Booking[]
+  packItems     PackItem[]
+  images        ProductImage[]
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId, order])
+}
+
+model Pack {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  name          String
+  description   String
+  priceCents    Int
+  depositType   DepositType
+  depositValue  Int
+  imageUrl      String?
+  isAvailable   Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         PackItem[]
+  bookings      Booking[]
+}
+
+model PackItem {
+  id        String  @id @default(cuid())
+  packId    String
+  pack      Pack    @relation(fields: [packId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@unique([packId, productId])
+}
+
+model HowItWorksStep {
+  id          String @id @default(cuid())
+  order       Int    @default(0)
+  title       String
+  description String
+}
+
+model Booking {
+  id                    String        @id @default(cuid())
+  productId             String?
+  product               Product?      @relation(fields: [productId], references: [id])
+  packId                String?
+  pack                  Pack?         @relation(fields: [packId], references: [id])
+  customerName          String
+  email                 String
+  phone                 String
+  eventDate             DateTime
+  quantity              Int           @default(1)
+  status                BookingStatus @default(PENDING_DEPOSIT)
+  depositAmountCents    Int
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([productId, eventDate])
+  @@index([packId, eventDate])
+}

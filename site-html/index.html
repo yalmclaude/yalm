@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YALM Events — Prestations événementielles haut de gamme</title>
+<meta name="description" content="YALM Events : photobooth, bars personnalisés, animations et signalétique sur mesure pour vos mariages et événements." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <p>Acompte requis pour bloquer votre date — disponibilités limitées</p>
+</div>
+
+<header class="header" id="header">
+  <div class="container header__inner">
+    <a href="#top" class="logo">
+      <span class="logo__word">yalm</span>
+      <span class="logo__sub">events</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#prestations">Prestations</a>
+      <a href="#fonctionnement">Comment ça marche</a>
+      <a href="#contact" class="nav__cta">Demander un devis</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Ouvrir le menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero" id="top">
+    <div class="hero__bg"></div>
+    <div class="container hero__content">
+      <p class="eyebrow">Mariages · Soirées privées · Événements d'entreprise</p>
+      <h1>Sublimez votre événement<br><span>avec élégance</span></h1>
+      <p class="hero__text">
+        Photobooths immersifs, bars sur mesure et signalétique raffinée :
+        une offre haut de gamme pensée pour marquer vos invités.
+      </p>
+      <div class="hero__actions">
+        <a href="#prestations" class="btn btn--gold">Voir les prestations</a>
+        <a href="#contact" class="btn btn--outline">Nous contacter</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="intro container">
+    <div class="intro__rule"></div>
+    <h2>Une expérience événementielle sur mesure</h2>
+    <p>
+      Chez <strong>YALM</strong>, chaque prestation est sélectionnée pour son impact visuel et son raffinement.
+      Du livre d'or audio au bar personnalisé à votre image, nous donnons à votre événement
+      la touche festive et structurée qu'il mérite.
+    </p>
+  </section>
+
+  <section class="catalogue" id="prestations">
+    <div class="container">
+      <p class="eyebrow eyebrow--center">Notre catalogue</p>
+      <h2 class="section-title">Prestations disponibles</h2>
+
+      <div class="cat-block" data-category="Visuel & Souvenirs">
+        <h3 class="cat-title">Visuel &amp; Souvenirs</h3>
+        <div class="grid" id="grid-visuel"></div>
+      </div>
+
+      <div class="cat-block" data-category="Animation & Bars">
+        <h3 class="cat-title">Animation &amp; Bars</h3>
+        <div class="grid" id="grid-bars"></div>
+      </div>
+
+      <div class="cat-block" data-category="Signalétique">
+        <h3 class="cat-title">Signalétique</h3>
+        <div class="grid" id="grid-signaletique"></div>
+      </div>
+
+      <div class="cat-block cat-block--muted">
+        <h3 class="cat-title cat-title--muted">Bientôt de retour</h3>
+        <div class="grid" id="grid-soon"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fonctionnement" id="fonctionnement">
+    <div class="container">
+      <p class="eyebrow eyebrow--center">Le processus</p>
+      <h2 class="section-title">Comment fonctionne la réservation</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num">01</span>
+          <h3>Choisissez votre prestation</h3>
+          <p>Parcourez notre catalogue et sélectionnez les services adaptés à votre événement.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <h3>Vérifiez la date</h3>
+          <p>Chaque prestation a son propre calendrier ; certaines disposent de plusieurs unités disponibles.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <h3>Bloquez la date</h3>
+          <p>Un acompte est nécessaire pour valider définitivement votre réservation et verrouiller la date.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="container contact__inner">
+      <div class="contact__text">
+        <p class="eyebrow">Demande de devis</p>
+        <h2>Parlons de votre événement</h2>
+        <p class="contact__lead">
+          Indiquez-nous vos besoins et la date envisagée : nous revenons vers vous avec
+          une proposition et les disponibilités correspondantes.
+        </p>
+        <ul class="contact__list">
+          <li>📧 contact@yalm-events.fr</li>
+          <li>📞 06 00 00 00 00</li>
+          <li>📍 Interventions sur toute l'Île-de-France</li>
+        </ul>
+      </div>
+
+      <form class="contact__form" id="contact-form">
+        <div class="field">
+          <label for="name">Nom complet</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="field field--row">
+          <div>
+            <label for="date">Date de l'événement</label>
+            <input type="date" id="date" name="date" />
+          </div>
+          <div>
+            <label for="service">Prestation souhaitée</label>
+            <select id="service" name="service">
+              <option value="">À définir</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="message">Votre message</label>
+          <textarea id="message" name="message" rows="4" placeholder="Décrivez votre événement, le nombre d'invités, le lieu..."></textarea>
+        </div>
+        <button type="submit" class="btn btn--gold btn--full">Envoyer ma demande</button>
+        <p class="form__note" id="form-note"></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal__close" id="modal-close" aria-label="Fermer">&times;</button>
+    <div class="modal__icon" id="modal-icon">🎉</div>
+    <h3 id="modal-title">Nom de la prestation</h3>
+    <p class="modal__desc" id="modal-desc"></p>
+    <div class="modal__price-row">
+      <span class="card__price" id="modal-price"></span>
+      <span class="card__deposit" id="modal-deposit"></span>
+    </div>
+
+    <label for="modal-date">Choisissez la date de votre événement</label>
+    <input type="date" id="modal-date" />
+    <p class="modal__hint" id="modal-hint">Sélectionnez une date pour vérifier la disponibilité.</p>
+
+    <button class="btn btn--gold btn--full" id="modal-confirm" disabled>
+      Vérifier &amp; demander cette date
+    </button>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="logo logo--footer">
+      <span class="logo__word">yalm</span>
+      <span class="logo__sub">events</span>
+    </div>
+    <p>© <span id="year"></span> YALM Events — Tous droits réservés</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
