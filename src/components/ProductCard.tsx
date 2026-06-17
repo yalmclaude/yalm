@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatPrice, depositLabel } from "@/lib/format";
-import type { Product } from "@/generated/prisma/client";
+import type { Product } from "@prisma/client";
 import { Reveal } from "@/components/Reveal";
 
 type ProductWithImages = Product & { images: { url: string }[] };
