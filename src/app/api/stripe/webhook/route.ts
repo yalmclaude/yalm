@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 async function sendConfirmationEmail(bookingId: string) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) return;
 
   const booking = await prisma.booking.findFirst({
@@ -26,17 +26,17 @@ async function sendConfirmationEmail(bookingId: string) {
   });
   const depositEuros = (booking.depositAmountCents / 100).toFixed(2).replace(".", ",");
 
-  await fetch("https://api.resend.com/emails", {
+  await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "api-key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "YALM Événements <onboarding@resend.dev>",
-      to: ["yalm.events@gmail.com"],
+      sender: { name: "YALM Événements", email: "yalm.events@gmail.com" },
+      to: [{ email: "yalm.events@gmail.com" }],
       subject: `✅ Nouvelle réservation — ${prestationName}`,
-      html: `
+      htmlContent: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#2b2b2b">
           <h2 style="color:#4a1015">Nouvelle réservation confirmée</h2>
           <table style="width:100%;border-collapse:collapse;margin-top:16px">
