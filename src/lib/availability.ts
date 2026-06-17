@@ -22,7 +22,7 @@ const ACTIVE_STATUS_FILTER = {
 };
 
 export async function getRemainingStock(productId: string, eventDate: Date) {
-  const product = await prisma.product.findFirst({ where: { id: productId } });
+  const product = await prisma.product.findMany({ where: { id: productId }, take: 1 }).then((r) => r[0] ?? null);
   if (!product) return 0;
 
   const { dayStart, dayEnd } = dayRange(eventDate);
@@ -56,7 +56,7 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
 }
 
 export async function getRemainingStockForPack(packId: string, eventDate: Date) {
-  const pack = await prisma.pack.findFirst({ where: { id: packId }, include: { items: true } });
+  const pack = await prisma.pack.findMany({ where: { id: packId }, include: { items: true }, take: 1 }).then((r) => r[0] ?? null);
   if (!pack || pack.items.length === 0) return 0;
 
   let remaining = Infinity;

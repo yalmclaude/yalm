@@ -54,7 +54,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       );
     }
 
-    const targetExists = await prisma.category.findFirst({ where: { id: reassignCategoryId } });
+    const targetExists = await prisma.category.findMany({ where: { id: reassignCategoryId }, take: 1 }).then((r) => r[0] ?? null);
     if (!targetExists) {
       return NextResponse.json({ error: "Catégorie de destination introuvable" }, { status: 400 });
     }

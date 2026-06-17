@@ -6,9 +6,10 @@ import { formatPrice, depositLabel } from "@/lib/format";
 
 export default async function PackPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const pack = await prisma.pack.findFirst({
+  const [pack] = await prisma.pack.findMany({
     where: { slug },
     include: { items: { include: { product: true } } },
+    take: 1,
   });
 
   if (!pack || !pack.isAvailable) {
