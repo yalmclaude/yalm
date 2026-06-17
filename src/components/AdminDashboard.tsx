@@ -522,6 +522,7 @@ export function AdminDashboard() {
                 <th className="px-3 py-2">Qté</th>
                 <th className="px-3 py-2">Acompte</th>
                 <th className="px-3 py-2">Statut</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -540,11 +541,41 @@ export function AdminDashboard() {
                   <td className="px-3 py-2">
                     <StatusBadge status={b.status} />
                   </td>
+                  <td className="px-3 py-2">
+                    <div className="flex gap-2">
+                      {b.status !== "CANCELLED" && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Refuser la réservation de ${b.customerName} ?`)) return;
+                            await fetch(`/api/admin/bookings/${b.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: "CANCELLED" }),
+                            });
+                            loadData();
+                          }}
+                          className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-200"
+                        >
+                          Refuser
+                        </button>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Supprimer définitivement la réservation de ${b.customerName} ?`)) return;
+                          await fetch(`/api/admin/bookings/${b.id}`, { method: "DELETE" });
+                          loadData();
+                        }}
+                        className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
               {bookings.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-gray-400">
+                  <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
                     Aucune réservation pour le moment
                   </td>
                 </tr>
