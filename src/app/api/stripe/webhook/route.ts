@@ -2,6 +2,56 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import nodemailer from "nodemailer";
+
+async function sendConfirmationEmail(bookingId: string) {
+  const booking = await prisma.booking.findFirst({
+    where: { id: bookingId },
+    include: {
+      product: { select: { name: true } },
+      pack: { select: { name: true } },
+    },
+  });
+
+  if (!booking) return;
+
+  const password = process.env.GMAIL_APP_PASSWORD;
+  if (!password) return;
+
+  const prestationName = booking.product?.name ?? booking.pack?.name ?? "Prestation";
+  const eventDate = booking.eventDate.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const depositEuros = (booking.depositAmountCents / 100).toFixed(2).replace(".", ",");
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: "yalmevents@gmail.com", pass: password },
+  });
+
+  await transporter.sendMail({
+    from: '"YALM Événements" <yalmevents@gmail.com>',
+    to: "yalmevents@gmail.com",
+    subject: `✅ Nouvelle réservation confirmée — ${prestationName}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#2b2b2b">
+        <h2 style="color:#4a1015">Nouvelle réservation confirmée</h2>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px">
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;width:40%">Prestation</td><td style="padding:8px 0;border-bottom:1px solid #eee">${prestationName}</td></tr>
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Client</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.customerName}</td></tr>
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Email</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.email}</td></tr>
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Téléphone</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.phone}</td></tr>
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Date de l'événement</td><td style="padding:8px 0;border-bottom:1px solid #eee">${eventDate}</td></tr>
+          <tr><td style="padding:8px 0;font-weight:bold">Acompte reçu</td><td style="padding:8px 0">${depositEuros} €</td></tr>
+        </table>
+        <p style="margin-top:24px;color:#666;font-size:13px">Réservation #${booking.id}</p>
+      </div>
+    `,
+  });
+}
 
 export async function POST(request: NextRequest) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -31,6 +81,10 @@ export async function POST(request: NextRequest) {
             typeof session.payment_intent === "string" ? session.payment_intent : undefined,
         },
       });
+
+      await sendConfirmationEmail(bookingId).catch((err) =>
+        console.error("Erreur envoi email:", err)
+      );
     }
   }
 
