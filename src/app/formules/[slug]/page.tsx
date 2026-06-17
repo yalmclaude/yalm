@@ -4,10 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BookingForm } from "@/components/BookingForm";
 import { formatPrice, depositLabel } from "@/lib/format";
 
-export async function generateStaticParams() {
-  const packs = await prisma.pack.findMany({ select: { slug: true } });
-  return packs.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function PackPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -5,10 +5,7 @@ import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
 import { formatPrice, depositLabel } from "@/lib/format";
 
-export async function generateStaticParams() {
-  const products = await prisma.product.findMany({ select: { slug: true } });
-  return products.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
