@@ -49,6 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             depositType={product.depositType}
             depositValue={product.depositValue}
             totalQuantity={product.totalQuantity}
+            allowFullPayment={product.allowFullPayment}
           />
         </div>
       </main>

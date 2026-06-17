@@ -6,7 +6,7 @@ import { depositAmountCents } from "@/lib/format";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { productId, packId, customerName, email, phone, eventDate, quantity } = body as {
+  const { productId, packId, customerName, email, phone, eventDate, quantity, paymentType } = body as {
     productId?: string;
     packId?: string;
     customerName?: string;
@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     phone?: string;
     eventDate?: string;
     quantity?: number;
+    paymentType?: "DEPOSIT" | "FULL";
   };
 
   if ((!productId && !packId) || !customerName || !email || !phone || !eventDate) {
@@ -43,6 +44,9 @@ export async function POST(request: NextRequest) {
   }
 
   const deposit = depositAmountCents(item.priceCents, item.depositType, item.depositValue) * qty;
+  const fullAmount = item.priceCents * qty;
+  const wantsFullPayment = paymentType === "FULL" && item.allowFullPayment;
+  const amountToCharge = wantsFullPayment ? fullAmount : deposit;
 
   const booking = await prisma.booking.create({
     data: {
@@ -53,12 +57,13 @@ export async function POST(request: NextRequest) {
       phone,
       eventDate: parsedDate,
       quantity: qty,
-      depositAmountCents: deposit,
+      depositAmountCents: amountToCharge,
       status: "PENDING_DEPOSIT",
     },
   });
 
   const origin = request.nextUrl.origin;
+  const label = wantsFullPayment ? `Paiement intégral — ${item.name}` : `Acompte — ${item.name}`;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -69,9 +74,9 @@ export async function POST(request: NextRequest) {
         {
           price_data: {
             currency: "eur",
-            unit_amount: deposit,
+            unit_amount: amountToCharge,
             product_data: {
-              name: `Acompte — ${item.name}`,
+              name: label,
               description: `Réservation du ${parsedDate.toLocaleDateString("fr-FR")}`,
             },
           },

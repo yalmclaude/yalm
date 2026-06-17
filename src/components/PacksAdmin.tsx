@@ -21,6 +21,7 @@ type Pack = {
   depositType: "FIXED" | "PERCENT";
   depositValue: number;
   isAvailable: boolean;
+  allowFullPayment: boolean;
   imageUrl: string | null;
   items: PackItem[];
 };
@@ -35,6 +36,7 @@ const emptyPack: EditingPack = {
   depositType: "PERCENT",
   depositValue: 30,
   isAvailable: true,
+  allowFullPayment: false,
   imageUrl: null,
   items: [],
 };
@@ -212,6 +214,17 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
               >
                 <option value="true">Oui</option>
                 <option value="false">Non (Bientôt de retour)</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-gray-700">Paiement intégral autorisé</span>
+              <select
+                value={editing.allowFullPayment ? "true" : "false"}
+                onChange={(e) => setEditing({ ...editing, allowFullPayment: e.target.value === "true" })}
+                className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="false">Non — acompte uniquement</option>
+                <option value="true">Oui — client peut payer le total</option>
               </select>
             </label>
             <label className="block text-sm sm:col-span-2">

@@ -20,6 +20,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       depositValue: Number(data.depositValue),
       totalQuantity: Number(data.totalQuantity),
       isAvailable: Boolean(data.isAvailable),
+      allowFullPayment: Boolean(data.allowFullPayment),
     },
     include: { category: true, images: { orderBy: { order: "asc" } } },
   });

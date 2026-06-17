@@ -28,6 +28,7 @@ type Product = {
   depositValue: number;
   totalQuantity: number;
   isAvailable: boolean;
+  allowFullPayment: boolean;
   images: ProductImg[];
 };
 
@@ -243,6 +244,7 @@ export function AdminDashboard() {
                   depositValue: 30,
                   totalQuantity: 1,
                   isAvailable: true,
+                  allowFullPayment: false,
                   images: [],
                 });
               }}
@@ -473,6 +475,16 @@ export function AdminDashboard() {
               >
                 <option value="true">Oui</option>
                 <option value="false">Non (Bientôt de retour)</option>
+              </select>
+            </Field>
+            <Field label="Paiement intégral autorisé">
+              <select
+                value={editing.allowFullPayment ? "true" : "false"}
+                onChange={(e) => setEditing({ ...editing, allowFullPayment: e.target.value === "true" })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="false">Non — acompte uniquement</option>
+                <option value="true">Oui — client peut payer le total</option>
               </select>
             </Field>
             <Field label="Description" full>

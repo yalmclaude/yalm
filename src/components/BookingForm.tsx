@@ -10,6 +10,7 @@ type Props = {
   depositType: "FIXED" | "PERCENT";
   depositValue: number;
   totalQuantity?: number;
+  allowFullPayment?: boolean;
   title?: string;
 };
 
@@ -20,6 +21,7 @@ export function BookingForm({
   depositType,
   depositValue,
   totalQuantity,
+  allowFullPayment = false,
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -29,6 +31,7 @@ export function BookingForm({
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +51,8 @@ export function BookingForm({
   }, [eventDate, idParam]);
 
   const deposit = depositAmountCents(priceCents, depositType, depositValue) * quantity;
+  const total = priceCents * quantity;
+  const amountToPay = paymentType === "FULL" ? total : deposit;
   const isSoldOut = remaining !== null && remaining <= 0;
   const exceedsStock = remaining !== null && quantity > remaining;
 
@@ -59,7 +64,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -146,9 +151,43 @@ export function BookingForm({
         />
       </div>
 
-      <div className="rounded-lg bg-background p-3.5 text-sm text-gray-700">
-        Acompte à régler pour bloquer la date : <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
-      </div>
+      {allowFullPayment && (
+        <div className="rounded-lg border border-bordeaux/10 p-4 space-y-2">
+          <p className="text-sm font-medium text-gray-700">Mode de paiement</p>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="paymentType"
+              value="DEPOSIT"
+              checked={paymentType === "DEPOSIT"}
+              onChange={() => setPaymentType("DEPOSIT")}
+              className="accent-bordeaux"
+            />
+            <span className="text-sm text-gray-700">
+              Payer l&apos;acompte uniquement — <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
+            </span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="paymentType"
+              value="FULL"
+              checked={paymentType === "FULL"}
+              onChange={() => setPaymentType("FULL")}
+              className="accent-bordeaux"
+            />
+            <span className="text-sm text-gray-700">
+              Payer le montant total — <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
+            </span>
+          </label>
+        </div>
+      )}
+
+      {!allowFullPayment && (
+        <div className="rounded-lg bg-background p-3.5 text-sm text-gray-700">
+          Acompte à régler pour bloquer la date : <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -157,7 +196,11 @@ export function BookingForm({
         disabled={submitting || isSoldOut || exceedsStock || !eventDate}
         className="w-full rounded-full bg-gold px-4 py-3 font-medium text-bordeaux-dark transition-all hover:-translate-y-0.5 hover:bg-gold-light hover:shadow-[0_10px_20px_rgba(201,162,39,0.35)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
-        {submitting ? "Redirection vers le paiement…" : "Réserver et payer l'acompte"}
+        {submitting
+          ? "Redirection vers le paiement…"
+          : paymentType === "FULL"
+          ? `Payer ${formatPrice(amountToPay)}`
+          : "Réserver et payer l'acompte"}
       </button>
     </form>
   );

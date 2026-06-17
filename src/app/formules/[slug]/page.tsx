@@ -64,6 +64,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             priceCents={pack.priceCents}
             depositType={pack.depositType}
             depositValue={pack.depositValue}
+            allowFullPayment={pack.allowFullPayment}
             title="Réserver cette formule"
           />
         </div>
