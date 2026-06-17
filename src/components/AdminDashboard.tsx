@@ -329,6 +329,9 @@ export function AdminDashboard() {
                         <p className="mt-1 text-xs text-gray-500">
                           {formatPrice(p.priceCents)} · Qté {p.totalQuantity}
                         </p>
+                        {p.allowFullPayment && (
+                          <p className="mt-1 text-xs font-medium text-gold">Paiement total activé</p>
+                        )}
                         <div className="mt-2 flex gap-3 text-xs">
                           <button onClick={() => setEditing(p)} className="text-bordeaux hover:underline">
                             Modifier

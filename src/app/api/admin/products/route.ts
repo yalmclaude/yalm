@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       depositValue: Number(data.depositValue),
       totalQuantity: Number(data.totalQuantity),
       isAvailable: Boolean(data.isAvailable),
+      allowFullPayment: Boolean(data.allowFullPayment),
     },
     include: { category: true, images: true },
   });

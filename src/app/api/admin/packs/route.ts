@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       depositType: data.depositType,
       depositValue: Number(data.depositValue),
       isAvailable: Boolean(data.isAvailable),
+      allowFullPayment: Boolean(data.allowFullPayment),
       imageUrl: data.imageUrl ?? null,
       items: {
         create: items
