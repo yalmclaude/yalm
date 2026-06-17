@@ -7,7 +7,7 @@ import { formatPrice, depositLabel } from "@/lib/format";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
+  const product = await prisma.product.findFirst({
     where: { slug },
     include: { category: true, images: { orderBy: { order: "asc" } } },
   });

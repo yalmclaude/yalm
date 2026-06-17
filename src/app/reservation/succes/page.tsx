@@ -9,7 +9,7 @@ export default async function BookingSuccessPage({
 }) {
   const { booking: bookingId } = await searchParams;
   const booking = bookingId
-    ? await prisma.booking.findUnique({ where: { id: bookingId }, include: { product: true, pack: true } })
+    ? await prisma.booking.findFirst({ where: { id: bookingId }, include: { product: true, pack: true } })
     : null;
   const itemName = booking?.product?.name ?? booking?.pack?.name;
 

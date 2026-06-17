@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
   }
 
   const item = packId
-    ? await prisma.pack.findUnique({ where: { id: packId } })
-    : await prisma.product.findUnique({ where: { id: productId! } });
+    ? await prisma.pack.findFirst({ where: { id: packId } })
+    : await prisma.product.findFirst({ where: { id: productId! } });
 
   if (!item || !item.isAvailable) {
     return NextResponse.json({ error: "Cette offre est indisponible" }, { status: 400 });
