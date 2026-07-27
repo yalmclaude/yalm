@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
   if (!product.isAvailable) {
     return (
       <Reveal>
-        <div className="rounded-2xl border border-bordeaux/5 bg-[#f1efec] p-6 opacity-85">
+        <div className="rounded-2xl border border-bordeaux/10 bg-background p-6 opacity-75">
           {coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -20,13 +20,13 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
               className="mb-4 h-36 w-full rounded-lg object-cover grayscale"
             />
           ) : (
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#d8d4cd] text-white">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-beige-dark text-bordeaux/50">
               ✦
             </div>
           )}
-          <h4 className="font-serif text-lg text-anthracite">{product.name}</h4>
-          <p className="mt-2 text-sm text-gray-500 min-h-11">{product.description}</p>
-          <span className="mt-3 inline-block rounded-full bg-[#e4e1db] px-3 py-1.5 text-[0.7rem] uppercase tracking-wide text-gray-500">
+          <h4 className="font-serif text-lg text-bordeaux/60">{product.name}</h4>
+          <p className="mt-2 text-sm text-bordeaux/50 min-h-11">{product.description}</p>
+          <span className="mt-3 inline-block rounded-full bg-beige-dark px-3 py-1.5 text-[0.7rem] uppercase tracking-wide text-bordeaux/60">
             Bientôt de retour
           </span>
         </div>
@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
     <Reveal>
       <Link
         href={`/produits/${product.slug}`}
-        className="group block rounded-2xl border border-bordeaux/5 bg-white p-6 shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.14)]"
+        className="group block rounded-2xl border border-bordeaux/15 bg-background p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
       >
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -48,13 +48,13 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
             ✦
           </div>
         )}
-        <h4 className="font-serif text-lg text-anthracite transition-colors group-hover:text-bordeaux">
+        <h4 className="font-serif text-lg text-bordeaux transition-colors group-hover:text-bordeaux-light">
           {product.name}
         </h4>
-        <p className="mt-2 text-sm text-gray-500 min-h-11">{product.description}</p>
+        <p className="mt-2 text-sm text-bordeaux/60 min-h-11">{product.description}</p>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
           <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
-          <span className="text-right text-xs text-gray-500">
+          <span className="text-right text-xs text-bordeaux/55">
             Acompte : {depositLabel(product.depositType, product.depositValue)}
           </span>
         </div>

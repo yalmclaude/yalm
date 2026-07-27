@@ -79,24 +79,28 @@ export function BookingForm({
     }
   }
 
+  const inputClass =
+    "mt-1.5 w-full rounded-lg border border-bordeaux/20 bg-background px-3.5 py-2.5 text-sm text-bordeaux placeholder:text-bordeaux/40 focus:border-bordeaux focus:outline-none";
+  const labelClass = "block text-sm font-medium text-bordeaux/80";
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border border-bordeaux/5 bg-white p-7 shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
+      className="space-y-4 rounded-2xl border border-bordeaux/15 bg-background p-7 shadow-[0_12px_30px_rgba(74,16,21,0.1)]"
     >
       <h3 className="font-serif text-xl text-bordeaux">{title}</h3>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Date de l&apos;événement</label>
+        <label className={labelClass}>Date de l&apos;événement</label>
         <input
           type="date"
           required
           min={today}
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-[#ddd6cd] bg-background px-3.5 py-2.5 text-sm focus:border-bordeaux focus:outline-none"
+          className={inputClass}
         />
-        {checkingAvailability && <p className="mt-1.5 text-xs text-gray-500">Vérification de la disponibilité…</p>}
+        {checkingAvailability && <p className="mt-1.5 text-xs text-bordeaux/60">Vérification de la disponibilité…</p>}
         {!checkingAvailability && remaining !== null && (
           <p className={`mt-1.5 text-xs ${isSoldOut ? "text-red-600" : "text-green-700"}`}>
             {isSoldOut ? "Indisponible à cette date" : `${remaining} disponible(s) à cette date`}
@@ -106,54 +110,54 @@ export function BookingForm({
 
       {!packId && totalQuantity !== undefined && totalQuantity > 1 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700">Quantité</label>
+          <label className={labelClass}>Quantité</label>
           <input
             type="number"
             min={1}
             max={totalQuantity}
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="mt-1.5 w-24 rounded-lg border border-[#ddd6cd] bg-background px-3.5 py-2.5 text-sm focus:border-bordeaux focus:outline-none"
+            className={`${inputClass} w-24`}
           />
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Nom complet</label>
+        <label className={labelClass}>Nom complet</label>
         <input
           type="text"
           required
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-[#ddd6cd] bg-background px-3.5 py-2.5 text-sm focus:border-bordeaux focus:outline-none"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
+        <label className={labelClass}>Email</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-[#ddd6cd] bg-background px-3.5 py-2.5 text-sm focus:border-bordeaux focus:outline-none"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+        <label className={labelClass}>Téléphone</label>
         <input
           type="tel"
           required
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-[#ddd6cd] bg-background px-3.5 py-2.5 text-sm focus:border-bordeaux focus:outline-none"
+          className={inputClass}
         />
       </div>
 
       {allowFullPayment && (
-        <div className="rounded-lg border border-bordeaux/10 p-4 space-y-2">
-          <p className="text-sm font-medium text-gray-700">Mode de paiement</p>
+        <div className="rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4 space-y-2">
+          <p className="text-sm font-medium text-bordeaux/80">Mode de paiement</p>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="radio"
@@ -163,7 +167,7 @@ export function BookingForm({
               onChange={() => setPaymentType("DEPOSIT")}
               className="accent-bordeaux"
             />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-bordeaux/80">
               Payer l&apos;acompte uniquement — <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
             </span>
           </label>
@@ -176,7 +180,7 @@ export function BookingForm({
               onChange={() => setPaymentType("FULL")}
               className="accent-bordeaux"
             />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-bordeaux/80">
               Payer le montant total — <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
             </span>
           </label>
@@ -184,7 +188,7 @@ export function BookingForm({
       )}
 
       {!allowFullPayment && (
-        <div className="rounded-lg bg-background p-3.5 text-sm text-gray-700">
+        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
           Acompte à régler pour bloquer la date : <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
         </div>
       )}

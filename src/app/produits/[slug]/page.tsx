@@ -29,9 +29,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
               {product.category.name}
             </p>
-            <h1 className="mt-2 font-serif text-3xl text-anthracite">{product.name}</h1>
-            <p className="mt-4 text-gray-600">{product.description}</p>
-            <div className="mt-6 space-y-1.5 text-sm text-gray-700">
+            <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>
+            <p className="mt-4 text-bordeaux/70">{product.description}</p>
+            <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
               <p>
                 Prix : <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
               </p>

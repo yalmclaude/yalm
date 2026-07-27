@@ -33,12 +33,12 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
               />
             )}
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Formule</p>
-            <h1 className="mt-2 font-serif text-3xl text-anthracite">{pack.name}</h1>
-            <p className="mt-4 text-gray-600">{pack.description}</p>
+            <h1 className="mt-2 font-serif text-3xl text-bordeaux">{pack.name}</h1>
+            <p className="mt-4 text-bordeaux/70">{pack.description}</p>
 
             <div className="mt-6">
-              <p className="text-sm font-medium text-anthracite">Cette formule inclut :</p>
-              <ul className="mt-2 space-y-1 text-sm text-gray-700">
+              <p className="text-sm font-medium text-bordeaux">Cette formule inclut :</p>
+              <ul className="mt-2 space-y-1 text-sm text-bordeaux/75">
                 {pack.items.map((item) => (
                   <li key={item.id}>
                     • {item.quantity > 1 ? `${item.quantity}× ` : ""}
@@ -48,7 +48,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
               </ul>
             </div>
 
-            <div className="mt-6 space-y-1.5 text-sm text-gray-700">
+            <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
               <p>
                 Prix : <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
               </p>

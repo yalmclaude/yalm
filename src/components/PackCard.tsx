@@ -20,7 +20,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
     <Reveal>
       <Link
         href={`/formules/${pack.slug}`}
-        className="group block rounded-2xl border border-gold/40 bg-white p-6 shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.14)]"
+        className="group block rounded-2xl border border-gold/50 bg-background p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
       >
         {pack.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -30,11 +30,11 @@ export function PackCard({ pack }: { pack: PackCardData }) {
             ★
           </div>
         )}
-        <h4 className="font-serif text-lg text-anthracite transition-colors group-hover:text-bordeaux">
+        <h4 className="font-serif text-lg text-bordeaux transition-colors group-hover:text-bordeaux-light">
           {pack.name}
         </h4>
-        <p className="mt-2 text-sm text-gray-500">{pack.description}</p>
-        <ul className="mt-3 space-y-0.5 text-xs text-gray-500">
+        <p className="mt-2 text-sm text-bordeaux/60">{pack.description}</p>
+        <ul className="mt-3 space-y-0.5 text-xs text-bordeaux/55">
           {pack.items.map((item, i) => (
             <li key={i}>
               • {item.quantity > 1 ? `${item.quantity}× ` : ""}
@@ -44,7 +44,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
         </ul>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
           <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
-          <span className="text-right text-xs text-gray-500">
+          <span className="text-right text-xs text-bordeaux/55">
             Acompte : {depositLabel(pack.depositType, pack.depositValue)}
           </span>
         </div>

@@ -12,7 +12,7 @@ export function SiteHeader() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="YALM Events" className="h-20 w-auto sm:h-24" />
           </Link>
-          <nav className="flex items-center gap-8 text-sm font-medium text-anthracite">
+          <nav className="flex items-center gap-8 text-sm font-medium text-bordeaux">
             <Link href="/#formules" className="hover:text-bordeaux transition-colors">
               Formules
             </Link>
