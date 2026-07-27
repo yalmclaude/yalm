@@ -208,20 +208,54 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative flex flex-col items-center text-center z-10 px-6">
 
-        {/* Logo — bloom reveal then gentle float */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.png"
-          alt="YALM Events"
-          style={{
-            width: "clamp(200px, 38vw, 480px)",
-            height: "auto",
-            display: "block",
-            borderRadius: "16px",
-            animation:
-              "logoReveal 1.4s cubic-bezier(0.22,1,0.36,1) both, logoFloat 5s ease-in-out 1.4s infinite",
-          }}
-        />
+        {/* Float wrapper — seul responsable du translateY */}
+        <div style={{ animation: "logoFloat 5s ease-in-out 1.4s infinite" }}>
+          {/* Breathe wrapper — gère opacity + blur, overflow:hidden pour le shimmer */}
+          <div
+            style={{
+              position: "relative",
+              borderRadius: "16px",
+              overflow: "hidden",
+              animation:
+                "logoReveal 1.4s cubic-bezier(0.22,1,0.36,1) both, logoBreathe 6s ease-in-out 3s infinite",
+            }}
+          >
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="YALM Events"
+              style={{
+                width: "clamp(200px, 38vw, 480px)",
+                height: "auto",
+                display: "block",
+              }}
+            />
+
+            {/* Shimmer magique qui balaie le yalm */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-50%",
+                  left: 0,
+                  width: "45%",
+                  height: "200%",
+                  background:
+                    "linear-gradient(to right, transparent, rgba(255,248,230,0.55), rgba(255,255,255,0.35), transparent)",
+                  animation: "shimmerSweep 3.5s cubic-bezier(0.4,0,0.6,1) 2s infinite",
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Divider */}
         <div
