@@ -185,7 +185,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-beige">
       {/* Canvas — particles & sparkles */}
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
