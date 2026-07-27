@@ -32,23 +32,14 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
-        {/* Slogan + headline + CTAs — outside the dark hero */}
-        <section className="bg-background py-20 text-center">
+        {/* CTAs — outside the dark hero */}
+        <section className="bg-background py-16 text-center">
           <div className="mx-auto max-w-2xl px-6">
             <p className="text-xs uppercase tracking-[0.32em] text-gold font-light">
               Your Amazing Life Moments
             </p>
             <div className="mx-auto my-5 h-px w-10 bg-gold/40" />
-            <h2 className="font-serif text-4xl font-semibold leading-snug text-bordeaux sm:text-5xl">
-              Sublimez votre événement
-              <br />
-              <em className="italic text-bordeaux-light">avec élégance</em>
-            </h2>
-            <p className="mt-6 text-gray-500 font-light leading-relaxed">
-              Photobooths immersifs, bars sur mesure et signalétique raffinée : une offre haut de gamme
-              pensée pour marquer vos invités.
-            </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
               <a href="#catalogue" className="rounded-full bg-bordeaux px-8 py-3.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_28px_rgba(74,16,21,0.3)]">
                 Voir les prestations
               </a>
@@ -57,18 +48,6 @@ export default async function HomePage() {
               </a>
             </div>
           </div>
-        </section>
-
-        <section className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <div className="mx-auto mb-6 h-[3px] w-14 rounded bg-gold" />
-          <h2 className="font-serif text-2xl text-bordeaux">
-            Une expérience événementielle sur mesure
-          </h2>
-          <p className="mt-4 text-gray-500">
-            Chez <strong>YALM</strong>, chaque prestation est sélectionnée pour son impact visuel
-            et son raffinement. Du livre d&apos;or audio au bar personnalisé à votre image, nous
-            donnons à votre événement la touche festive et structurée qu&apos;il mérite.
-          </p>
         </section>
 
         {packs.length > 0 && (
