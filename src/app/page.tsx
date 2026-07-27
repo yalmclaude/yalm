@@ -32,6 +32,21 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
+        {/* Headline section — moved out of hero so YALM stays clean */}
+        <section className="relative bg-bordeaux-dark py-16 text-center text-white">
+          <div className="mx-auto max-w-2xl px-6">
+            <p className="font-serif text-3xl font-semibold leading-snug sm:text-4xl">
+              Sublimez votre événement
+              <br />
+              <em className="text-gold-light">avec élégance</em>
+            </p>
+            <p className="mt-5 text-white/65 font-light leading-relaxed">
+              Photobooths immersifs, bars sur mesure et signalétique raffinée : une offre haut de gamme
+              pensée pour marquer vos invités.
+            </p>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-2xl px-6 py-16 text-center">
           <div className="mx-auto mb-6 h-[3px] w-14 rounded bg-gold" />
           <h2 className="font-serif text-2xl text-bordeaux">
