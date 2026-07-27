@@ -66,15 +66,24 @@ h3,
 }
 
 @keyframes logoBreathe {
-  0%   { opacity: 1; filter: blur(0px)  brightness(1); }
-  38%  { opacity: 0; filter: blur(8px)  brightness(1.6); }
-  56%  { opacity: 0; filter: blur(8px)  brightness(1.6); }
-  100% { opacity: 1; filter: blur(0px)  brightness(1); }
+  0%   { opacity: 1; }
+  38%  { opacity: 0; }
+  58%  { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-@keyframes shimmerSweep {
-  0%   { transform: translateX(-220%) skewX(-18deg); opacity: 1; }
-  100% { transform: translateX(320%)  skewX(-18deg); opacity: 0.8; }
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 0 0px 0px rgba(201,162,39,0), 0 0 0px 0px rgba(74,16,21,0); }
+  25%       { box-shadow: 0 0 30px 8px rgba(201,162,39,0.22), 0 0 60px 20px rgba(201,162,39,0.08); }
+  50%       { box-shadow: 0 0 50px 14px rgba(74,16,21,0.18), 0 0 90px 30px rgba(74,16,21,0.06); }
+  75%       { box-shadow: 0 0 30px 8px rgba(201,162,39,0.22), 0 0 60px 20px rgba(201,162,39,0.08); }
+}
+
+@keyframes sloganBreathe {
+  0%   { opacity: 1; transform: translateY(0px); }
+  32%  { opacity: 0; transform: translateY(-18px); }
+  58%  { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0px); }
 }
 
 @keyframes glowPulse {
