@@ -45,6 +45,21 @@ h3,
   font-family: var(--font-serif), "Playfair Display", serif;
 }
 
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes yalmPulse {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(-1deg); }
+  50%       { opacity: 0.6; transform: scale(1.04) rotate(-1deg); }
+}
+
+.yalm-watermark {
+  animation: yalmPulse 10s ease-in-out infinite;
+  transform-origin: center;
+}
+
 .card-reveal {
   opacity: 0;
   transform: translateY(16px);

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { PackCard } from "@/components/PackCard";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
+import { HeroSection } from "@/components/HeroSection";
 
 export default async function HomePage() {
   const categories = await prisma.category.findMany({
@@ -29,43 +30,7 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <main className="flex-1">
-        <section className="relative overflow-hidden text-white">
-          <div
-            className="absolute inset-0 -z-10"
-            style={{
-              background:
-                "radial-gradient(circle at 80% 20%, rgba(201,162,39,0.25), transparent 55%), linear-gradient(135deg, var(--bordeaux-dark) 0%, var(--bordeaux) 55%, var(--bordeaux-light) 100%)",
-            }}
-          />
-          <div className="mx-auto max-w-3xl px-6 py-24 sm:py-28">
-            <p className="text-xs uppercase tracking-[0.18em] text-gold-light">
-              Mariages · Soirées privées · Événements d&apos;entreprise
-            </p>
-            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-              Sublimez votre événement
-              <br />
-              <span className="italic text-gold-light">avec élégance</span>
-            </h1>
-            <p className="mt-5 max-w-lg text-white/85">
-              Photobooths immersifs, bars sur mesure et signalétique raffinée : une offre haut de
-              gamme pensée pour marquer vos invités.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-4">
-              <a
-                href="#catalogue"
-                className="rounded-full bg-gold px-7 py-3.5 text-sm font-medium text-bordeaux-dark transition-all hover:-translate-y-0.5 hover:bg-gold-light hover:shadow-[0_10px_20px_rgba(201,162,39,0.35)]"
-              >
-                Voir les prestations
-              </a>
-              <a
-                href="#formules"
-                className="rounded-full border border-white/60 px-7 py-3.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                Découvrir nos formules
-              </a>
-            </div>
-          </div>
-        </section>
+        <HeroSection />
 
         <section className="mx-auto max-w-2xl px-6 py-16 text-center">
           <div className="mx-auto mb-6 h-[3px] w-14 rounded bg-gold" />
