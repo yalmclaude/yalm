@@ -32,18 +32,30 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
-        {/* Headline section — moved out of hero so YALM stays clean */}
-        <section className="relative bg-bordeaux-dark py-16 text-center text-white">
+        {/* Slogan + headline + CTAs — outside the dark hero */}
+        <section className="bg-background py-20 text-center">
           <div className="mx-auto max-w-2xl px-6">
-            <p className="font-serif text-3xl font-semibold leading-snug sm:text-4xl">
+            <p className="text-xs uppercase tracking-[0.32em] text-gold font-light">
+              Your Amazing Life Moments
+            </p>
+            <div className="mx-auto my-5 h-px w-10 bg-gold/40" />
+            <h2 className="font-serif text-4xl font-semibold leading-snug text-bordeaux sm:text-5xl">
               Sublimez votre événement
               <br />
-              <em className="text-gold-light">avec élégance</em>
-            </p>
-            <p className="mt-5 text-white/65 font-light leading-relaxed">
+              <em className="italic text-bordeaux-light">avec élégance</em>
+            </h2>
+            <p className="mt-6 text-gray-500 font-light leading-relaxed">
               Photobooths immersifs, bars sur mesure et signalétique raffinée : une offre haut de gamme
               pensée pour marquer vos invités.
             </p>
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
+              <a href="#catalogue" className="rounded-full bg-bordeaux px-8 py-3.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_28px_rgba(74,16,21,0.3)]">
+                Voir les prestations
+              </a>
+              <a href="#formules" className="rounded-full border border-bordeaux/30 px-8 py-3.5 text-sm font-light text-bordeaux transition-all hover:-translate-y-0.5 hover:border-bordeaux hover:bg-bordeaux/5">
+                Nos formules
+              </a>
+            </div>
           </div>
         </section>
 
