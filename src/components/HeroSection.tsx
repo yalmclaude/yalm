@@ -5,17 +5,17 @@ import { useEffect, useState } from "react";
 const SLOGAN = "Your Amazing Life Moments";
 
 export function HeroSection() {
-  // 0 = exterior immobile
-  // 1 = portes s'ouvrent
-  // 2 = zoom / entrée dans la salle
-  // 3 = interior plein écran + slogan
   const [phase, setPhase] = useState(0);
+  // 0 : portes fermées (image 1)
+  // 1 : portes s'ouvrent
+  // 2 : zoom d'entrée
+  // 3 : intérieur + slogan
   const [visibleLetters, setVisibleLetters] = useState(0);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 1500);   // ouverture des portes
-    const t2 = setTimeout(() => setPhase(2), 4800);   // zoom d'entrée
-    const t3 = setTimeout(() => setPhase(3), 6500);   // interior + slogan
+    const t1 = setTimeout(() => setPhase(1), 1500);  // début ouverture
+    const t2 = setTimeout(() => setPhase(2), 5000);  // zoom d'entrée
+    const t3 = setTimeout(() => setPhase(3), 6600);  // intérieur
     const t4 = setTimeout(() => {
       let n = 0;
       const iv = setInterval(() => {
@@ -24,8 +24,11 @@ export function HeroSection() {
         if (n >= SLOGAN.length) clearInterval(iv);
       }, 72);
       return () => clearInterval(iv);
-    }, 7200);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    }, 7800);
+    return () => {
+      clearTimeout(t1); clearTimeout(t2);
+      clearTimeout(t3); clearTimeout(t4);
+    };
   }, []);
 
   return (
@@ -38,7 +41,7 @@ export function HeroSection() {
         background: "#000",
       }}
     >
-      {/* ── Interior — apparaît après le zoom ─────────────── */}
+      {/* ── IMAGE 2 : intérieur — toujours derrière ─────────── */}
       <div
         style={{
           position: "absolute",
@@ -46,86 +49,81 @@ export function HeroSection() {
           backgroundImage: "url('/hero-interior.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity:    phase >= 3 ? 1 : 0,
-          transform:  phase >= 3 ? "scale(1)" : "scale(1.08)",
-          transition: "opacity 1.4s ease, transform 1.4s ease",
+          // légère animation de "settle" quand elle prend le relais
+          transform:  phase >= 3 ? "scale(1)"    : "scale(1.06)",
+          opacity:    phase >= 3 ? 1             : 1,
+          transition: "transform 1.8s ease",
         }}
       />
 
-      {/* ── Couche extérieure : image + portes + zoom ──────── */}
+      {/* ── IMAGE 1 : panneau gauche (demi-gauche de l'exterior) ─ */}
       <div
         style={{
           position: "absolute",
-          inset: 0,
-          // zoom d'entrée : on "fonce" vers l'intérieur
-          transform:  phase >= 2 ? "scale(2.8)" : "scale(1)",
+          top: 0, left: 0,
+          width: "50%", height: "100%",
+          overflow: "hidden",
+          // zoom vers les portes + glissement d'ouverture
+          transform: phase >= 2
+            ? "translateX(-100%) scale(1.4)"
+            : phase >= 1
+            ? "translateX(-100%)"
+            : "translateX(0)",
+          transformOrigin: "left center",
           transition: phase >= 2
             ? "transform 1.8s cubic-bezier(0.4, 0, 1, 1)"
-            : "none",
-          transformOrigin: "center center",
-          // disparaît quand l'interior prend le relais
+            : "transform 3.4s cubic-bezier(0.76, 0, 0.24, 1)",
+          // disparaît quand l'intérieur prend le relais
           opacity:    phase >= 3 ? 0 : 1,
+          zIndex: 2,
         }}
       >
-        {/* Image exterior complète — visible quand les portes ne couvrent pas tout */}
+        {/* div interne 100vw pour montrer la moitié gauche de l'image */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0, left: 0,
+            width: "200%", height: "100%",
             backgroundImage: "url('/hero-exterior.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
+      </div>
 
-        {/* Porte gauche — glisse à gauche */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0, left: 0,
-            width: "50%", height: "100%",
-            overflow: "hidden",
-            transform:  phase >= 1 ? "translateX(-100%)" : "translateX(0)",
-            transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0, left: 0,
-              width: "200%", height: "100%",
-              backgroundImage: "url('/hero-exterior.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </div>
-
-        {/* Porte droite — glisse à droite */}
+      {/* ── IMAGE 1 : panneau droit (demi-droite de l'exterior) ─ */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0, right: 0,
+          width: "50%", height: "100%",
+          overflow: "hidden",
+          transform: phase >= 2
+            ? "translateX(100%) scale(1.4)"
+            : phase >= 1
+            ? "translateX(100%)"
+            : "translateX(0)",
+          transformOrigin: "right center",
+          transition: phase >= 2
+            ? "transform 1.8s cubic-bezier(0.4, 0, 1, 1)"
+            : "transform 3.4s cubic-bezier(0.76, 0, 0.24, 1)",
+          opacity:    phase >= 3 ? 0 : 1,
+          zIndex: 2,
+        }}
+      >
         <div
           style={{
             position: "absolute",
             top: 0, right: 0,
-            width: "50%", height: "100%",
-            overflow: "hidden",
-            transform:  phase >= 1 ? "translateX(100%)" : "translateX(0)",
-            transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
+            width: "200%", height: "100%",
+            backgroundImage: "url('/hero-exterior.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0, right: 0,
-              width: "200%", height: "100%",
-              backgroundImage: "url('/hero-exterior.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </div>
+        />
       </div>
 
-      {/* ── Slogan ──────────────────────────────────────────── */}
+      {/* ── SLOGAN ───────────────────────────────────────────── */}
       <div
         style={{
           position: "absolute",
@@ -136,7 +134,7 @@ export function HeroSection() {
           zIndex: 10,
           pointerEvents: "none",
           opacity:    phase >= 3 ? 1 : 0,
-          transition: "opacity 1.4s ease 0.6s",
+          transition: "opacity 1.4s ease 0.5s",
         }}
       >
         <p
