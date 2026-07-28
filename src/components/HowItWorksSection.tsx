@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Reveal } from "@/components/Reveal";
 
 type Step = {
   id: string;
@@ -12,10 +13,12 @@ export function HowItWorksSection({ steps }: { steps: Step[] }) {
   return (
     <section id="comment-ca-marche" className="bg-beige-dark py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-bordeaux/70">
-          Le processus
-        </p>
-        <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">Comment ça marche ?</h2>
+        <Reveal>
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-bordeaux/70">
+            Le processus
+          </p>
+          <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">Comment ça marche ?</h2>
+        </Reveal>
 
         <div className="isolate mt-14 grid gap-10 sm:grid-cols-3">
           {steps.map((step, index) => {
@@ -31,12 +34,16 @@ export function HowItWorksSection({ steps }: { steps: Step[] }) {
               </div>
             );
 
-            return index === 0 ? (
-              <Link key={step.id} href="/#catalogue" className="block cursor-pointer">
-                {card}
-              </Link>
-            ) : (
-              <div key={step.id}>{card}</div>
+            return (
+              <Reveal key={step.id} delay={index * 120}>
+                {index === 0 ? (
+                  <Link href="/#catalogue" className="block cursor-pointer">
+                    {card}
+                  </Link>
+                ) : (
+                  card
+                )}
+              </Reveal>
             );
           })}
         </div>

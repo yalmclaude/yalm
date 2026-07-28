@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export function Reveal({ children }: { children: React.ReactNode }) {
+export function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function Reveal({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={ref} className="card-reveal">
+    <div ref={ref} className="card-reveal" style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
       {children}
     </div>
   );
