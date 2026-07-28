@@ -5,17 +5,18 @@ import { useEffect, useState } from "react";
 const SLOGAN = "Your Amazing Life Moments";
 
 export function HeroSection() {
-  const [doorsOpen, setDoorsOpen]       = useState(false);
-  const [sloganReady, setSloganReady]   = useState(false);
+  // 0 = exterior immobile
+  // 1 = portes s'ouvrent
+  // 2 = zoom / entrée dans la salle
+  // 3 = interior plein écran + slogan
+  const [phase, setPhase] = useState(0);
   const [visibleLetters, setVisibleLetters] = useState(0);
 
   useEffect(() => {
-    // 1.5 s : début ouverture des portes
-    const t1 = setTimeout(() => setDoorsOpen(true), 1500);
-
-    // 5.5 s : slogan (après que les portes soient complètement ouvertes)
-    const t2 = setTimeout(() => {
-      setSloganReady(true);
+    const t1 = setTimeout(() => setPhase(1), 1500);   // ouverture des portes
+    const t2 = setTimeout(() => setPhase(2), 4800);   // zoom d'entrée
+    const t3 = setTimeout(() => setPhase(3), 6500);   // interior + slogan
+    const t4 = setTimeout(() => {
       let n = 0;
       const iv = setInterval(() => {
         n++;
@@ -23,9 +24,8 @@ export function HeroSection() {
         if (n >= SLOGAN.length) clearInterval(iv);
       }, 72);
       return () => clearInterval(iv);
-    }, 5500);
-
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    }, 7200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
 
   return (
@@ -38,7 +38,7 @@ export function HeroSection() {
         background: "#000",
       }}
     >
-      {/* ── Salle de mariage — toujours présente derrière ── */}
+      {/* ── Interior — apparaît après le zoom ─────────────── */}
       <div
         style={{
           position: "absolute",
@@ -46,67 +46,97 @@ export function HeroSection() {
           backgroundImage: "url('/hero-interior.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          opacity:    phase >= 3 ? 1 : 0,
+          transform:  phase >= 3 ? "scale(1)" : "scale(1.08)",
+          transition: "opacity 1.4s ease, transform 1.4s ease",
         }}
       />
 
-      {/* ── Porte gauche — glisse vers la gauche ── */}
+      {/* ── Couche extérieure : image + portes + zoom ──────── */}
       <div
         style={{
           position: "absolute",
-          top: 0, left: 0,
-          width: "50%", height: "100%",
-          overflow: "hidden",
-          transform: doorsOpen ? "translateX(-100%)" : "translateX(0)",
-          transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
+          inset: 0,
+          // zoom d'entrée : on "fonce" vers l'intérieur
+          transform:  phase >= 2 ? "scale(2.8)" : "scale(1)",
+          transition: phase >= 2
+            ? "transform 1.8s cubic-bezier(0.4, 0, 1, 1)"
+            : "none",
+          transformOrigin: "center center",
+          // disparaît quand l'interior prend le relais
+          opacity:    phase >= 3 ? 0 : 1,
         }}
       >
-        {/* Contenu plein écran clipé par le panneau */}
+        {/* Image exterior complète — visible quand les portes ne couvrent pas tout */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "url('/hero-exterior.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+
+        {/* Porte gauche — glisse à gauche */}
         <div
           style={{
             position: "absolute",
             top: 0, left: 0,
-            width: "200%", height: "100%",
-            backgroundImage: "url('/hero-exterior.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            width: "50%", height: "100%",
+            overflow: "hidden",
+            transform:  phase >= 1 ? "translateX(-100%)" : "translateX(0)",
+            transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
           }}
-        />
-      </div>
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0, left: 0,
+              width: "200%", height: "100%",
+              backgroundImage: "url('/hero-exterior.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </div>
 
-      {/* ── Porte droite — glisse vers la droite ── */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0, right: 0,
-          width: "50%", height: "100%",
-          overflow: "hidden",
-          transform: doorsOpen ? "translateX(100%)" : "translateX(0)",
-          transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
-        }}
-      >
+        {/* Porte droite — glisse à droite */}
         <div
           style={{
             position: "absolute",
             top: 0, right: 0,
-            width: "200%", height: "100%",
-            backgroundImage: "url('/hero-exterior.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            width: "50%", height: "100%",
+            overflow: "hidden",
+            transform:  phase >= 1 ? "translateX(100%)" : "translateX(0)",
+            transition: "transform 3.2s cubic-bezier(0.76, 0, 0.24, 1)",
           }}
-        />
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0, right: 0,
+              width: "200%", height: "100%",
+              backgroundImage: "url('/hero-exterior.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </div>
       </div>
 
-      {/* ── Slogan ── */}
+      {/* ── Slogan ──────────────────────────────────────────── */}
       <div
         style={{
-          position: "absolute", inset: 0,
+          position: "absolute",
+          inset: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10,
           pointerEvents: "none",
-          opacity: sloganReady ? 1 : 0,
-          transition: "opacity 1.2s ease",
+          opacity:    phase >= 3 ? 1 : 0,
+          transition: "opacity 1.4s ease 0.6s",
         }}
       >
         <p
@@ -133,13 +163,13 @@ export function HeroSection() {
                 transitionDelay: `${i * 0.013}s`,
               }}
             >
-              {ch === " " ? " " : ch}
+              {ch === " " ? " " : ch}
             </span>
           ))}
         </p>
       </div>
 
-      {/* ── Flèche scroll ── */}
+      {/* ── Flèche scroll ────────────────────────────────────── */}
       {visibleLetters >= SLOGAN.length && (
         <div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
