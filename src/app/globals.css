@@ -120,3 +120,31 @@ h3,
   opacity: 1;
   transform: translateY(0);
 }
+
+.hero-reel {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    rgba(201, 162, 39, 0.9) 0deg 9deg,
+    rgba(74, 16, 21, 0.15) 9deg 33deg
+  );
+  border: 3px solid rgba(74, 16, 21, 0.55);
+  box-shadow: 0 10px 26px -8px rgba(74, 16, 21, 0.4);
+}
+
+.hero-reel::after {
+  content: "";
+  position: absolute;
+  inset: 36%;
+  border-radius: 50%;
+  background: #4a1015;
+  border: 2px solid rgba(201, 162, 39, 0.6);
+}
+
+@media (max-width: 900px) {
+  .hero-reel {
+    display: none;
+  }
+}
