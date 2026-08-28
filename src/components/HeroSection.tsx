@@ -8,27 +8,44 @@ export function HeroSection() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "1rem",
+        gap: "0.6rem",
         padding: "clamp(3.5rem, 10vw, 6rem) 1.5rem",
-        background:
-          "radial-gradient(120% 100% at 50% 0%, var(--background) 0%, var(--beige-dark) 100%)",
+        background: "linear-gradient(180deg, var(--bordeaux) 0%, var(--bordeaux-dark) 100%)",
         textAlign: "center",
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt="YALM Events"
-        style={{ width: "clamp(220px, 32vw, 380px)", height: "auto" }}
-      />
+      <h1
+        style={{
+          fontFamily: "var(--font-serif), serif",
+          fontSize: "clamp(2.75rem, 8vw, 4.5rem)",
+          lineHeight: 1,
+          color: "var(--gold-light)",
+          margin: 0,
+        }}
+      >
+        yalm
+      </h1>
+      <p
+        style={{
+          fontFamily: "var(--font-sans), sans-serif",
+          fontSize: "clamp(0.75rem, 1.6vw, 0.95rem)",
+          fontWeight: 600,
+          letterSpacing: "0.4em",
+          color: "var(--gold-light)",
+          margin: 0,
+          textTransform: "uppercase",
+        }}
+      >
+        Events
+      </p>
       <p
         style={{
           fontFamily: "var(--font-serif), serif",
           fontStyle: "italic",
           fontWeight: 400,
           fontSize: "clamp(1.05rem, 2.4vw, 1.4rem)",
-          color: "var(--bordeaux)",
-          margin: 0,
+          color: "var(--gold-light)",
+          margin: "0.5rem 0 0",
         }}
       >
         {SLOGAN}
