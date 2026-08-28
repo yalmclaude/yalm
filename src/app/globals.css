@@ -45,71 +45,6 @@ h3,
   font-family: var(--font-serif), "Playfair Display", serif;
 }
 
-@keyframes heroFadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes yalmIn {
-  from { opacity: 0; transform: scale(0.88); filter: blur(14px) drop-shadow(0 0 0px rgba(240,230,210,0)); }
-  to   { opacity: 1; transform: scale(1);    filter: blur(0)    drop-shadow(0 0 40px rgba(240,230,210,0.18)); }
-}
-
-@keyframes logoReveal {
-  from { opacity: 0; transform: scale(0.80) translateY(28px); filter: blur(10px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);    filter: blur(0); }
-}
-
-@keyframes logoFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-12px); }
-}
-
-@keyframes logoBreathe {
-  0%   { opacity: 1; }
-  38%  { opacity: 0; }
-  58%  { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-@keyframes logoGlow {
-  0%, 100% { box-shadow: 0 0 0px 0px rgba(201,162,39,0), 0 0 0px 0px rgba(74,16,21,0); }
-  25%       { box-shadow: 0 0 30px 8px rgba(201,162,39,0.22), 0 0 60px 20px rgba(201,162,39,0.08); }
-  50%       { box-shadow: 0 0 50px 14px rgba(74,16,21,0.18), 0 0 90px 30px rgba(74,16,21,0.06); }
-  75%       { box-shadow: 0 0 30px 8px rgba(201,162,39,0.22), 0 0 60px 20px rgba(201,162,39,0.08); }
-}
-
-@keyframes sloganBreathe {
-  0%   { opacity: 1; transform: translateY(0px); }
-  32%  { opacity: 0; transform: translateY(-18px); }
-  58%  { opacity: 0; transform: translateY(18px); }
-  100% { opacity: 1; transform: translateY(0px); }
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.9); }
-  50%       { opacity: 0.85; transform: scale(1.08); }
-}
-
-@keyframes goldShimmer {
-  0%   { background-position: 0%   center; }
-  100% { background-position: 250% center; }
-}
-
-@keyframes scrollBounce {
-  0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50%       { transform: translateY(6px); opacity: 0.9; }
-}
-
-.scroll-arrow {
-  width: 16px;
-  height: 16px;
-  border-right: 1.5px solid rgba(74,16,21,0.38);
-  border-bottom: 1.5px solid rgba(74,16,21,0.38);
-  transform: rotate(45deg);
-  animation: scrollBounce 1.8s ease-in-out infinite;
-}
-
 .card-reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -119,8 +54,4 @@ h3,
 .card-reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-.hero-fade-in {
-  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
