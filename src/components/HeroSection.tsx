@@ -10,7 +10,8 @@ export function HeroSection() {
         justifyContent: "center",
         gap: "1rem",
         padding: "clamp(3.5rem, 10vw, 6rem) 1.5rem",
-        background: "var(--background)",
+        background:
+          "radial-gradient(120% 100% at 50% 0%, var(--background) 0%, var(--beige-dark) 100%)",
         textAlign: "center",
       }}
     >
