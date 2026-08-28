@@ -8,29 +8,44 @@ export function HeroSection() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.75rem",
+        gap: "0.6rem",
         padding: "clamp(3.5rem, 10vw, 6rem) 1.5rem",
-        background: "linear-gradient(180deg, #4a1015 0%, #320a0e 100%)",
+        background: "linear-gradient(180deg, var(--bordeaux) 0%, var(--bordeaux-dark) 100%)",
         textAlign: "center",
       }}
     >
       <h1
         style={{
-          fontFamily: "var(--font-display), serif",
-          fontSize: "clamp(2rem, 6vw, 3.5rem)",
-          letterSpacing: "0.08em",
-          color: "#e0c674",
+          fontFamily: "var(--font-serif), serif",
+          fontSize: "clamp(2.75rem, 8vw, 4.5rem)",
+          lineHeight: 1,
+          color: "var(--gold-light)",
           margin: 0,
         }}
       >
-        YALM EVENTS
+        yalm
       </h1>
       <p
         style={{
-          fontFamily: "var(--font-script), cursive",
-          fontSize: "clamp(1.25rem, 3.2vw, 2rem)",
-          color: "rgba(255,248,220,0.92)",
+          fontFamily: "var(--font-sans), sans-serif",
+          fontSize: "clamp(0.75rem, 1.6vw, 0.95rem)",
+          fontWeight: 600,
+          letterSpacing: "0.4em",
+          color: "rgba(255,248,220,0.85)",
           margin: 0,
+          textTransform: "uppercase",
+        }}
+      >
+        Events
+      </p>
+      <p
+        style={{
+          fontFamily: "var(--font-serif), serif",
+          fontStyle: "italic",
+          fontWeight: 400,
+          fontSize: "clamp(1.05rem, 2.4vw, 1.4rem)",
+          color: "rgba(255,248,220,0.75)",
+          margin: "0.5rem 0 0",
         }}
       >
         {SLOGAN}
