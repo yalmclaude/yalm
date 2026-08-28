@@ -8,44 +8,26 @@ export function HeroSection() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.6rem",
+        gap: "1rem",
         padding: "clamp(3.5rem, 10vw, 6rem) 1.5rem",
-        background: "linear-gradient(180deg, var(--bordeaux) 0%, var(--bordeaux-dark) 100%)",
+        background: "var(--background)",
         textAlign: "center",
       }}
     >
-      <h1
-        style={{
-          fontFamily: "var(--font-serif), serif",
-          fontSize: "clamp(2.75rem, 8vw, 4.5rem)",
-          lineHeight: 1,
-          color: "var(--gold-light)",
-          margin: 0,
-        }}
-      >
-        yalm
-      </h1>
-      <p
-        style={{
-          fontFamily: "var(--font-sans), sans-serif",
-          fontSize: "clamp(0.75rem, 1.6vw, 0.95rem)",
-          fontWeight: 600,
-          letterSpacing: "0.4em",
-          color: "rgba(255,248,220,0.85)",
-          margin: 0,
-          textTransform: "uppercase",
-        }}
-      >
-        Events
-      </p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo.png"
+        alt="YALM Events"
+        style={{ width: "clamp(220px, 32vw, 380px)", height: "auto" }}
+      />
       <p
         style={{
           fontFamily: "var(--font-serif), serif",
           fontStyle: "italic",
           fontWeight: 400,
           fontSize: "clamp(1.05rem, 2.4vw, 1.4rem)",
-          color: "rgba(255,248,220,0.75)",
-          margin: "0.5rem 0 0",
+          color: "var(--bordeaux)",
+          margin: 0,
         }}
       >
         {SLOGAN}
