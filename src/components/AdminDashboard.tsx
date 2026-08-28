@@ -208,14 +208,21 @@ export function AdminDashboard() {
     <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-anthracite">Administration YALM</h1>
-        <div className="flex items-center gap-4">
-          <a href="/admin/coffrets" className="text-sm text-bordeaux hover:underline">
-            Coffrets mariage
-          </a>
-          <button onClick={handleLogout} className="text-sm text-bordeaux hover:underline">
-            Se déconnecter
-          </button>
-        </div>
+        <button onClick={handleLogout} className="text-sm text-bordeaux hover:underline">
+          Se déconnecter
+        </button>
+      </div>
+
+      <div className="mt-6 flex gap-2 border-b border-gray-200">
+        <span className="border-b-2 border-bordeaux px-4 py-2.5 text-sm font-semibold text-bordeaux">
+          Catalogue &amp; réservations
+        </span>
+        <a
+          href="/admin/coffrets"
+          className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-bordeaux"
+        >
+          Coffrets mariage
+        </a>
       </div>
 
       <section className="mt-8">
