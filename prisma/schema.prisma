@@ -125,6 +125,7 @@ model Coffret {
   names      String   @default("")
   date       String   @default("")
   location   String   @default("")
+  username   String   @default("")
   code       String   @default("")
   cover      String   @default("")
   final      String   @default("")
@@ -137,7 +138,7 @@ model Coffret {
   messages CoffretMessage[]
   products CoffretProduct[]
 
-  @@index([code])
+  @@index([username, code])
 }
 
 model CoffretPhoto {

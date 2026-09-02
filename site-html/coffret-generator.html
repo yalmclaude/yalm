@@ -116,7 +116,7 @@ function getShareLink(c) { return `${location.origin}${location.pathname}#/maria
 
 function blankCoffret() {
   return {
-    slug: "", names: "", date: "", location: "", code: "",
+    slug: "", names: "", date: "", location: "", username: "", code: "",
     cover: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
     final: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1600&auto=format&fit=crop",
     categories: [...DEFAULT_CATEGORIES],
@@ -154,12 +154,12 @@ async function loadCoffretPublic(slug) {
     return withDefaults(data.coffret);
   } catch { return null; }
 }
-async function unlockCoffretByCode(code) {
+async function unlockCoffretByCode(username, code) {
   try {
     const res = await fetch("/api/coffrets/unlock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ username, code }),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -361,7 +361,7 @@ function renderDashboard() {
       <div>
         <p style="font-family:'Playfair Display',serif;font-size:18px">${esc(c.names) || "(sans nom)"}</p>
         <p style="font-family:Inter,sans-serif;font-size:12px;color:var(--texte-soft);margin-top:4px">
-          ${esc(c.date) || "Date non définie"} ${c.location ? "— " + esc(c.location) : ""} · code ${esc(c.code) || "—"}
+          ${esc(c.date) || "Date non définie"} ${c.location ? "— " + esc(c.location) : ""} · identifiant ${esc(c.username) || "—"} · code ${esc(c.code) || "—"}
         </p>
         <p style="font-family:Inter,sans-serif;font-size:11px;color:var(--beige-dark);margin-top:2px">votre-site.fr/mariage/${esc(c.slug)}</p>
       </div>
@@ -496,6 +496,7 @@ function renderEdit() {
 
     <div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:40px">
       <div><label class="field-label">Prénoms des mariés</label><input class="field-input" id="f-names" placeholder="Nadia &amp; Souleymane" value="${esc(c.names)}"></div>
+      <div><label class="field-label">Nom d'utilisateur</label><input class="field-input" id="f-username" placeholder="nadia-souleymane" value="${esc(c.username)}"></div>
       <div><label class="field-label">Code d'accès</label><input class="field-input" id="f-code" placeholder="0808" value="${esc(c.code)}"></div>
       <div><label class="field-label">Date du mariage</label><input class="field-input" id="f-date" placeholder="8 Août 2026" value="${esc(c.date)}"></div>
       <div><label class="field-label">Lieu</label><input class="field-input" id="f-location" placeholder="Château de Vaux-le-Vicomte" value="${esc(c.location)}"></div>
@@ -559,7 +560,7 @@ function renderEdit() {
 function syncEditFieldsIntoState() {
   const c = state.activeCoffret;
   const g = (id) => document.getElementById(id)?.value ?? "";
-  c.names = g("f-names"); c.code = g("f-code"); c.date = g("f-date");
+  c.names = g("f-names"); c.username = g("f-username"); c.code = g("f-code"); c.date = g("f-date");
   c.location = g("f-location"); c.cover = g("f-cover"); c.final = g("f-final");
 }
 
@@ -573,10 +574,11 @@ function renderPublicGate() {
       <img src="${LOGO_SRC}" alt="Yalm Events" style="width:84px;height:84px;border-radius:50%;margin:0 auto 26px;display:block">
       <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique de mariage</p>
       <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:14px;line-height:1.25">Retrouvez votre<br>espace souvenir</h1>
-      <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--beige);opacity:.85;margin-bottom:40px">Entrez le code fourni par Yalm Events</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--beige);opacity:.85;margin-bottom:40px">Entrez l'identifiant et le code fournis par Yalm Events</p>
       <form id="public-gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+        <input id="public-gate-username" placeholder="Votre identifiant" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.error?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:1px">
         <input id="public-gate-code" placeholder="Votre code" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.error?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:3px">
-        ${p.error ? `<p style="color:#E8A6A6;font-size:12px">Code incorrect. Merci de vérifier votre invitation.</p>` : ""}
+        ${p.error ? `<p style="color:#E8A6A6;font-size:12px">Identifiant ou code incorrect. Merci de vérifier votre invitation.</p>` : ""}
         <button type="submit" ${p.checking ? "disabled" : ""} style="margin-top:10px;background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 34px;font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px">${p.checking ? ic.loader + " Vérification…" : "Entrer"}</button>
       </form>
     </div>
@@ -601,9 +603,10 @@ function renderPreview() {
         <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:14px;line-height:1.25">Bienvenue dans votre<br>espace souvenir</h1>
         <p style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--beige);opacity:.85;margin-bottom:40px">${esc(c.names) || "Vos noms"}</p>
         <form id="gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
-          <label style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--beige);opacity:.75">Entrez votre code d'accès</label>
+          <label style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--beige);opacity:.75">Entrez votre identifiant et votre code d'accès</label>
+          <input id="gate-username" placeholder="Votre identifiant" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.codeError?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:1px">
           <input id="gate-code" placeholder="Votre code" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.codeError?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:3px">
-          ${p.codeError ? `<p style="color:#E8A6A6;font-size:12px">Code incorrect. Merci de vérifier votre invitation.</p>` : ""}
+          ${p.codeError ? `<p style="color:#E8A6A6;font-size:12px">Identifiant ou code incorrect. Merci de vérifier votre invitation.</p>` : ""}
           <button type="submit" style="margin-top:10px;background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 34px;font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px">Entrer</button>
         </form>
       </div>
@@ -942,19 +945,22 @@ function bindEvents() {
   const gateForm = document.getElementById("gate-form");
   if (gateForm) gateForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const val = document.getElementById("gate-code").value.trim();
-    if (val === (state.activeCoffret.code || "")) { state.preview.unlocked = true; state.preview.codeError = false; }
-    else state.preview.codeError = true;
+    const usernameVal = document.getElementById("gate-username").value.trim();
+    const codeVal = document.getElementById("gate-code").value.trim();
+    if (usernameVal === (state.activeCoffret.username || "") && codeVal === (state.activeCoffret.code || "")) {
+      state.preview.unlocked = true; state.preview.codeError = false;
+    } else state.preview.codeError = true;
     render();
   });
 
   const publicGateForm = document.getElementById("public-gate-form");
   if (publicGateForm) publicGateForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const val = document.getElementById("public-gate-code").value.trim();
-    if (!val) return;
+    const usernameVal = document.getElementById("public-gate-username").value.trim();
+    const codeVal = document.getElementById("public-gate-code").value.trim();
+    if (!usernameVal || !codeVal) return;
     state.publicGate.checking = true; state.publicGate.error = false; render();
-    const c = await unlockCoffretByCode(val);
+    const c = await unlockCoffretByCode(usernameVal, codeVal);
     state.publicGate.checking = false;
     if (c) {
       state.activeCoffret = c;

@@ -4,15 +4,16 @@ import { coffretInclude, serializeCoffret } from "@/lib/coffret";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
+  const username = typeof body?.username === "string" ? body.username.trim() : "";
   const code = typeof body?.code === "string" ? body.code.trim() : "";
 
-  if (!code) {
-    return NextResponse.json({ error: "Code incorrect" }, { status: 400 });
+  if (!username || !code) {
+    return NextResponse.json({ error: "Identifiants incorrects" }, { status: 400 });
   }
 
-  const coffret = await prisma.coffret.findFirst({ where: { code }, include: coffretInclude });
+  const coffret = await prisma.coffret.findFirst({ where: { username, code }, include: coffretInclude });
   if (!coffret) {
-    return NextResponse.json({ error: "Code incorrect" }, { status: 404 });
+    return NextResponse.json({ error: "Identifiants incorrects" }, { status: 404 });
   }
 
   return NextResponse.json({ coffret: serializeCoffret(coffret) });

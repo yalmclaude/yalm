@@ -8,7 +8,7 @@ export async function GET() {
   }
   const coffrets = await prisma.coffret.findMany({
     orderBy: { updatedAt: "desc" },
-    select: { slug: true, names: true, date: true, location: true, code: true, updatedAt: true },
+    select: { slug: true, names: true, date: true, location: true, username: true, code: true, updatedAt: true },
   });
   return NextResponse.json({
     coffrets: coffrets.map((c) => ({ ...c, updatedAt: c.updatedAt.getTime() })),
@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { slug, names, date, location, code, cover, final, categories, photos, videos, messages, products } = body;
+  const { slug, names, date, location, username, code, cover, final, categories, photos, videos, messages, products } =
+    body;
 
   if (!slug) {
     return NextResponse.json({ error: "Slug manquant" }, { status: 400 });
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
         names: names ?? "",
         date: date ?? "",
         location: location ?? "",
+        username: username ?? "",
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",
@@ -44,6 +46,7 @@ export async function POST(request: NextRequest) {
         names: names ?? "",
         date: date ?? "",
         location: location ?? "",
+        username: username ?? "",
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",

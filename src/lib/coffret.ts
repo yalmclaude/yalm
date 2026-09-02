@@ -15,6 +15,7 @@ export function serializeCoffret(c: CoffretWithItems) {
     names: c.names,
     date: c.date,
     location: c.location,
+    username: c.username,
     code: c.code,
     cover: c.cover,
     final: c.final,
