@@ -600,8 +600,7 @@ function renderPreview() {
       <div style="max-width:420px;width:100%">
         <img src="${LOGO_SRC}" alt="Yalm Events" style="width:84px;height:84px;border-radius:50%;margin:0 auto 26px;display:block">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique de mariage</p>
-        <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:14px;line-height:1.25">Bienvenue dans votre<br>espace souvenir</h1>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--beige);opacity:.85;margin-bottom:40px">${esc(c.names) || "Vos noms"}</p>
+        <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:40px;line-height:1.25">Bienvenue dans votre<br>espace souvenir</h1>
         <form id="gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
           <label style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--beige);opacity:.75">Entrez votre identifiant et votre code d'accès</label>
           <input id="gate-username" placeholder="Votre identifiant" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.codeError?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:1px">
