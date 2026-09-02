@@ -257,7 +257,7 @@ hiddenInput.addEventListener("change", async () => {
     }
   } catch (err) {
     console.error("Upload failed", err);
-    alert("L'envoi du fichier a échoué. Vérifiez votre connexion et réessayez.");
+    alert(`L'envoi du fichier a échoué : ${err?.message || "erreur inconnue"}`);
   }
   state.uploading = false;
   render();
