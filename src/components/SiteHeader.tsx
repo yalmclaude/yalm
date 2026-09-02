@@ -25,6 +25,9 @@ export function SiteHeader() {
             <a href="/coffret" className="hover:text-bordeaux transition-colors">
               Mon coffret
             </a>
+            <a href="/admin" className="text-xs text-bordeaux/50 hover:text-bordeaux transition-colors">
+              Admin
+            </a>
           </nav>
         </div>
       </header>
