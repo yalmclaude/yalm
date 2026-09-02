@@ -98,13 +98,6 @@ const FALLBACK_VIDEO_THUMB = "data:image/svg+xml;utf8," + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260"><rect width="400" height="260" fill="#4C0303"/><circle cx="200" cy="130" r="34" fill="none" stroke="#F5EAD9" stroke-width="2"/><path d="M191 114l30 16-30 16z" fill="#F5EAD9"/></svg>`
 );
 const DEFAULT_CATEGORIES = ["Préparatifs", "Cérémonie", "Couple", "Cocktail", "Dîner", "Soirée", "Détails"];
-const INDEX_KEY = "yalm-coffrets-index";
-const coffretKey = (slug) => `yalm-coffret-${slug}`;
-
-// Uses Claude's persistent artifact storage when this file runs inside a Claude
-// conversation; otherwise falls back to the browser's own localStorage so the
-// file also works as a standalone .html file opened directly or hosted anywhere.
-const hasCloudStorage = typeof window !== "undefined" && !!window.storage && typeof window.storage.get === "function";
 
 function slugify(str) {
   return (str || "")
@@ -139,68 +132,83 @@ function withDefaults(c) {
 
 async function loadIndex() {
   try {
-    if (hasCloudStorage) { const r = await window.storage.get(INDEX_KEY, false); return r ? JSON.parse(r.value) : []; }
-    const v = localStorage.getItem(INDEX_KEY); return v ? JSON.parse(v) : [];
+    const res = await fetch("/api/admin/coffrets");
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.coffrets || [];
   } catch { return []; }
-}
-async function saveIndex(list) {
-  if (hasCloudStorage) { await window.storage.set(INDEX_KEY, JSON.stringify(list), false); return; }
-  localStorage.setItem(INDEX_KEY, JSON.stringify(list));
 }
 async function loadCoffret(slug) {
   try {
-    if (hasCloudStorage) { const r = await window.storage.get(coffretKey(slug), false); return r ? withDefaults(JSON.parse(r.value)) : null; }
-    const v = localStorage.getItem(coffretKey(slug)); return v ? withDefaults(JSON.parse(v)) : null;
+    const res = await fetch(`/api/admin/coffrets/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return withDefaults(data.coffret);
   } catch { return null; }
 }
-const COFFRET_SIZE_LIMIT = 4.5 * 1024 * 1024; // stay under the ~5MB per-key storage cap, leaving headroom
-
+async function loadCoffretPublic(slug) {
+  try {
+    const res = await fetch(`/api/coffrets/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return withDefaults(data.coffret);
+  } catch { return null; }
+}
+async function unlockCoffretByCode(code) {
+  try {
+    const res = await fetch("/api/coffrets/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return withDefaults(data.coffret);
+  } catch { return null; }
+}
 async function saveCoffret(c) {
-  const payload = JSON.stringify(c);
-  if (payload.length > COFFRET_SIZE_LIMIT) {
-    const err = new Error("TOO_LARGE");
-    err.code = "TOO_LARGE";
-    throw err;
-  }
-  if (hasCloudStorage) { await window.storage.set(coffretKey(c.slug), payload, false); return; }
-  localStorage.setItem(coffretKey(c.slug), payload);
+  const res = await fetch("/api/admin/coffrets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(c),
+  });
+  if (!res.ok) throw new Error("SAVE_FAILED");
 }
 async function deleteCoffretStorage(slug) {
   try {
-    if (hasCloudStorage) { await window.storage.delete(coffretKey(slug), false); return; }
-    localStorage.removeItem(coffretKey(slug));
+    await fetch(`/api/admin/coffrets/${encodeURIComponent(slug)}`, { method: "DELETE" });
   } catch {}
 }
 
 /* ===================== global state ===================== */
 
 const state = {
-  screen: "dashboard",     // dashboard | edit | preview
+  screen: "dashboard",     // dashboard | edit | preview | publicGate
   index: [],
   loading: true,
   storageError: false,
+  uploading: false,
   activeCoffret: null,     // full coffret object being edited/previewed
   preview: {
     unlocked: false, view: "home", code: "", codeError: false, menuOpen: false,
     filter: "Tout", favorites: new Set(), lightboxIndex: null, videoModal: null, qrModal: false,
     audio: { answered: false, ringing: true, playingId: null, continuous: false },
   },
+  publicGate: { error: false, checking: false },
 };
 
 const app = document.getElementById("app");
 const hiddenInput = document.getElementById("hidden-file-input");
 let pendingTarget = null;
 
-const STORABLE_MAX_BYTES = 1.2 * 1024 * 1024; // ~1.2MB raw (~1.6MB once base64-encoded): kept small so several files still fit the ~5MB total budget for one coffret
-
-function fileToStorableUrl(file) {
-  if (file.size > STORABLE_MAX_BYTES) return Promise.resolve({ url: URL.createObjectURL(file), durable: false });
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve({ url: reader.result, durable: true });
-    reader.onerror = () => resolve({ url: URL.createObjectURL(file), durable: false });
-    reader.readAsDataURL(file);
+async function uploadToBlob(file) {
+  const { upload } = await import("https://esm.sh/@vercel/blob@2.4.0/client");
+  const blob = await upload(file.name, file, {
+    access: "public",
+    handleUploadUrl: "/api/admin/coffret-upload",
+    multipart: file.size > 8 * 1024 * 1024,
   });
+  return blob.url;
 }
 
 hiddenInput.addEventListener("change", async () => {
@@ -209,51 +217,50 @@ hiddenInput.addEventListener("change", async () => {
   syncEditFieldsIntoState();
   const c = state.activeCoffret;
   const needsThumb = []; // video rows added/edited here with no thumbnail yet
-  let sessionOnlyCount = 0;
   const target = pendingTarget;
   hiddenInput.value = "";
   pendingTarget = null;
 
-  if (target.kind === "photo-bulk") {
-    for (const file of files) {
-      const { url, durable } = await fileToStorableUrl(file);
-      if (!durable) sessionOnlyCount++;
-      c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: url });
-    }
-  } else if (target.kind === "mixed-bulk") {
-    const stripExt = (name) => name.replace(/\.[^.]+$/, "");
-    for (const file of Array.from(files)) {
-      const type = file.type || "";
-      const { url, durable } = await fileToStorableUrl(file);
-      if (!durable) sessionOnlyCount++;
-      if (type.startsWith("image/")) {
+  state.uploading = true; render();
+  try {
+    if (target.kind === "photo-bulk") {
+      for (const file of files) {
+        const url = await uploadToBlob(file);
         c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: url });
-      } else if (type.startsWith("video/")) {
-        const row = { id: uid(), title: stripExt(file.name), duration: "", thumb: "", src: url };
-        c.videos.push(row);
-        needsThumb.push(row);
-      } else if (type.startsWith("audio/")) {
-        c.messages.push({ id: uid(), name: stripExt(file.name), duration: 30, quote: "", src: url });
+      }
+    } else if (target.kind === "mixed-bulk") {
+      const stripExt = (name) => name.replace(/\.[^.]+$/, "");
+      for (const file of Array.from(files)) {
+        const type = file.type || "";
+        const url = await uploadToBlob(file);
+        if (type.startsWith("image/")) {
+          c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: url });
+        } else if (type.startsWith("video/")) {
+          const row = { id: uid(), title: stripExt(file.name), duration: "", thumb: "", src: url };
+          c.videos.push(row);
+          needsThumb.push(row);
+        } else if (type.startsWith("audio/")) {
+          c.messages.push({ id: uid(), name: stripExt(file.name), duration: 30, quote: "", src: url });
+        }
+      }
+    } else if (target.kind === "cover" || target.kind === "final") {
+      const url = await uploadToBlob(files[0]);
+      c[target.kind] = url;
+    } else {
+      const list = listForKind(c, target.kind);
+      const row = list.find(r => r.id === target.id);
+      if (row) {
+        const url = await uploadToBlob(files[0]);
+        row[target.field] = url;
+        if (target.kind === "video" && target.field === "src" && !row.thumb) needsThumb.push(row);
       }
     }
-  } else if (target.kind === "cover" || target.kind === "final") {
-    const { url } = await fileToStorableUrl(files[0]);
-    c[target.kind] = url;
-  } else {
-    const list = listForKind(c, target.kind);
-    const row = list.find(r => r.id === target.id);
-    if (row) {
-      const { url, durable } = await fileToStorableUrl(files[0]);
-      if (!durable) sessionOnlyCount++;
-      row[target.field] = url;
-      if (target.kind === "video" && target.field === "src" && !row.thumb) needsThumb.push(row);
-    }
+  } catch (err) {
+    console.error("Upload failed", err);
+    alert("L'envoi du fichier a échoué. Vérifiez votre connexion et réessayez.");
   }
+  state.uploading = false;
   render();
-
-  if (sessionOnlyCount > 0) {
-    alert(`${sessionOnlyCount} fichier(s) dépassent 4 Mo et restent temporaires : ils fonctionnent tant que cette page reste ouverte, mais disparaîtront après un rechargement. Pour un coffret définitif, hébergez ces fichiers (Drive, Cloudflare R2...) et collez leur lien à la place.`);
-  }
 
   // Auto-generate a cover image from the video's own first frame when none was set manually.
   needsThumb.forEach(row => {
@@ -295,6 +302,7 @@ function render() {
   if (state.screen === "dashboard") app.innerHTML = renderDashboard();
   else if (state.screen === "edit") app.innerHTML = renderEdit();
   else if (state.screen === "preview") app.innerHTML = renderPreview();
+  else if (state.screen === "publicGate") app.innerHTML = renderPublicGate();
   bindEvents();
 }
 
@@ -465,23 +473,15 @@ function renderEdit() {
   <div style="max-width:780px;margin:0 auto;padding:60px 24px 140px">
     <button style="background:none;border:none;color:var(--texte-soft);display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:30px" data-action="cancel-edit">${ic.arrowLeft} Retour aux coffrets</button>
     <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:30px;margin-bottom:18px">Informations du mariage</h2>
-    <p style="font-size:12px;color:var(--texte-soft);background:var(--beige);padding:12px 16px;border-radius:2px;margin-bottom:10px;line-height:1.6">
-      Vous pouvez choisir vos photos, vidéos et fichiers audio directement depuis votre ordinateur avec le bouton ${ic.folder}. Les fichiers de moins de 1,2 Mo sont intégrés directement et resteront lisibles même après avoir rechargé la page. Les fichiers plus lourds (vidéos surtout) restent temporaires — ils fonctionnent tant que cette page reste ouverte, mais pour un coffret définitif, hébergez-les ensuite (Drive, Cloudflare R2...) et collez leur lien à la place. Le coffret entier doit rester sous environ 4,5 Mo pour pouvoir être enregistré.
+    <p style="font-size:12px;color:var(--texte-soft);background:var(--beige);padding:12px 16px;border-radius:2px;margin-bottom:20px;line-height:1.6">
+      Vous pouvez choisir vos photos, vidéos et fichiers audio directement depuis votre ordinateur avec le bouton ${ic.folder} : ils sont envoyés et hébergés de façon permanente. L'envoi peut prendre un moment pour les grosses vidéos.
     </p>
-    ${(() => { const size = JSON.stringify(c).length; const pct = Math.min(100, Math.round((size / COFFRET_SIZE_LIMIT) * 100)); const over = size > COFFRET_SIZE_LIMIT;
-      return `<div style="margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:${over ? '#B84545' : 'var(--texte-soft)'};margin-bottom:5px">
-          <span>Taille actuelle du coffret</span><span>${(size/1024/1024).toFixed(2)} Mo / ${(COFFRET_SIZE_LIMIT/1024/1024).toFixed(1)} Mo</span>
-        </div>
-        <div style="height:5px;background:var(--beige-dark);border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${over ? '#B84545' : 'var(--bordeaux)'}"></div>
-        </div>
-      </div>`; })()}
-    <button class="btn btn-primary" style="margin-bottom:14px" data-action="pick-file" data-kind="mixed-bulk" data-accept="image/*,video/*,audio/*" data-multiple="1">${ic.folder} Importer tous vos fichiers (photos, vidéos, audios)</button>
+    ${state.uploading ? `<div style="display:flex;align-items:center;gap:10px;background:var(--beige);padding:10px 16px;border-radius:2px;margin-bottom:16px;font-size:13px;color:var(--bordeaux)">${ic.loader} Envoi du fichier en cours…</div>` : ""}
+    <button class="btn btn-primary" style="margin-bottom:14px" data-action="pick-file" data-kind="mixed-bulk" data-accept="image/*,video/*,audio/*" data-multiple="1" ${state.uploading ? "disabled" : ""}>${ic.folder} Importer tous vos fichiers (photos, vidéos, audios)</button>
 
     <div style="border:1px solid var(--beige-dark);border-radius:2px;padding:18px 20px;margin-bottom:30px;background:var(--beige)">
-      <p style="font-family:'Playfair Display',serif;font-size:16px;color:var(--bordeaux);margin-bottom:6px">Ajouter plusieurs liens à la fois (recommandé pour un vrai mariage)</p>
-      <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Pour un mariage avec beaucoup de fichiers (surtout des vidéos), n'importez pas directement depuis votre ordinateur — la taille du navigateur est limitée. Hébergez vos fichiers sur Drive, Dropbox ou Cloudflare R2, puis collez ici tous leurs liens d'un coup (un lien par ligne) : ça ne prend presque pas de place, la capacité est alors quasi illimitée.</p>
+      <p style="font-family:'Playfair Display',serif;font-size:16px;color:var(--bordeaux);margin-bottom:6px">Ajouter plusieurs liens à la fois</p>
+      <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Vous pouvez aussi coller des liens vers des fichiers déjà hébergés ailleurs (Drive, Dropbox...) plutôt que de les importer un par un — collez ici tous les liens d'un coup (un par ligne).</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
         <select class="field-input" id="bulk-link-type" style="width:160px">
           <option value="photo">Photos</option>
@@ -563,12 +563,34 @@ function syncEditFieldsIntoState() {
   c.location = g("f-location"); c.cover = g("f-cover"); c.final = g("f-final");
 }
 
+/* ===================== PUBLIC: code-only entry ===================== */
+
+function renderPublicGate() {
+  const p = state.publicGate;
+  return `
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bordeaux-deep),var(--bordeaux));padding:24px;text-align:center">
+    <div style="max-width:420px;width:100%">
+      <img src="${LOGO_SRC}" alt="Yalm Events" style="width:84px;height:84px;border-radius:50%;margin:0 auto 26px;display:block">
+      <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique de mariage</p>
+      <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:14px;line-height:1.25">Retrouvez votre<br>espace souvenir</h1>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--beige);opacity:.85;margin-bottom:40px">Entrez le code fourni par Yalm Events</p>
+      <form id="public-gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+        <input id="public-gate-code" placeholder="Votre code" style="width:100%;max-width:280px;text-align:center;background:transparent;border:1px solid ${p.error?'#D98787':'rgba(255,255,255,.35)'};border-radius:2px;padding:13px 16px;color:var(--blanc);font-size:15px;letter-spacing:3px">
+        ${p.error ? `<p style="color:#E8A6A6;font-size:12px">Code incorrect. Merci de vérifier votre invitation.</p>` : ""}
+        <button type="submit" ${p.checking ? "disabled" : ""} style="margin-top:10px;background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 34px;font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px">${p.checking ? ic.loader + " Vérification…" : "Entrer"}</button>
+      </form>
+    </div>
+  </div>`;
+}
+
 /* ===================== CLIENT PREVIEW ===================== */
 
 function renderPreview() {
   const c = state.activeCoffret;
   const p = state.preview;
-  const backBtn = `<button data-action="exit-preview" style="position:fixed;top:14px;left:14px;z-index:200;background:var(--texte);color:var(--blanc);border:none;border-radius:30px;padding:9px 16px;font-size:12px;display:flex;align-items:center;gap:8px">${ic.arrowLeft} Administration</button>`;
+  const backBtn = window.__COFFRET_ADMIN__
+    ? `<button data-action="exit-preview" style="position:fixed;top:14px;left:14px;z-index:200;background:var(--texte);color:var(--blanc);border:none;border-radius:30px;padding:9px 16px;font-size:12px;display:flex;align-items:center;gap:8px">${ic.arrowLeft} Administration</button>`
+    : "";
 
   if (!p.unlocked) {
     return backBtn + `
@@ -926,6 +948,25 @@ function bindEvents() {
     render();
   });
 
+  const publicGateForm = document.getElementById("public-gate-form");
+  if (publicGateForm) publicGateForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const val = document.getElementById("public-gate-code").value.trim();
+    if (!val) return;
+    state.publicGate.checking = true; state.publicGate.error = false; render();
+    const c = await unlockCoffretByCode(val);
+    state.publicGate.checking = false;
+    if (c) {
+      state.activeCoffret = c;
+      state.preview = { unlocked:true, view:"home", code:"", codeError:false, menuOpen:false, filter:"Tout", favorites:new Set(), lightboxIndex:null, videoModal:null, qrModal:false, audio:{answered:false, ringing:true, playingId:null, continuous:false} };
+      history.replaceState(null, "", location.pathname + location.search + `#/mariage/${encodeURIComponent(c.slug)}`);
+      state.screen = "preview";
+    } else {
+      state.publicGate.error = true;
+    }
+    render();
+  });
+
   // edit-form field inputs -> sync into draft object (no full re-render needed)
   app.querySelectorAll("[data-field]").forEach(el => {
     const evt = el.tagName === "SELECT" ? "change" : "input";
@@ -1006,14 +1047,12 @@ async function onAction(e) {
     const existing = (await loadIndex()).map(x => x.slug);
     while (existing.includes(newSlug)) { newSlug = `${slugify(c.names)}-copie-${i}`; i++; }
     const copy = { ...c, slug: newSlug, names: c.names + " (copie)", updatedAt: Date.now() };
-    await saveCoffret(copy); await updateIndexEntry(copy); await refreshIndex(); return;
+    await saveCoffret(copy); await refreshIndex(); return;
   }
 
   if (action === "delete") {
     const slug = el.dataset.slug;
     await deleteCoffretStorage(slug);
-    const list = await loadIndex();
-    await saveIndex(list.filter(x => x.slug !== slug));
     await refreshIndex(); return;
   }
 
@@ -1026,16 +1065,11 @@ async function onAction(e) {
     c.slug = slug; c.updatedAt = Date.now();
     try {
       await saveCoffret(c);
-      await updateIndexEntry(c);
       await refreshIndex();
       state.screen = "dashboard";
     } catch (err) {
-      if (err && err.code === "TOO_LARGE") {
-        alert("Ce coffret est trop volumineux pour être enregistré (au-delà d'environ 4,5 Mo au total). Retirez quelques photos/audios importés directement, ou remplacez-les par un lien hébergé (Drive, Cloudflare R2...) plutôt qu'un fichier intégré.");
-      } else {
-        state.storageError = true;
-        console.error("Save failed", err);
-      }
+      state.storageError = true;
+      console.error("Save failed", err);
     }
     render(); return;
   }
@@ -1140,12 +1174,6 @@ async function onAction(e) {
     else playMessage(id, cont);
     return;
   }
-}
-
-async function updateIndexEntry(c) {
-  const list = await loadIndex();
-  const meta = { slug: c.slug, names: c.names, date: c.date, location: c.location, code: c.code, updatedAt: c.updatedAt };
-  await saveIndex([...list.filter(e => e.slug !== c.slug), meta]);
 }
 
 async function refreshIndex() {
@@ -1306,7 +1334,7 @@ async function boot() {
   const m = location.hash.match(/^#\/mariage\/(.+)$/);
   if (m) {
     const slug = decodeURIComponent(m[1]);
-    const c = await loadCoffret(slug);
+    const c = await loadCoffretPublic(slug);
     if (c) {
       state.activeCoffret = c;
       state.preview = { unlocked:false, view:"home", code:"", codeError:false, menuOpen:false, filter:"Tout", favorites:new Set(), lightboxIndex:null, videoModal:null, qrModal:false, audio:{answered:false, ringing:true, playingId:null, continuous:false} };
@@ -1317,7 +1345,9 @@ async function boot() {
     }
   }
   if (!window.__COFFRET_ADMIN__) {
-    app.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;font-family:'Inter',sans-serif;color:var(--texte-soft);">Lien invalide ou expiré.</div>`;
+    state.screen = "publicGate";
+    state.loading = false;
+    render();
     return;
   }
   refreshIndex();

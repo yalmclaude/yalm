@@ -118,3 +118,75 @@ model Booking {
   @@index([productId, eventDate])
   @@index([packId, eventDate])
 }
+
+model Coffret {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  names      String   @default("")
+  date       String   @default("")
+  location   String   @default("")
+  code       String   @default("")
+  cover      String   @default("")
+  final      String   @default("")
+  categories String[] @default(["Préparatifs", "Cérémonie", "Couple", "Cocktail", "Dîner", "Soirée", "Détails"])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  photos   CoffretPhoto[]
+  videos   CoffretVideo[]
+  messages CoffretMessage[]
+  products CoffretProduct[]
+
+  @@index([code])
+}
+
+model CoffretPhoto {
+  id        String  @id @default(cuid())
+  coffretId String
+  coffret   Coffret @relation(fields: [coffretId], references: [id], onDelete: Cascade)
+  category  String  @default("")
+  src       String  @default("")
+  order     Int     @default(0)
+
+  @@index([coffretId, order])
+}
+
+model CoffretVideo {
+  id        String  @id @default(cuid())
+  coffretId String
+  coffret   Coffret @relation(fields: [coffretId], references: [id], onDelete: Cascade)
+  title     String  @default("")
+  duration  String  @default("")
+  thumb     String  @default("")
+  src       String  @default("")
+  order     Int     @default(0)
+
+  @@index([coffretId, order])
+}
+
+model CoffretMessage {
+  id        String  @id @default(cuid())
+  coffretId String
+  coffret   Coffret @relation(fields: [coffretId], references: [id], onDelete: Cascade)
+  name      String  @default("")
+  duration  Int     @default(30)
+  quote     String  @default("")
+  src       String  @default("")
+  order     Int     @default(0)
+
+  @@index([coffretId, order])
+}
+
+model CoffretProduct {
+  id          String  @id @default(cuid())
+  coffretId   String
+  coffret     Coffret @relation(fields: [coffretId], references: [id], onDelete: Cascade)
+  name        String  @default("")
+  price       String  @default("")
+  description String  @default("")
+  image       String  @default("")
+  link        String  @default("")
+  order       Int     @default(0)
+
+  @@index([coffretId, order])
+}

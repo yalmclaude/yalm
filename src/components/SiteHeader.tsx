@@ -22,6 +22,9 @@ export function SiteHeader() {
             <Link href="/#comment-ca-marche" className="hover:text-bordeaux transition-colors">
               Comment ça marche ?
             </Link>
+            <a href="/coffret" className="hover:text-bordeaux transition-colors">
+              Mon coffret
+            </a>
           </nav>
         </div>
       </header>
