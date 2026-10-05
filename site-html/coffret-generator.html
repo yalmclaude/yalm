@@ -255,6 +255,72 @@ async function expandZips(files) {
   return out;
 }
 
+/* Some recorders (wireless mics, dictaphones) write MPEG Layer II ("MP2") audio with a .MP3 extension.
+   No browser can play that, so such files are decoded and re-encoded as real MP3 before upload. */
+const scriptLoads = {};
+function loadScriptOnce(src) {
+  return scriptLoads[src] ||= new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = resolve;
+    s.onerror = () => { delete scriptLoads[src]; reject(new Error("le module de conversion audio n'a pas pu se charger")); };
+    document.head.appendChild(s);
+  });
+}
+async function loadMp2Tools() {
+  await Promise.all([
+    loadScriptOnce("https://cdn.jsdelivr.net/npm/mpg123-decoder@1.0.3/dist/mpg123-decoder.min.js"),
+    loadScriptOnce("https://cdn.jsdelivr.net/npm/@breezystack/lamejs@1.2.7/dist/lamejs.iife.js"),
+  ]);
+  return { MPEGDecoder: window["mpg123-decoder"].MPEGDecoder, Mp3Encoder: window.lamejs.Mp3Encoder };
+}
+
+// True when the first MPEG audio frame (after any ID3 tag) is Layer I or II rather than Layer III (MP3).
+function isMpegLayer12(b) {
+  let i = 0;
+  if (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) i = 10 + ((b[6] << 21) | (b[7] << 14) | (b[8] << 7) | b[9]);
+  for (const end = Math.min(b.length - 3, i + 4096); i < end; i++) {
+    if (b[i] !== 0xFF || (b[i + 1] & 0xE0) !== 0xE0) continue;
+    const layer = (b[i + 1] >> 1) & 3, version = (b[i + 1] >> 3) & 3;
+    if (layer === 0 || version === 1 || (b[i + 2] >> 4) === 15 || ((b[i + 2] >> 2) & 3) === 3) continue; // not a valid header
+    return layer === 2 || layer === 3;
+  }
+  return false;
+}
+
+async function mp2ToMp3(bytes) {
+  const { MPEGDecoder, Mp3Encoder } = await loadMp2Tools();
+  const dec = new MPEGDecoder();
+  await dec.ready;
+  const { channelData, samplesDecoded, sampleRate } = dec.decode(bytes);
+  dec.free();
+  if (!samplesDecoded) throw new Error("décodage audio impossible");
+  const pcm = new Int16Array(samplesDecoded);
+  for (let i = 0; i < samplesDecoded; i++) {
+    let v = 0;
+    for (const ch of channelData) v += ch[i];
+    v = Math.max(-1, Math.min(1, v / channelData.length));
+    pcm[i] = v < 0 ? v * 0x8000 : v * 0x7FFF;
+  }
+  const enc = new Mp3Encoder(1, sampleRate, sampleRate >= 32000 ? 96 : 64);
+  const parts = [];
+  for (let i = 0; i < pcm.length; i += 1152) {
+    const out = enc.encodeBuffer(pcm.subarray(i, i + 1152));
+    if (out.length) parts.push(out);
+    if (i % (1152 * 200) === 0) await new Promise(r => setTimeout(r)); // keep the page responsive
+  }
+  parts.push(enc.flush());
+  return { blob: new Blob(parts, { type: "audio/mpeg" }), duration: Math.round(samplesDecoded / sampleRate) };
+}
+
+// Returns { file, duration } — the original file, or an MP3 conversion when the browser couldn't play it.
+async function makePlayable(file) {
+  if (mediaKindOf(file) !== "audio") return { file, duration: null };
+  const head = new Uint8Array(await file.slice(0, 16384).arrayBuffer());
+  if (!isMpegLayer12(head)) return { file, duration: null };
+  const { blob, duration } = await mp2ToMp3(new Uint8Array(await file.arrayBuffer()));
+  return { file: new File([blob], stripExt(file.name) + ".mp3", { type: "audio/mpeg" }), duration };
+}
+
 function getAudioDuration(file) {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
@@ -295,9 +361,10 @@ async function uploadMany(files) {
       const i = next++;
       const file = files[i];
       try {
+        const playable = await makePlayable(file);
         const [url, duration] = await Promise.all([
-          uploadToBlob(file),
-          mediaKindOf(file) === "audio" ? getAudioDuration(file) : Promise.resolve(null),
+          uploadToBlob(playable.file),
+          playable.duration || mediaKindOf(file) !== "audio" ? Promise.resolve(playable.duration) : getAudioDuration(file),
         ]);
         results[i] = { file, url, duration };
       } catch (err) {
@@ -364,12 +431,14 @@ hiddenInput.addEventListener("change", async () => {
       const list = listForKind(c, target.kind);
       const row = list.find(r => r.id === target.id);
       if (row) {
-        const url = await uploadToBlob(files[0]);
-        row[target.field] = url;
-        if (target.kind === "video" && target.field === "src" && !row.thumb) needsThumb.push(row);
         if (target.kind === "message" && target.field === "src") {
-          const d = await getAudioDuration(files[0]);
+          const playable = await makePlayable(files[0]);
+          row.src = await uploadToBlob(playable.file);
+          const d = playable.duration || await getAudioDuration(playable.file);
           if (d) row.duration = d;
+        } else {
+          row[target.field] = await uploadToBlob(files[0]);
+          if (target.kind === "video" && target.field === "src" && !row.thumb) needsThumb.push(row);
         }
       }
     }
@@ -675,6 +744,7 @@ function renderEdit() {
           <button class="btn btn-outline" data-action="add-message">${ic.plus} Ajouter</button>
         </div>
       </div>
+      ${c.messages.some(m => m.src) ? `<button class="btn btn-ghost" style="margin-bottom:12px" data-action="fix-audio" ${state.uploading ? "disabled" : ""}>${ic.check} Rendre tous les audios lisibles sur téléphone</button>` : ""}
       <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Sélectionnez autant d'audios que vous voulez (mp3, m4a, wav, opus, mémos vocaux…), ou un seul fichier .zip qui les contient tous : chaque audio devient un message séparé, nommé d'après son fichier.</p>
       <div style="display:flex;flex-direction:column;gap:12px">
         ${msgRows || `<p style="font-size:13px;color:var(--beige-dark)">Rien pour l'instant.</p>`}
@@ -1148,6 +1218,38 @@ async function onAction(e) {
     const withFiles = c.messages.filter(m => m.src);
     if (!withFiles.length) { alert("Aucun message audio n'a de fichier réel associé pour l'instant."); return; }
     await downloadZip(withFiles.map(m => ({ name: m.name || m.id, url: m.src })), `${slugify(c.names)}-livre-dor-audio`, el);
+    return;
+  }
+  if (action === "fix-audio") {
+    syncEditFieldsIntoState();
+    const c = state.activeCoffret;
+    const msgs = c.messages.filter(m => m.src);
+    state.uploading = true; state.uploadNotice = ""; render(); window.scrollTo({ top: 0 });
+    let fixed = 0, done = 0;
+    const failed = [];
+    for (const m of msgs) {
+      setUploadProgress(`Vérification des audios… ${done} / ${msgs.length}`);
+      try {
+        const res = await fetch(m.src);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const playable = await makePlayable(new File([blob], (m.name || "message") + ".mp3", { type: blob.type || "audio/mpeg" }));
+        if (playable.duration) {
+          m.src = await uploadToBlob(playable.file);
+          m.duration = playable.duration;
+          fixed++;
+        }
+      } catch (err) {
+        console.error("Audio repair failed", m.src, err);
+        failed.push(m.name || m.id);
+      }
+      done++;
+    }
+    const parts = [fixed ? `${fixed} audio(s) converti(s) en MP3 lisible partout.` : "Tous les audios étaient déjà dans un format lisible."];
+    if (failed.length) parts.push(`${failed.length} n'ont pas pu être traités : ${failed.slice(0, 5).join(", ")}${failed.length > 5 ? "…" : ""}`);
+    if (fixed) parts.push(await autoSaveAfterUpload(c));
+    state.uploading = false; state.uploadNotice = parts.join(" ");
+    render(); window.scrollTo({ top: 0 });
     return;
   }
   if (action === "download-message") {
