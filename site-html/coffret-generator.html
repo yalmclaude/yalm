@@ -83,6 +83,9 @@ a { color: inherit; }
   .nav-links { display: none !important; }
   .nav-burger { display: block !important; }
 }
+@media (max-width: 520px) {
+  .msg-row { padding: 14px 12px !important; gap: 10px !important; }
+}
 </style>
 </head>
 <body>
@@ -188,6 +191,8 @@ const state = {
   loading: true,
   storageError: false,
   uploading: false,
+  uploadProgress: "",
+  uploadNotice: "",
   activeCoffret: null,     // full coffret object being edited/previewed
   preview: {
     unlocked: false, view: "home", code: "", codeError: false, menuOpen: false,
@@ -201,14 +206,118 @@ const app = document.getElementById("app");
 const hiddenInput = document.getElementById("hidden-file-input");
 let pendingTarget = null;
 
+// Phones often hand over files with an empty or generic MIME type (WhatsApp .opus, Android .amr,
+// iPhone voice memos...), so the media kind is decided from the extension when the type is missing.
+const EXT_MIME = {
+  jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp", heic: "image/heic", heif: "image/heif",
+  mp4: "video/mp4", mov: "video/quicktime", m4v: "video/x-m4v", avi: "video/x-msvideo", mkv: "video/x-matroska",
+  mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg", oga: "audio/ogg", opus: "audio/ogg",
+  amr: "audio/amr", "3gp": "audio/3gpp", "3ga": "audio/3gpp", caf: "audio/x-caf", flac: "audio/flac", webm: "audio/webm",
+  aif: "audio/aiff", aiff: "audio/aiff", wma: "audio/x-ms-wma",
+  zip: "application/zip",
+};
+const AUDIO_ACCEPT = "audio/*," + Object.keys(EXT_MIME).filter(e => EXT_MIME[e].startsWith("audio/")).map(e => "." + e).join(",");
+const ZIP_ACCEPT = ".zip,application/zip,application/x-zip-compressed";
+
+function extOf(name) { const m = (name || "").toLowerCase().match(/\.([a-z0-9]+)$/); return m ? m[1] : ""; }
+function mimeOf(file) {
+  const t = file.type || "";
+  if (t && t !== "application/octet-stream") return t;
+  return EXT_MIME[extOf(file.name)] || t;
+}
+function mediaKindOf(file) {
+  const t = mimeOf(file);
+  if (t.startsWith("image/")) return "photo";
+  if (t.startsWith("video/")) return "video";
+  if (t.startsWith("audio/")) return "audio";
+  if (t.includes("zip") || extOf(file.name) === "zip") return "zip";
+  return null;
+}
+function stripExt(name) { return (name || "").replace(/\.[^.]+$/, ""); }
+
+// Replaces every .zip in the list by the media files it contains, each as its own File, in name order.
+async function expandZips(files) {
+  const out = [];
+  for (const f of files) {
+    if (mediaKindOf(f) !== "zip") { out.push(f); continue; }
+    if (typeof JSZip === "undefined") throw new Error("le module de décompression n'a pas pu se charger");
+    const zip = await JSZip.loadAsync(await f.arrayBuffer());
+    const entries = Object.values(zip.files)
+      .filter(e => !e.dir && !/(^|\/)(__MACOSX\/|\.)/.test(e.name))
+      .sort((a, b) => a.name.localeCompare(b.name, "fr", { numeric: true }));
+    for (const e of entries) {
+      const base = e.name.split("/").pop();
+      const type = EXT_MIME[extOf(base)];
+      if (!type || type === "application/zip") continue;
+      out.push(new File([await e.async("uint8array")], base, { type }));
+    }
+  }
+  return out;
+}
+
+function getAudioDuration(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const a = new Audio();
+    const done = (v) => { clearTimeout(timer); URL.revokeObjectURL(url); resolve(v); };
+    const timer = setTimeout(() => done(null), 5000);
+    a.preload = "metadata";
+    a.addEventListener("loadedmetadata", () => done(isFinite(a.duration) && a.duration > 0 ? Math.round(a.duration) : null));
+    a.addEventListener("error", () => done(null));
+    a.src = url;
+  });
+}
+
 async function uploadToBlob(file) {
   const { upload } = await import("https://esm.sh/@vercel/blob@2.4.0/client");
   const blob = await upload(file.name, file, {
     access: "public",
     handleUploadUrl: "/api/admin/coffret-upload",
+    contentType: mimeOf(file) || undefined,
     multipart: file.size > 8 * 1024 * 1024,
   });
   return blob.url;
+}
+
+function setUploadProgress(text) {
+  state.uploadProgress = text;
+  const el = document.getElementById("upload-progress-text");
+  if (el) el.textContent = text;
+}
+
+// Uploads several files (3 at a time), never stopping on one failure. Returns results in the original order.
+async function uploadMany(files) {
+  const results = new Array(files.length);
+  let next = 0, done = 0;
+  setUploadProgress(`Envoi des fichiers… 0 / ${files.length}`);
+  async function worker() {
+    while (next < files.length) {
+      const i = next++;
+      const file = files[i];
+      try {
+        const [url, duration] = await Promise.all([
+          uploadToBlob(file),
+          mediaKindOf(file) === "audio" ? getAudioDuration(file) : Promise.resolve(null),
+        ]);
+        results[i] = { file, url, duration };
+      } catch (err) {
+        console.error("Upload failed", file.name, err);
+        results[i] = { file, error: err?.message || "erreur inconnue" };
+      }
+      done++;
+      setUploadProgress(`Envoi des fichiers… ${done} / ${files.length}`);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(3, files.length) }, worker));
+  return results;
+}
+
+async function autoSaveAfterUpload(c) {
+  if (!c.names && !c.slug) return "Fichiers ajoutés — renseignez les prénoms puis cliquez sur « Enregistrer le coffret ».";
+  c.slug = c.slug || slugify(c.names);
+  c.updatedAt = Date.now();
+  try { await saveCoffret(c); return "Fichiers ajoutés et coffret enregistré."; }
+  catch { return "Fichiers ajoutés, mais l'enregistrement automatique a échoué — cliquez sur « Enregistrer le coffret »."; }
 }
 
 hiddenInput.addEventListener("change", async () => {
@@ -221,28 +330,33 @@ hiddenInput.addEventListener("change", async () => {
   hiddenInput.value = "";
   pendingTarget = null;
 
-  state.uploading = true; render();
+  state.uploading = true; state.uploadNotice = ""; state.uploadProgress = "Préparation des fichiers…"; render();
   try {
-    if (target.kind === "photo-bulk") {
-      for (const file of files) {
-        const url = await uploadToBlob(file);
-        c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: url });
-      }
-    } else if (target.kind === "mixed-bulk") {
-      const stripExt = (name) => name.replace(/\.[^.]+$/, "");
-      for (const file of Array.from(files)) {
-        const type = file.type || "";
-        const url = await uploadToBlob(file);
-        if (type.startsWith("image/")) {
-          c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: url });
-        } else if (type.startsWith("video/")) {
-          const row = { id: uid(), title: stripExt(file.name), duration: "", thumb: "", src: url };
+    if (target.kind === "photo-bulk" || target.kind === "mixed-bulk" || target.kind === "audio-bulk") {
+      const wanted = target.kind === "photo-bulk" ? ["photo"] : target.kind === "audio-bulk" ? ["audio"] : ["photo", "video", "audio"];
+      if (files.some(f => mediaKindOf(f) === "zip")) setUploadProgress("Ouverture du fichier .zip…");
+      const all = await expandZips(files);
+      const media = all.filter(f => wanted.includes(mediaKindOf(f)));
+      const ignored = all.length - media.length;
+      const results = await uploadMany(media);
+      let added = 0;
+      const failed = [];
+      for (const r of results) {
+        if (r.error) { failed.push(r.file.name); continue; }
+        added++;
+        const kind = mediaKindOf(r.file);
+        if (kind === "photo") c.photos.push({ id: uid(), category: c.categories[0] || "Photos", src: r.url });
+        else if (kind === "video") {
+          const row = { id: uid(), title: stripExt(r.file.name), duration: "", thumb: "", src: r.url };
           c.videos.push(row);
           needsThumb.push(row);
-        } else if (type.startsWith("audio/")) {
-          c.messages.push({ id: uid(), name: stripExt(file.name), duration: 30, quote: "", src: url });
-        }
+        } else c.messages.push({ id: uid(), name: stripExt(r.file.name), duration: r.duration || 30, quote: "", src: r.url });
       }
+      const parts = [`${added} fichier(s) ajouté(s).`];
+      if (ignored) parts.push(`${ignored} fichier(s) ignoré(s) (format non reconnu).`);
+      if (failed.length) parts.push(`${failed.length} envoi(s) échoué(s) : ${failed.slice(0, 5).join(", ")}${failed.length > 5 ? "…" : ""}`);
+      if (added) parts.push(await autoSaveAfterUpload(c));
+      state.uploadNotice = parts.join(" ");
     } else if (target.kind === "cover" || target.kind === "final") {
       const url = await uploadToBlob(files[0]);
       c[target.kind] = url;
@@ -253,6 +367,10 @@ hiddenInput.addEventListener("change", async () => {
         const url = await uploadToBlob(files[0]);
         row[target.field] = url;
         if (target.kind === "video" && target.field === "src" && !row.thumb) needsThumb.push(row);
+        if (target.kind === "message" && target.field === "src") {
+          const d = await getAudioDuration(files[0]);
+          if (d) row.duration = d;
+        }
       }
     }
   } catch (err) {
@@ -347,7 +465,7 @@ function renderWaveform(seedNum, waveId) {
   const bars = waveformBars(typeof seedNum === "number" ? seedNum : 1);
   const barsMarkup = bars.map(h => `<div style="width:3px;border-radius:2px;height:${(h*100).toFixed(1)}%;background:currentColor;flex-shrink:0"></div>`).join("");
   return `
-  <div style="position:relative;height:32px;flex:1" data-wave-id="${waveId}">
+  <div style="position:relative;height:32px;flex:1;overflow:hidden" data-wave-id="${waveId}">
     <div style="position:absolute;inset:0;display:flex;align-items:center;gap:2px;color:var(--beige-dark)">${barsMarkup}</div>
     <div class="wave-fill" style="position:absolute;inset:0;display:flex;align-items:center;gap:2px;color:var(--bordeaux);width:0%;overflow:hidden;white-space:nowrap">${barsMarkup}</div>
   </div>`;
@@ -445,13 +563,13 @@ function renderEdit() {
     </div>`).join("");
 
   const msgRows = c.messages.map(m => `
-    <div style="border:1px solid var(--beige-dark);border-radius:2px;padding:14px;display:grid;grid-template-columns:1fr 100px;gap:10px" data-row="message" data-id="${m.id}">
+    <div style="border:1px solid var(--beige-dark);border-radius:2px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:10px" data-row="message" data-id="${m.id}">
       <input class="field-input" placeholder="Nom (ex: Papa)" data-field="name" data-id="${m.id}" data-kind="message" value="${esc(m.name)}">
       <input class="field-input" type="number" placeholder="Durée (sec)" data-field="duration" data-id="${m.id}" data-kind="message" value="${esc(m.duration)}">
       <input class="field-input" style="grid-column:1/-1" placeholder="Citation marquante du message" data-field="quote" data-id="${m.id}" data-kind="message" value="${esc(m.quote)}">
       <div style="grid-column:1/-1;display:flex;gap:6px">
         <input class="field-input" style="flex:1" placeholder="Audio — URL ou fichier (optionnel)" data-field="src" data-id="${m.id}" data-kind="message" value="${esc(m.src)}">
-        <button class="btn-ghost" style="padding:9px 10px" data-action="pick-file" data-kind="message" data-id="${m.id}" data-field="src" data-accept="audio/*">${ic.folder}</button>
+        <button class="btn-ghost" style="padding:9px 10px" data-action="pick-file" data-kind="message" data-id="${m.id}" data-field="src" data-accept="${AUDIO_ACCEPT}">${ic.folder}</button>
       </div>
       <button style="grid-column:1/-1;background:none;border:none;color:#B84545;justify-self:start;display:flex;align-items:center;gap:6px;font-size:12px" data-action="remove-message" data-id="${m.id}">${ic.trash} Retirer ce message</button>
     </div>`).join("");
@@ -476,8 +594,9 @@ function renderEdit() {
     <p style="font-size:12px;color:var(--texte-soft);background:var(--beige);padding:12px 16px;border-radius:2px;margin-bottom:20px;line-height:1.6">
       Vous pouvez choisir vos photos, vidéos et fichiers audio directement depuis votre ordinateur avec le bouton ${ic.folder} : ils sont envoyés et hébergés de façon permanente. L'envoi peut prendre un moment pour les grosses vidéos.
     </p>
-    ${state.uploading ? `<div style="display:flex;align-items:center;gap:10px;background:var(--beige);padding:10px 16px;border-radius:2px;margin-bottom:16px;font-size:13px;color:var(--bordeaux)">${ic.loader} Envoi du fichier en cours…</div>` : ""}
-    <button class="btn btn-primary" style="margin-bottom:14px" data-action="pick-file" data-kind="mixed-bulk" data-accept="image/*,video/*,audio/*" data-multiple="1" ${state.uploading ? "disabled" : ""}>${ic.folder} Importer tous vos fichiers (photos, vidéos, audios)</button>
+    ${state.uploading ? `<div style="display:flex;align-items:center;gap:10px;background:var(--beige);padding:10px 16px;border-radius:2px;margin-bottom:16px;font-size:13px;color:var(--bordeaux)">${ic.loader} <span id="upload-progress-text">${esc(state.uploadProgress || "Envoi du fichier en cours…")}</span></div>` : ""}
+    ${!state.uploading && state.uploadNotice ? `<div style="background:var(--beige);padding:10px 16px;border-radius:2px;margin-bottom:16px;font-size:13px;color:var(--bordeaux);line-height:1.5">${esc(state.uploadNotice)}</div>` : ""}
+    <button class="btn btn-primary" style="margin-bottom:14px;max-width:100%;text-align:left" data-action="pick-file" data-kind="mixed-bulk" data-accept="image/*,video/*,${AUDIO_ACCEPT},${ZIP_ACCEPT}" data-multiple="1" ${state.uploading ? "disabled" : ""}>${ic.folder} Importer tous vos fichiers (photos, vidéos, audios ou .zip)</button>
 
     <div style="border:1px solid var(--beige-dark);border-radius:2px;padding:18px 20px;margin-bottom:30px;background:var(--beige)">
       <p style="font-family:'Playfair Display',serif;font-size:16px;color:var(--bordeaux);margin-bottom:6px">Ajouter plusieurs liens à la fois</p>
@@ -547,7 +666,20 @@ function renderEdit() {
     </div>
 
     ${repeatSection("Vidéos", "video", videoRows)}
-    ${repeatSection("Livre d'or audio", "message", msgRows)}
+    <div style="margin-bottom:40px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+        <h3 style="font-family:'Playfair Display',serif;font-size:19px;color:var(--bordeaux)">Livre d'or audio <span style="font-size:13px;color:var(--texte-soft)">(${c.messages.length})</span></h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline" data-action="pick-file" data-kind="audio-bulk" data-accept="${AUDIO_ACCEPT}" data-multiple="1" ${state.uploading ? "disabled" : ""}>${ic.folder} Importer des audios</button>
+          <button class="btn btn-outline" data-action="pick-file" data-kind="audio-bulk" data-accept="${ZIP_ACCEPT}" data-multiple="1" ${state.uploading ? "disabled" : ""}>${ic.folder} Importer un .zip</button>
+          <button class="btn btn-outline" data-action="add-message">${ic.plus} Ajouter</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Sélectionnez autant d'audios que vous voulez (mp3, m4a, wav, opus, mémos vocaux…), ou un seul fichier .zip qui les contient tous : chaque audio devient un message séparé, nommé d'après son fichier.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${msgRows || `<p style="font-size:13px;color:var(--beige-dark)">Rien pour l'instant.</p>`}
+      </div>
+    </div>
     ${repeatSection("Produits (album photo, pins, etc.)", "product", productRows)}
 
     <div style="display:flex;gap:14px;margin-top:20px">
@@ -844,13 +976,14 @@ function renderAudio(c) {
   if (state.activeCoffret.messages.length === 0) return emptySection(ic.mic, "Aucun message audio n'a encore été ajouté à ce coffret.");
 
   const msgs = state.activeCoffret.messages;
+  const firstPlayable = msgs.find(m => m.src) || msgs[0];
   return `
   <div class="fade-in-up" style="max-width:900px;margin:0 auto;padding:80px 24px 110px">
     <header style="text-align:center;margin-bottom:44px">
       <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bordeaux);opacity:.7;margin-bottom:14px">Livre d'or audio</p>
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(26px,4vw,38px);margin-bottom:22px">${msgs.length} messages pour vous</h2>
       <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-        <button style="background:var(--bordeaux);color:var(--blanc);border:none;padding:12px 24px;border-radius:30px;font-size:12px;display:flex;align-items:center;gap:8px" data-action="play-message" data-id="${msgs[0].id}" data-continuous="1">${ic.list} Écouter tous les messages</button>
+        <button style="background:var(--bordeaux);color:var(--blanc);border:none;padding:12px 24px;border-radius:30px;font-size:12px;display:flex;align-items:center;gap:8px" data-action="play-message" data-id="${firstPlayable.id}" data-continuous="1">${ic.list} Écouter tous les messages</button>
         <button style="background:transparent;color:var(--bordeaux);border:1px solid var(--bordeaux);padding:12px 24px;border-radius:30px;font-size:12px;display:flex;align-items:center;gap:8px" data-action="zip-audio">${ic.download} Télécharger tous les messages</button>
       </div>
     </header>
@@ -858,14 +991,14 @@ function renderAudio(c) {
       ${msgs.map(m => {
         const playing = p.playingId === m.id;
         return `
-        <div style="background:var(--blanc);border:1px solid var(--beige-dark);border-radius:3px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+        <div class="msg-row" style="background:var(--blanc);border:1px solid var(--beige-dark);border-radius:3px;padding:20px 22px;display:flex;align-items:center;gap:16px">
           <button data-action="play-message" data-id="${m.id}" data-continuous="0" id="play-btn-${m.id}" style="width:42px;height:42px;min-width:42px;border-radius:50%;background:var(--bordeaux);border:none;display:flex;align-items:center;justify-content:center;color:var(--blanc)">${playing?ic.pause:ic.play}</button>
           <div style="flex:1;min-width:0">
-            <p style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:6px">${esc(m.name)}</p>
+            <p style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.name)}</p>
             ${renderWaveform(1 + [...m.id].reduce((a,ch)=>a+ch.charCodeAt(0),0), m.id)}
           </div>
           <span id="time-${m.id}" style="font-size:12px;color:var(--texte-soft);min-width:34px;text-align:right">${fmtTime(m.duration||30)}</span>
-          <button style="background:none;border:none;color:var(--texte-soft)">${ic.download}</button>
+          ${m.src ? `<button data-action="download-message" data-id="${m.id}" aria-label="Télécharger ce message" style="background:none;border:none;color:var(--texte-soft);padding:8px;margin:-8px">${ic.download}</button>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -1017,6 +1150,11 @@ async function onAction(e) {
     await downloadZip(withFiles.map(m => ({ name: m.name || m.id, url: m.src })), `${slugify(c.names)}-livre-dor-audio`, el);
     return;
   }
+  if (action === "download-message") {
+    const m = state.activeCoffret.messages.find(x => x.id === el.dataset.id);
+    if (m && m.src) await downloadSingle(m.src, m.name || "message", el);
+    return;
+  }
   if (action === "zip-all") {
     const c = state.activeCoffret;
     const entries = [
@@ -1028,11 +1166,12 @@ async function onAction(e) {
     return;
   }
 
-  if (action === "new") { state.activeCoffret = blankCoffret(); state.screen = "edit"; render(); return; }
+  if (action === "new") { state.activeCoffret = blankCoffret(); state.uploadNotice = ""; state.screen = "edit"; render(); return; }
 
   if (action === "edit") {
     const c = await loadCoffret(el.dataset.slug);
     state.activeCoffret = c || blankCoffret();
+    state.uploadNotice = "";
     state.screen = "edit"; render(); return;
   }
 
@@ -1236,9 +1375,11 @@ audioPlayer.addEventListener("ended", () => {
 
 audioPlayer.addEventListener("error", () => {
   const id = state.preview.audio.playingId;
-  if (id !== null) resetWaveUI(id);
+  if (id === null) return;
+  resetWaveUI(id);
   state.preview.audio.playingId = null;
   render();
+  alert("Ce message audio ne peut pas être lu sur cet appareil (format non pris en charge ou fichier introuvable). Vous pouvez le télécharger avec le bouton à droite du message.");
 });
 
 function playMessage(id, cont) {
@@ -1262,7 +1403,9 @@ function playMessage(id, cont) {
     if (playPromise && typeof playPromise.catch === "function") {
       playPromise.catch(err => {
         console.error("Audio playback failed", err);
-        alert(`La lecture audio n'a pas pu démarrer (${err && err.name ? err.name : "erreur inconnue"}). Si ce fichier a été ajouté depuis votre ordinateur lors d'une session précédente et dépasse 4 Mo, il n'est plus disponible après rechargement — réimportez-le, ou utilisez un lien hébergé (Drive, Cloudflare R2...) à la place.`);
+        // AbortError just means another message was started in between; the "error" event covers unreadable files.
+        if (err && (err.name === "AbortError" || err.name === "NotSupportedError")) return;
+        alert(`La lecture audio n'a pas pu démarrer (${err && err.name ? err.name : "erreur inconnue"}). Touchez à nouveau le bouton lecture.`);
         state.preview.audio.playingId = null;
         resetWaveUI(id);
         render();
@@ -1285,6 +1428,27 @@ function togglePauseMessage(id) {
   } else {
     playMessage(id, false);
   }
+}
+
+// Cross-origin links ignore the download attribute (notably on iPhone), so fetch the file first.
+async function downloadSingle(url, name, btnEl) {
+  const original = btnEl.innerHTML;
+  btnEl.innerHTML = ic.loader;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("fetch failed");
+    const blob = await res.blob();
+    const ext = extOf(new URL(url, location.href).pathname) || (blob.type.split("/")[1] || "").split(";")[0];
+    const filename = (name.replace(/[\\/:*?"<>|]+/g, "-").trim() || "fichier") + (ext ? "." + ext : "");
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+  } catch {
+    window.open(url, "_blank");
+  }
+  btnEl.innerHTML = original;
 }
 
 async function downloadZip(entries, zipName, btnEl) {
