@@ -1217,7 +1217,7 @@ async function onAction(e) {
     const c = state.activeCoffret;
     const withFiles = c.messages.filter(m => m.src);
     if (!withFiles.length) { alert("Aucun message audio n'a de fichier réel associé pour l'instant."); return; }
-    await downloadZip(withFiles.map(m => ({ name: m.name || m.id, url: m.src })), `${slugify(c.names)}-livre-dor-audio`, el);
+    await downloadZip(await playableEntries(withFiles, ""), `${slugify(c.names)}-livre-dor-audio`, el);
     return;
   }
   if (action === "fix-audio") {
@@ -1254,7 +1254,10 @@ async function onAction(e) {
   }
   if (action === "download-message") {
     const m = state.activeCoffret.messages.find(x => x.id === el.dataset.id);
-    if (m && m.src) await downloadSingle(m.src, m.name || "message", el);
+    if (m && m.src) {
+      const [entry] = await playableEntries([m], "");
+      await downloadSingle(entry.url, entry.name, el);
+    }
     return;
   }
   if (action === "zip-all") {
@@ -1262,7 +1265,7 @@ async function onAction(e) {
     const entries = [
       ...c.photos.map(p => ({ name: `photos/${p.category}-${p.id}`, url: p.src })),
       ...c.videos.filter(v => v.src).map(v => ({ name: `videos/${v.title || v.id}`, url: v.src })),
-      ...c.messages.filter(m => m.src).map(m => ({ name: `audio/${m.name || m.id}`, url: m.src })),
+      ...(await playableEntries(c.messages.filter(m => m.src), "audio/")),
     ];
     await downloadZip(entries, `${slugify(c.names)}-coffret-complet`, el);
     return;
@@ -1410,6 +1413,8 @@ async function onAction(e) {
   }
 
   if (action === "pick-up") {
+    unlockAudio();
+    prepareAllMessages();
     state.preview.audio.ringing = false; render();
     setTimeout(() => { state.preview.audio.answered = true; render(); }, 550);
     return;
@@ -1417,7 +1422,7 @@ async function onAction(e) {
   if (action === "play-message") {
     const id = el.dataset.id, cont = el.dataset.continuous === "1";
     if (state.preview.audio.playingId === id) { audioPlayer.pause(); state.preview.audio.playingId = null; render(); }
-    else playMessage(id, cont);
+    else { unlockAudio(); playMessage(id, cont); }
     return;
   }
 }
@@ -1452,6 +1457,7 @@ function resetWaveUI(id) {
 }
 
 audioPlayer.addEventListener("timeupdate", () => {
+  if (audioPlayer.src === SILENT_WAV) return;
   const id = state.preview.audio.playingId;
   if (id === null || !audioPlayer.duration || isNaN(audioPlayer.duration)) return;
   const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -1462,6 +1468,7 @@ audioPlayer.addEventListener("timeupdate", () => {
 });
 
 audioPlayer.addEventListener("ended", () => {
+  if (audioPlayer.src === SILENT_WAV) return;
   const id = state.preview.audio.playingId;
   const cont = state.preview.audio.continuous;
   if (id !== null) resetWaveUI(id);
@@ -1476,6 +1483,7 @@ audioPlayer.addEventListener("ended", () => {
 });
 
 audioPlayer.addEventListener("error", () => {
+  if (audioPlayer.src === SILENT_WAV) return;
   const id = state.preview.audio.playingId;
   if (id === null) return;
   resetWaveUI(id);
@@ -1484,7 +1492,66 @@ audioPlayer.addEventListener("error", () => {
   alert("Ce message audio ne peut pas être lu sur cet appareil (format non pris en charge ou fichier introuvable). Vous pouvez le télécharger avec le bouton à droite du message.");
 });
 
-function playMessage(id, cont) {
+/* Messages already stored as MP2 (see makePlayable) can't be played by any browser, so the listening page
+   converts them on the fly. Only MPEG-looking files are fetched and checked; m4a, wav... play from their link. */
+const playableCache = new Map(); // src -> Promise<{ url, duration }>
+function mayNeedConversion(msg) {
+  return ["", "mp3", "mp2", "mpa", "mpga"].includes(extOf(new URL(msg.src, location.href).pathname));
+}
+function getPlayable(msg) {
+  if (!mayNeedConversion(msg)) return Promise.resolve({ url: msg.src, duration: null });
+  if (!playableCache.has(msg.src)) {
+    const p = (async () => {
+      const res = await fetch(msg.src);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const head = new Uint8Array(await blob.slice(0, 16384).arrayBuffer());
+      if (!isMpegLayer12(head)) return { url: URL.createObjectURL(blob), duration: null };
+      const mp3 = await mp2ToMp3(new Uint8Array(await blob.arrayBuffer()));
+      return { url: URL.createObjectURL(mp3.blob), duration: mp3.duration };
+    })();
+    p.catch(() => playableCache.delete(msg.src));
+    playableCache.set(msg.src, p);
+  }
+  return playableCache.get(msg.src);
+}
+function applyPlayableDuration(msg, playable) {
+  if (!playable.duration || msg.duration === playable.duration) return;
+  msg.duration = playable.duration;
+  const label = document.getElementById(`time-${msg.id}`);
+  if (label && state.preview.audio.playingId !== msg.id) label.textContent = fmtTime(msg.duration);
+}
+// Converts every message in the background (2 at a time) so taps start playing instantly.
+async function prepareAllMessages() {
+  const queue = state.activeCoffret.messages.filter(m => m.src && mayNeedConversion(m));
+  const worker = async () => {
+    while (queue.length) {
+      const m = queue.shift();
+      try { applyPlayableDuration(m, await getPlayable(m)); } catch (err) { console.error("Audio preparation failed", m.src, err); }
+    }
+  };
+  await Promise.all([worker(), worker()]);
+}
+
+// iPhones only let a page start audio from a tap. Playing a tiny silent clip during the "Décrocher" tap
+// unlocks the player, so messages can start later even after an asynchronous conversion.
+const SILENT_WAV = (() => {
+  const n = 800, buf = new Uint8Array(44 + n), v = new DataView(buf.buffer);
+  const str = (o, s) => [...s].forEach((ch, i) => buf[o + i] = ch.charCodeAt(0));
+  str(0, "RIFF"); v.setUint32(4, 36 + n, true); str(8, "WAVEfmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 8000, true);
+  v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, "data"); v.setUint32(40, n, true); buf.fill(128, 44);
+  return "data:audio/wav;base64," + btoa(String.fromCharCode(...buf));
+})();
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  audioPlayer.src = SILENT_WAV;
+  audioPlayer.play().catch(() => {});
+}
+
+async function playMessage(id, cont) {
   const msg = state.activeCoffret.messages.find(m => m.id === id);
   if (!msg || !msg.src) {
     alert("Ce message n'a pas encore de fichier audio associé — ajoutez-en un depuis la fiche du coffret.");
@@ -1495,31 +1562,35 @@ function playMessage(id, cont) {
 
   state.preview.audio.playingId = id;
   state.preview.audio.continuous = cont;
+  render();
+
+  let playable;
+  const pending = getPlayable(msg);
+  const btn = document.getElementById(`play-btn-${id}`);
+  const slow = setTimeout(() => { if (btn && state.preview.audio.playingId === id) btn.innerHTML = ic.loader; }, 150);
+  try { playable = await pending; }
+  catch (err) { console.error("Audio preparation failed", err); playable = { url: msg.src, duration: null }; }
+  clearTimeout(slow);
+  if (state.preview.audio.playingId !== id) return; // another message was chosen meanwhile
+  applyPlayableDuration(msg, playable);
+  if (btn) btn.innerHTML = ic.pause;
+
   try {
-    if (audioPlayer.src !== msg.src) {
+    if (audioPlayer.src !== playable.url) {
       audioPlayer.pause();
-      audioPlayer.src = msg.src;
+      audioPlayer.src = playable.url;
       audioPlayer.load();
     }
-    const playPromise = audioPlayer.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(err => {
-        console.error("Audio playback failed", err);
-        // AbortError just means another message was started in between; the "error" event covers unreadable files.
-        if (err && (err.name === "AbortError" || err.name === "NotSupportedError")) return;
-        alert(`La lecture audio n'a pas pu démarrer (${err && err.name ? err.name : "erreur inconnue"}). Touchez à nouveau le bouton lecture.`);
-        state.preview.audio.playingId = null;
-        resetWaveUI(id);
-        render();
-      });
-    }
+    await audioPlayer.play();
   } catch (err) {
-    console.error("Audio playback error", err);
-    alert(`La lecture audio n'a pas pu démarrer (${err && err.name ? err.name : "erreur inconnue"}).`);
-    state.preview.audio.playingId = null;
+    console.error("Audio playback failed", err);
+    // AbortError just means another message was started in between; the "error" event covers unreadable files.
+    if (err && (err.name === "AbortError" || err.name === "NotSupportedError")) return;
+    alert(`La lecture audio n'a pas pu démarrer (${err && err.name ? err.name : "erreur inconnue"}). Touchez à nouveau le bouton lecture.`);
+    if (state.preview.audio.playingId === id) state.preview.audio.playingId = null;
     resetWaveUI(id);
+    render();
   }
-  render();
 }
 
 function togglePauseMessage(id) {
@@ -1533,6 +1604,15 @@ function togglePauseMessage(id) {
 }
 
 // Cross-origin links ignore the download attribute (notably on iPhone), so fetch the file first.
+// Download entries for messages, pointing at the playable (converted) version when there is one.
+async function playableEntries(msgs, prefix) {
+  return Promise.all(msgs.map(async m => {
+    let url = m.src;
+    try { url = (await getPlayable(m)).url; } catch {}
+    return { name: prefix + (m.name || m.id), url };
+  }));
+}
+
 async function downloadSingle(url, name, btnEl) {
   const original = btnEl.innerHTML;
   btnEl.innerHTML = ic.loader;
@@ -1540,7 +1620,7 @@ async function downloadSingle(url, name, btnEl) {
     const res = await fetch(url);
     if (!res.ok) throw new Error("fetch failed");
     const blob = await res.blob();
-    const ext = extOf(new URL(url, location.href).pathname) || (blob.type.split("/")[1] || "").split(";")[0];
+    const ext = (url.startsWith("blob:") ? "" : extOf(new URL(url, location.href).pathname)) || (blob.type.split("/")[1] || "").split(";")[0].replace(/^mpeg$/, "mp3");
     const filename = (name.replace(/[\\/:*?"<>|]+/g, "-").trim() || "fichier") + (ext ? "." + ext : "");
     const objectUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1570,7 +1650,7 @@ async function downloadZip(entries, zipName, btnEl) {
       if (!res.ok) throw new Error("fetch failed");
       const blob = await res.blob();
       let ext = "";
-      const typeExt = (blob.type.split("/")[1] || "").replace("jpeg", "jpg").split(";")[0];
+      const typeExt = (blob.type.split("/")[1] || "").replace("jpeg", "jpg").split(";")[0].replace(/^mpeg$/, "mp3");
       if (typeExt) ext = "." + typeExt;
       else { const m = entry.url.match(/\.([a-zA-Z0-9]{2,4})(?:\?|#|$)/); if (m) ext = "." + m[1]; }
       let base = (entry.name || "fichier").replace(/[\\/:*?"<>|]+/g, "-").trim() || "fichier";
