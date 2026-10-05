@@ -122,7 +122,7 @@ function blankCoffret() {
     slug: "", names: "", date: "", location: "", username: "", code: "",
     cover: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
     final: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1600&auto=format&fit=crop",
-    categories: [...DEFAULT_CATEGORIES],
+    categories: [...DEFAULT_CATEGORIES], showQuotes: true,
     photos: [], videos: [], messages: [], products: [], updatedAt: Date.now(),
   };
 }
@@ -746,6 +746,10 @@ function renderEdit() {
       </div>
       ${c.messages.some(m => m.src) ? `<button class="btn btn-ghost" style="margin-bottom:12px" data-action="fix-audio" ${state.uploading ? "disabled" : ""}>${ic.check} Rendre tous les audios lisibles sur téléphone</button>` : ""}
       <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Sélectionnez autant d'audios que vous voulez (mp3, m4a, wav, opus, mémos vocaux…), ou un seul fichier .zip qui les contient tous : chaque audio devient un message séparé, nommé d'après son fichier.</p>
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--texte);background:var(--beige);padding:12px 14px;border-radius:2px;margin-bottom:14px;cursor:pointer;line-height:1.5">
+        <input type="checkbox" id="f-show-quotes" style="width:18px;height:18px;margin-top:1px;accent-color:var(--bordeaux);flex-shrink:0" ${c.showQuotes !== false ? "checked" : ""}>
+        <span>Afficher la section « Les mots qui resteront » (les citations des messages) sur la page des mariés</span>
+      </label>
       <div style="display:flex;flex-direction:column;gap:12px">
         ${msgRows || `<p style="font-size:13px;color:var(--beige-dark)">Rien pour l'instant.</p>`}
       </div>
@@ -764,6 +768,8 @@ function syncEditFieldsIntoState() {
   const g = (id) => document.getElementById(id)?.value ?? "";
   c.names = g("f-names"); c.username = g("f-username"); c.code = g("f-code"); c.date = g("f-date");
   c.location = g("f-location"); c.cover = g("f-cover"); c.final = g("f-final");
+  const showQuotes = document.getElementById("f-show-quotes");
+  if (showQuotes) c.showQuotes = showQuotes.checked;
 }
 
 /* ===================== PUBLIC: code-only entry ===================== */
@@ -1072,16 +1078,16 @@ function renderAudio(c) {
         </div>`;
       }).join("")}
     </div>
-    <div style="text-align:center">
+    ${c.showQuotes === false ? "" : `<div style="text-align:center">
       <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;color:var(--bordeaux);margin-bottom:30px">Les mots qui resteront</h3>
       <div class="quotes-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
-        ${msgs.slice(0,3).map(m => `
+        ${(msgs.some(m => m.quote) ? msgs.filter(m => m.quote) : msgs).slice(0,3).map(m => `
         <div style="background:var(--beige);padding:26px 22px;border-radius:2px">
           <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;line-height:1.5;margin-bottom:14px">« ${esc(m.quote) || "..."} »</p>
           <p style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--texte-soft)">${esc(m.name)}</p>
         </div>`).join("")}
       </div>
-    </div>
+    </div>`}
   </div>`;
 }
 

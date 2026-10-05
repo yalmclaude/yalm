@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { slug, names, date, location, username, code, cover, final, categories, photos, videos, messages, products } =
+  const { slug, names, date, location, username, code, cover, final, showQuotes, categories, photos, videos, messages, products } =
     body;
 
   if (!slug) {
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",
+        showQuotes: showQuotes !== false,
         categories: Array.isArray(categories) ? categories : undefined,
       },
       update: {
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",
+        showQuotes: showQuotes !== false,
         categories: Array.isArray(categories) ? categories : undefined,
       },
     });

@@ -19,6 +19,7 @@ export function serializeCoffret(c: CoffretWithItems) {
     code: c.code,
     cover: c.cover,
     final: c.final,
+    showQuotes: c.showQuotes,
     categories: c.categories,
     updatedAt: c.updatedAt.getTime(),
     photos: c.photos.map((p) => ({ id: p.id, category: p.category, src: p.src })),
