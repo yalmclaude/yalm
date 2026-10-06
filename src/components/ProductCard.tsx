@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={coverUrl} alt={product.name} className="mb-4 h-36 w-full rounded-lg object-cover" />
         ) : (
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-bordeaux to-bordeaux-light text-gold-light">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-bordeaux to-bordeaux-light text-beige">
             ✦
           </div>
         )}

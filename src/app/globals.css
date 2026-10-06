@@ -10,6 +10,8 @@
   --gold-light: #e0c674;
   --anthracite: #2b2b2b;
   --beige-dark: #dfc9b0;
+  --beige: #f5ead9;
+  --beige-deep: #8f7a5c;
 }
 
 @theme inline {
@@ -22,6 +24,8 @@
   --color-gold-light: var(--gold-light);
   --color-anthracite: var(--anthracite);
   --color-beige-dark: var(--beige-dark);
+  --color-beige: var(--beige);
+  --color-beige-deep: var(--beige-deep);
   --font-serif: var(--font-cormorant);
   --font-sans: var(--font-jost);
 }

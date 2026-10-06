@@ -306,7 +306,7 @@ export function AdminDashboard() {
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <h3
                       className={`text-xs font-semibold uppercase tracking-wide ${
-                        col.key === SOON_COLUMN ? "text-gray-400" : "text-gold"
+                        col.key === SOON_COLUMN ? "text-gray-400" : "text-beige-deep"
                       }`}
                     >
                       {col.label}
@@ -342,7 +342,7 @@ export function AdminDashboard() {
                           {formatPrice(p.priceCents)} · Qté {p.totalQuantity}
                         </p>
                         {p.allowFullPayment && (
-                          <p className="mt-1 text-xs font-medium text-gold">Paiement total activé</p>
+                          <p className="mt-1 text-xs font-medium text-beige-deep">Paiement total activé</p>
                         )}
                         <div className="mt-2 flex gap-3 text-xs">
                           <button onClick={() => setEditing(p)} className="text-bordeaux hover:underline">

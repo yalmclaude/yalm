@@ -9,7 +9,7 @@ const NAV_LINKS = [
 export function SiteHeader() {
   return (
     <>
-      <div className="bg-bordeaux-dark text-center text-[0.78rem] tracking-wide text-gold-light py-2 px-4">
+      <div className="bg-bordeaux-dark text-center text-[0.78rem] tracking-wide text-beige py-2 px-4">
         Acompte requis pour bloquer votre date — disponibilités limitées
       </div>
       <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-background/90 backdrop-blur-md">

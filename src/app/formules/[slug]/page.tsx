@@ -32,7 +32,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
                 className="mb-5 h-64 w-full rounded-2xl object-cover shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
               />
             )}
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Formule</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">Formule</p>
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{pack.name}</h1>
             <p className="mt-4 text-bordeaux/70">{pack.description}</p>
 

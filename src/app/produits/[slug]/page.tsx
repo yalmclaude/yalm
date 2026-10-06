@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
           <div>
             <ProductGallery images={product.images} alt={product.name} />
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
               {product.category.name}
             </p>
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>

@@ -52,7 +52,7 @@ export default async function HomePage() {
         {packs.length > 0 && (
           <section id="formules" className="mx-auto max-w-6xl px-6 py-12">
             <Reveal>
-              <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+              <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
                 Des offres combinées
               </p>
               <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">Nos formules</h2>
@@ -67,7 +67,7 @@ export default async function HomePage() {
 
         <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>
-            <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+            <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
               Notre catalogue
             </p>
             <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">
@@ -81,7 +81,7 @@ export default async function HomePage() {
             return (
               <div key={category.id} className="mt-12">
                 <Reveal>
-                  <h3 className="mb-6 border-b border-bordeaux/10 pb-3 text-sm font-semibold uppercase tracking-[0.12em] text-gold">
+                  <h3 className="mb-6 border-b border-bordeaux/10 pb-3 text-sm font-semibold uppercase tracking-[0.12em] text-beige-deep">
                     {category.name}
                   </h3>
                 </Reveal>
@@ -111,7 +111,7 @@ export default async function HomePage() {
         <HowItWorksSection steps={howItWorksSteps} />
       </main>
       <footer className="bg-bordeaux-dark py-9 text-center text-sm text-white/70">
-        <span className="font-serif italic text-gold-light">yalm</span>{" "}
+        <span className="font-serif italic text-beige">yalm</span>{" "}
         <span className="text-[0.62rem] uppercase tracking-[0.32em] text-white/50">events</span>
         <p className="mt-2">© {new Date().getFullYear()} YALM Événements — Tous droits réservés</p>
       </footer>

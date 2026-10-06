@@ -19,7 +19,7 @@ export function HeroSection() {
           fontFamily: "var(--font-wordmark), serif",
           fontSize: "clamp(2.75rem, 8vw, 4.5rem)",
           lineHeight: 1,
-          color: "var(--gold-light)",
+          color: "var(--beige)",
           margin: 0,
         }}
       >
@@ -31,7 +31,7 @@ export function HeroSection() {
           fontSize: "clamp(0.75rem, 1.6vw, 0.95rem)",
           fontWeight: 600,
           letterSpacing: "0.4em",
-          color: "var(--gold-light)",
+          color: "var(--beige)",
           margin: 0,
           textTransform: "uppercase",
         }}
@@ -44,7 +44,7 @@ export function HeroSection() {
           fontStyle: "italic",
           fontWeight: 400,
           fontSize: "clamp(1.05rem, 2.4vw, 1.4rem)",
-          color: "var(--gold-light)",
+          color: "var(--beige)",
           margin: "0.5rem 0 0",
         }}
       >
