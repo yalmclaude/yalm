@@ -114,7 +114,7 @@ export function ServiceIcons() {
           } ${i === SERVICES.length - 1 ? "col-span-2" : ""}`}
         >
           {s.icon}
-          <span className="label-caps max-w-[9rem] leading-snug !text-[0.62rem] !tracking-[0.06em]">{s.label}</span>
+          <span className="label-caps max-w-[9rem] leading-snug !text-[0.62rem] !tracking-[0.06em] lg:!text-[0.72rem] lg:!tracking-[0.12em]">{s.label}</span>
         </li>
       ))}
     </ul>
