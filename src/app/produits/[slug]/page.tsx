@@ -6,6 +6,7 @@ import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
 import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
+import { canBuy, canRent } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +41,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </p>
             ) : (
             <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
-              {durations.length > 0 ? (
+              {!canRent(product) ? null : durations.length > 0 ? (
                 <div>
-                  <p>Tarifs selon la durée :</p>
+                  <p>{canBuy(product) ? "Location selon la durée :" : "Tarifs selon la durée :"}</p>
                   <ul className="mt-1 space-y-0.5">
                     {durations.map((d) => (
                       <li key={d.hours}>
@@ -53,11 +54,22 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 </div>
               ) : (
                 <p>
-                  Prix : <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
+                  {canBuy(product) ? "Location" : "Prix"} :{" "}
+                  <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
+                </p>
+              )}
+              {canBuy(product) && (
+                <p>
+                  {canRent(product) ? "Achat, pour le garder" : "Prix"} :{" "}
+                  <span className="font-semibold text-bordeaux">{formatPrice(product.purchasePriceCents)}</span>
                 </p>
               )}
               <p>Acompte requis : {depositLabel(product.depositType, product.depositValue)}</p>
-              {product.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(product.cautionCents)}</p>}
+              {product.cautionCents > 0 && canRent(product) && (
+                <p>
+                  Caution (remboursable{canBuy(product) ? ", en location" : ""}) : {formatPrice(product.cautionCents)}
+                </p>
+              )}
               {product.totalQuantity > 1 && <p>{product.totalQuantity} unités disponibles dans notre flotte</p>}
             </div>
             )}
@@ -75,6 +87,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             allowFullPayment={product.allowFullPayment}
             cautionCents={product.cautionCents}
             durationOptions={durations}
+            saleMode={product.saleMode}
+            purchasePriceCents={product.purchasePriceCents}
           />
           )}
         </div>

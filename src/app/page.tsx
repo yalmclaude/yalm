@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
-import { PackCard } from "@/components/PackCard";
+import { CustomFormulaCard, PackCard } from "@/components/PackCard";
+import { CUSTOM_DISCOUNT_PERCENT, CUSTOM_MIN_ITEMS } from "@/lib/pricing";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { Reveal } from "@/components/Reveal";
@@ -37,18 +38,17 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
-        {packs.length > 0 && (
-          <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
-            <Reveal>
-              <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
-            </Reveal>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {packs.map((pack) => (
-                <PackCard key={pack.id} pack={pack} />
-              ))}
-            </div>
-          </section>
-        )}
+        <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
+          <Reveal>
+            <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
+          </Reveal>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {packs.map((pack) => (
+              <PackCard key={pack.id} pack={pack} />
+            ))}
+            <CustomFormulaCard minItems={CUSTOM_MIN_ITEMS} discountPercent={CUSTOM_DISCOUNT_PERCENT} />
+          </div>
+        </section>
 
         <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>

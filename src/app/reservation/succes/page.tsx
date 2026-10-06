@@ -12,7 +12,7 @@ export default async function BookingSuccessPage({
   const booking = bookingId
     ? await prisma.booking.findMany({ where: { id: bookingId }, include: { product: true, pack: true }, take: 1 }).then((r) => r[0] ?? null)
     : null;
-  const itemName = booking?.product?.name ?? booking?.pack?.name;
+  const itemName = booking?.product?.name ?? booking?.pack?.name ?? (booking?.items ? "votre formule personnalisée" : undefined);
 
   return (
     <>

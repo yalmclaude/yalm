@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
       cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
       durationOptions: parseDurationOptions(data.durationOptions),
       quoteOnly: Boolean(data.quoteOnly),
+      saleMode: ["RENT", "BUY", "BOTH"].includes(data.saleMode) ? data.saleMode : "RENT",
+      purchasePriceCents: Math.max(0, Math.round(Number(data.purchasePriceCents) || 0)),
     },
     include: { category: true, images: true },
   });

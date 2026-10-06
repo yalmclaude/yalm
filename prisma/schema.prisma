@@ -47,6 +47,8 @@ model Product {
   cautionCents     Int            @default(0)
   durationOptions  Json           @default("[]")
   quoteOnly        Boolean        @default(false)
+  saleMode           String         @default("RENT") // RENT | BUY | BOTH
+  purchasePriceCents Int            @default(0)
   createdAt        DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   bookings      Booking[]
@@ -118,6 +120,8 @@ model Booking {
   depositAmountCents    Int
   cautionCents          Int           @default(0)
   durationHours         Float?
+  purchase              Boolean       @default(false)
+  items                 Json?
   stripeSessionId       String?
   stripePaymentIntentId String?
   createdAt             DateTime      @default(now())

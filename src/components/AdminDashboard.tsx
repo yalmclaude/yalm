@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, formatHours, parseDurationOptions, type DurationOption } from "@/lib/format";
 import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
+import { parseCustomLines, type CustomLine } from "@/lib/pricing";
 import { PacksAdmin } from "@/components/PacksAdmin";
 import { HowItWorksAdmin } from "@/components/HowItWorksAdmin";
 import { ProductImageGalleryAdmin } from "@/components/ProductImageGalleryAdmin";
@@ -33,6 +34,8 @@ type Product = {
   cautionCents: number;
   durationOptions: DurationOption[];
   quoteOnly: boolean;
+  saleMode: string;
+  purchasePriceCents: number;
   images: ProductImg[];
 };
 
@@ -49,6 +52,8 @@ type Booking = {
   durationHours: number | null;
   product: { name: string } | null;
   pack: { name: string } | null;
+  purchase: boolean;
+  items: CustomLine[] | null;
 };
 
 type EditingProduct = Omit<Product, "category" | "id"> & { id?: string };
@@ -292,6 +297,8 @@ export function AdminDashboard() {
                   cautionCents: 0,
                   durationOptions: [],
                   quoteOnly: false,
+                  saleMode: "RENT",
+                  purchasePriceCents: 0,
                   images: [],
                 });
               }}
@@ -380,6 +387,11 @@ export function AdminDashboard() {
                           <p className="mt-1 text-xs font-medium text-beige-deep">Paiement total activé</p>
                         )}
                         {p.quoteOnly && <p className="mt-1 text-xs font-medium text-bordeaux">Sur devis</p>}
+                        {p.saleMode !== "RENT" && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {p.saleMode === "BUY" ? "Achat" : "Location ou achat"} · achat {formatPrice(p.purchasePriceCents)}
+                          </p>
+                        )}
                         {p.durationOptions?.length > 0 && (
                           <p className="mt-1 text-xs text-gray-500">
                             {p.durationOptions.map((d) => `${formatHours(d.hours)} ${formatPrice(d.priceCents)}`).join(" · ")}
@@ -498,7 +510,7 @@ export function AdminDashboard() {
                 ))}
               </select>
             </Field>
-            <Field label="Prix (centimes)">
+            <Field label="Prix de location (centimes)">
               <input
                 type="number"
                 value={editing.priceCents}
@@ -545,6 +557,29 @@ export function AdminDashboard() {
                 <option value="false">Non (Bientôt de retour)</option>
               </select>
             </Field>
+            <Field label="Location ou achat">
+              <select
+                value={editing.saleMode}
+                onChange={(e) => setEditing({ ...editing, saleMode: e.target.value })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="RENT">Location uniquement</option>
+                <option value="BOTH">Location ou achat (le client choisit)</option>
+                <option value="BUY">Achat uniquement (le client le garde)</option>
+              </select>
+            </Field>
+            {editing.saleMode !== "RENT" && (
+              <Field label="Prix d'achat — pour le garder (€)">
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={editing.purchasePriceCents / 100}
+                  onChange={(e) => setEditing({ ...editing, purchasePriceCents: Math.round(Number(e.target.value) * 100) })}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </Field>
+            )}
             <Field label="Mode de réservation">
               <select
                 value={editing.quoteOnly ? "true" : "false"}
@@ -645,8 +680,15 @@ export function AdminDashboard() {
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    {b.product?.name ?? b.pack?.name ?? "—"}
+                    {b.product?.name ?? b.pack?.name ?? (b.items ? "Formule personnalisée (-5 %)" : "—")}
+                    {b.purchase && <div className="text-xs font-medium text-bordeaux">Achat (à garder)</div>}
                     {b.durationHours ? <div className="text-xs text-gray-500">{formatHours(b.durationHours)}</div> : null}
+                    {parseCustomLines(b.items).map((l) => (
+                      <div key={l.productId} className="text-xs text-gray-500">
+                        {l.name} · {l.mode === "BUY" ? "à garder" : "location"}
+                        {l.durationHours ? ` ${formatHours(l.durationHours)}` : ""} · {formatPrice(l.discountedCents)}
+                      </div>
+                    ))}
                   </td>
                   <td className="px-3 py-2">{new Date(b.eventDate).toLocaleDateString("fr-FR")}</td>
                   <td className="px-3 py-2">{b.quantity}</td>

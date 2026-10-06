@@ -13,6 +13,8 @@ type Props = {
   allowFullPayment?: boolean;
   cautionCents?: number;
   durationOptions?: DurationOption[];
+  saleMode?: string;
+  purchasePriceCents?: number;
   title?: string;
 };
 
@@ -26,6 +28,8 @@ export function BookingForm({
   allowFullPayment = false,
   cautionCents = 0,
   durationOptions = [],
+  saleMode = "RENT",
+  purchasePriceCents = 0,
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -37,6 +41,7 @@ export function BookingForm({
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [durationHours, setDurationHours] = useState<number | null>(durationOptions[0]?.hours ?? null);
+  const [mode, setMode] = useState<"RENT" | "BUY">(saleMode === "BUY" ? "BUY" : "RENT");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,15 +60,19 @@ export function BookingForm({
       .finally(() => setCheckingAvailability(false));
   }, [eventDate, idParam]);
 
-  const chosenDuration = durationOptions.find((d) => d.hours === durationHours) ?? null;
-  const unitPrice = chosenDuration ? chosenDuration.priceCents : priceCents;
+  const buying = mode === "BUY";
+  const rentalDurations = buying ? [] : durationOptions;
+  const chosenDuration = rentalDurations.find((d) => d.hours === durationHours) ?? null;
+  const rentPrice = chosenDuration ? chosenDuration.priceCents : priceCents;
+  const unitPrice = buying ? purchasePriceCents : rentPrice;
   const deposit = depositAmountCents(unitPrice, depositType, depositValue) * quantity;
   const total = unitPrice * quantity;
-  const caution = cautionCents * quantity;
+  // Bought items stay with the client: no caution, and the rental stock doesn't apply.
+  const caution = buying ? 0 : cautionCents * quantity;
   const amountToPay = (paymentType === "FULL" ? total : deposit) + caution;
-  const needsDuration = durationOptions.length > 0 && !chosenDuration;
-  const isSoldOut = remaining !== null && remaining <= 0;
-  const exceedsStock = remaining !== null && quantity > remaining;
+  const needsDuration = rentalDurations.length > 0 && !chosenDuration;
+  const isSoldOut = !buying && remaining !== null && remaining <= 0;
+  const exceedsStock = !buying && remaining !== null && quantity > remaining;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +82,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours: buying ? null : durationHours, mode }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -110,7 +119,7 @@ export function BookingForm({
           className={inputClass}
         />
         {checkingAvailability && <p className="mt-1.5 text-xs text-bordeaux/60">Vérification de la disponibilité…</p>}
-        {!checkingAvailability && remaining !== null && (
+        {!buying && !checkingAvailability && remaining !== null && (
           <p className={`mt-1.5 text-xs ${isSoldOut ? "text-red-600" : "text-green-700"}`}>
             {isSoldOut ? "Indisponible à cette date" : `${remaining} disponible(s) à cette date`}
           </p>
@@ -131,11 +140,49 @@ export function BookingForm({
         </div>
       )}
 
-      {durationOptions.length > 0 && (
+      {saleMode === "BOTH" && (
+        <div>
+          <p className={labelClass}>Location ou achat</p>
+          <div className="mt-1.5 grid grid-cols-2 gap-2">
+            {(
+              [
+                [
+                  "RENT",
+                  "Louer",
+                  durationOptions.length
+                    ? `dès ${formatPrice(Math.min(...durationOptions.map((d) => d.priceCents)))}`
+                    : formatPrice(priceCents),
+                ],
+                ["BUY", "Le garder", formatPrice(purchasePriceCents)],
+              ] as const
+            ).map(([value, label, price]) => {
+              const active = mode === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setMode(value)}
+                  aria-pressed={active}
+                  className={`rounded-lg border px-3 py-2.5 text-center transition-colors ${
+                    active
+                      ? "border-bordeaux bg-bordeaux text-cream"
+                      : "border-bordeaux/20 bg-background text-bordeaux hover:border-bordeaux"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{label}</span>
+                  <span className={`block text-xs ${active ? "text-cream/80" : "text-bordeaux/60"}`}>{price}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {rentalDurations.length > 0 && (
         <div>
           <p className={labelClass}>Durée</p>
           <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {durationOptions.map((d) => {
+            {rentalDurations.map((d) => {
               const active = d.hours === durationHours;
               return (
                 <button

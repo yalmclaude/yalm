@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import { formatHours } from "@/lib/format";
+import { parseCustomLines } from "@/lib/pricing";
 
 async function sendConfirmationEmail(bookingId: string) {
   const apiKey = process.env.BREVO_API_KEY;
@@ -17,7 +19,16 @@ async function sendConfirmationEmail(bookingId: string) {
 
   if (!booking) return;
 
-  const prestationName = booking.product?.name ?? booking.pack?.name ?? "Prestation";
+  const customLines = parseCustomLines(booking.items);
+  const prestationName =
+    (booking.product?.name ?? booking.pack?.name ?? (customLines.length ? "Formule personnalisée" : "Prestation")) +
+    (booking.purchase ? " (achat)" : "");
+  const customDetail = customLines
+    .map(
+      (l) =>
+        `${l.name} — ${l.mode === "BUY" ? "à garder" : "location"}${l.durationHours ? ` ${formatHours(l.durationHours)}` : ""} — ${(l.discountedCents / 100).toFixed(2).replace(".", ",")} €`
+    )
+    .join("<br>");
   const eventDate = booking.eventDate.toLocaleDateString("fr-FR", {
     weekday: "long",
     year: "numeric",
@@ -41,6 +52,7 @@ async function sendConfirmationEmail(bookingId: string) {
           <h2 style="color:#4a1015">Nouvelle réservation confirmée</h2>
           <table style="width:100%;border-collapse:collapse;margin-top:16px">
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;width:40%">Prestation</td><td style="padding:8px 0;border-bottom:1px solid #eee">${prestationName}</td></tr>
+            ${customDetail ? `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;vertical-align:top">Détail (-5 %)</td><td style="padding:8px 0;border-bottom:1px solid #eee">${customDetail}</td></tr>` : ""}
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Client</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.customerName}</td></tr>
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Email</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.email}</td></tr>
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Téléphone</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.phone}</td></tr>

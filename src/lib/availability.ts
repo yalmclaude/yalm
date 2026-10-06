@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { parseCustomLines } from "@/lib/pricing";
 
 const PENDING_EXPIRY_MINUTES = 30;
 
@@ -27,9 +28,11 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
 
   const { dayStart, dayEnd } = dayRange(eventDate);
 
+  // Purchases don't take a unit out of the rental fleet.
   const directBookings = await prisma.booking.findMany({
     where: {
       productId,
+      purchase: false,
       eventDate: { gte: dayStart, lt: dayEnd },
       ...ACTIVE_STATUS_FILTER,
     },
@@ -52,7 +55,23 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
     }
   }
 
-  return Math.max(0, product.totalQuantity - directReserved - packReserved);
+  // Custom formules list their products in Booking.items; rented lines each use one unit.
+  const customBookings = await prisma.booking.findMany({
+    where: {
+      productId: null,
+      packId: null,
+      eventDate: { gte: dayStart, lt: dayEnd },
+      ...ACTIVE_STATUS_FILTER,
+    },
+    select: { items: true, quantity: true },
+  });
+  const customReserved = customBookings.reduce(
+    (sum, b) =>
+      sum + parseCustomLines(b.items).filter((l) => l.productId === productId && l.mode === "RENT").length * b.quantity,
+    0
+  );
+
+  return Math.max(0, product.totalQuantity - directReserved - packReserved - customReserved);
 }
 
 export async function getRemainingStockForPack(packId: string, eventDate: Date) {
