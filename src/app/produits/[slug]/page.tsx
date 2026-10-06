@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
+import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
 import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
@@ -33,6 +34,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </p>
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>
             <p className="mt-4 text-bordeaux/70">{product.description}</p>
+            {product.quoteOnly ? (
+              <p className="mt-6 text-sm text-bordeaux/75">
+                Tarif : <span className="font-semibold text-bordeaux">sur devis</span>
+              </p>
+            ) : (
             <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
               {durations.length > 0 ? (
                 <div>
@@ -54,8 +60,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               {product.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(product.cautionCents)}</p>}
               {product.totalQuantity > 1 && <p>{product.totalQuantity} unités disponibles dans notre flotte</p>}
             </div>
+            )}
           </div>
 
+          {product.quoteOnly ? (
+            <QuoteContact />
+          ) : (
           <BookingForm
             productId={product.id}
             priceCents={product.priceCents}
@@ -66,6 +76,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             cautionCents={product.cautionCents}
             durationOptions={durations}
           />
+          )}
         </div>
       </main>
       <SiteFooter />

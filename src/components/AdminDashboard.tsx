@@ -32,6 +32,7 @@ type Product = {
   allowFullPayment: boolean;
   cautionCents: number;
   durationOptions: DurationOption[];
+  quoteOnly: boolean;
   images: ProductImg[];
 };
 
@@ -264,6 +265,7 @@ export function AdminDashboard() {
                   allowFullPayment: false,
                   cautionCents: 0,
                   durationOptions: [],
+                  quoteOnly: false,
                   images: [],
                 });
               }}
@@ -351,6 +353,7 @@ export function AdminDashboard() {
                         {p.allowFullPayment && (
                           <p className="mt-1 text-xs font-medium text-beige-deep">Paiement total activé</p>
                         )}
+                        {p.quoteOnly && <p className="mt-1 text-xs font-medium text-bordeaux">Sur devis</p>}
                         {p.durationOptions?.length > 0 && (
                           <p className="mt-1 text-xs text-gray-500">
                             {p.durationOptions.map((d) => `${formatHours(d.hours)} ${formatPrice(d.priceCents)}`).join(" · ")}
@@ -508,6 +511,16 @@ export function AdminDashboard() {
               >
                 <option value="true">Oui</option>
                 <option value="false">Non (Bientôt de retour)</option>
+              </select>
+            </Field>
+            <Field label="Mode de réservation">
+              <select
+                value={editing.quoteOnly ? "true" : "false"}
+                onChange={(e) => setEditing({ ...editing, quoteOnly: e.target.value === "true" })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="false">Réservation et paiement en ligne</option>
+                <option value="true">Sur devis — le client doit nous appeler</option>
               </select>
             </Field>
             <Field label="Paiement intégral autorisé">

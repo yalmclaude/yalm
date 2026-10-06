@@ -53,13 +53,22 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
         </h4>
         <p className="mt-2 text-sm text-bordeaux/60 min-h-11">{product.description}</p>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
-          <span className="font-semibold text-bordeaux">
-            {parseDurationOptions(product.durationOptions).length > 0 && "Dès "}
-            {formatPrice(startingPriceCents(product.priceCents, parseDurationOptions(product.durationOptions)))}
-          </span>
-          <span className="text-right text-xs text-bordeaux/55">
-            Acompte : {depositLabel(product.depositType, product.depositValue)}
-          </span>
+          {product.quoteOnly ? (
+            <>
+              <span className="font-semibold text-bordeaux">Sur devis</span>
+              <span className="text-right text-xs text-bordeaux/55">Appelez-nous</span>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-bordeaux">
+                {parseDurationOptions(product.durationOptions).length > 0 && "Dès "}
+                {formatPrice(startingPriceCents(product.priceCents, parseDurationOptions(product.durationOptions)))}
+              </span>
+              <span className="text-right text-xs text-bordeaux/55">
+                Acompte : {depositLabel(product.depositType, product.depositValue)}
+              </span>
+            </>
+          )}
         </div>
       </Link>
     </Reveal>

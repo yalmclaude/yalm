@@ -46,6 +46,7 @@ model Product {
   allowFullPayment Boolean        @default(false)
   cautionCents     Int            @default(0)
   durationOptions  Json           @default("[]")
+  quoteOnly        Boolean        @default(false)
   createdAt        DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   bookings      Booking[]
@@ -77,6 +78,7 @@ model Pack {
   allowFullPayment Boolean     @default(false)
   cautionCents     Int         @default(0)
   durationOptions  Json        @default("[]")
+  quoteOnly        Boolean     @default(false)
   createdAt        DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         PackItem[]

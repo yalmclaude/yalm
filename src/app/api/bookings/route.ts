@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
   if (!item || !item.isAvailable) {
     return NextResponse.json({ error: "Cette offre est indisponible" }, { status: 400 });
   }
+  if (item.quoteOnly) {
+    return NextResponse.json({ error: "Cette offre est sur devis : contactez-nous par téléphone" }, { status: 400 });
+  }
 
   const remaining = packId
     ? await getRemainingStockForPack(packId, parsedDate)

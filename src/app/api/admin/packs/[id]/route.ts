@@ -28,6 +28,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       allowFullPayment: Boolean(data.allowFullPayment),
       cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
       durationOptions: parseDurationOptions(data.durationOptions),
+      quoteOnly: Boolean(data.quoteOnly),
       imageUrl: data.imageUrl ?? null,
       items: {
         create: items

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
+import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
 
@@ -50,6 +51,11 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
               </ul>
             </div>
 
+            {pack.quoteOnly ? (
+              <p className="mt-6 text-sm text-bordeaux/75">
+                Tarif : <span className="font-semibold text-bordeaux">sur devis</span>
+              </p>
+            ) : (
             <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
               {durations.length > 0 ? (
                 <div>
@@ -70,8 +76,12 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
               <p>Acompte requis : {depositLabel(pack.depositType, pack.depositValue)}</p>
               {pack.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(pack.cautionCents)}</p>}
             </div>
+            )}
           </div>
 
+          {pack.quoteOnly ? (
+            <QuoteContact title="Cette formule est sur devis" />
+          ) : (
           <BookingForm
             packId={pack.id}
             priceCents={pack.priceCents}
@@ -82,6 +92,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             durationOptions={durations}
             title="Réserver cette formule"
           />
+          )}
         </div>
       </main>
       <SiteFooter />

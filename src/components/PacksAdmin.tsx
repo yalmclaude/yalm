@@ -25,6 +25,7 @@ type Pack = {
   allowFullPayment: boolean;
   cautionCents: number;
   durationOptions: DurationOption[];
+  quoteOnly: boolean;
   imageUrl: string | null;
   items: PackItem[];
 };
@@ -42,6 +43,7 @@ const emptyPack: EditingPack = {
   allowFullPayment: false,
   cautionCents: 0,
   durationOptions: [],
+  quoteOnly: false,
   imageUrl: null,
   items: [],
 };
@@ -137,7 +139,10 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs">{pack.isAvailable ? "Disponible" : "Bientôt de retour"}</p>
+            <p className="mt-2 text-xs">
+              {pack.isAvailable ? "Disponible" : "Bientôt de retour"}
+              {pack.quoteOnly && " · Sur devis"}
+            </p>
             <div className="mt-3 flex gap-3 text-xs">
               <button
                 onClick={() =>
@@ -220,6 +225,17 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
               >
                 <option value="true">Oui</option>
                 <option value="false">Non (Bientôt de retour)</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-gray-700">Mode de réservation</span>
+              <select
+                value={editing.quoteOnly ? "true" : "false"}
+                onChange={(e) => setEditing({ ...editing, quoteOnly: e.target.value === "true" })}
+                className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="false">Réservation et paiement en ligne</option>
+                <option value="true">Sur devis — le client doit nous appeler</option>
               </select>
             </label>
             <label className="block text-sm">

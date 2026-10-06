@@ -13,6 +13,7 @@ type PackCardData = {
   depositValue: number;
   imageUrl: string | null;
   durationOptions: unknown;
+  quoteOnly: boolean;
   items: PackCardProduct[];
 };
 
@@ -44,13 +45,22 @@ export function PackCard({ pack }: { pack: PackCardData }) {
           ))}
         </ul>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
-          <span className="font-semibold text-bordeaux">
-            {parseDurationOptions(pack.durationOptions).length > 0 && "Dès "}
-            {formatPrice(startingPriceCents(pack.priceCents, parseDurationOptions(pack.durationOptions)))}
-          </span>
-          <span className="text-right text-xs text-bordeaux/55">
-            Acompte : {depositLabel(pack.depositType, pack.depositValue)}
-          </span>
+          {pack.quoteOnly ? (
+            <>
+              <span className="font-semibold text-bordeaux">Sur devis</span>
+              <span className="text-right text-xs text-bordeaux/55">Appelez-nous</span>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-bordeaux">
+                {parseDurationOptions(pack.durationOptions).length > 0 && "Dès "}
+                {formatPrice(startingPriceCents(pack.priceCents, parseDurationOptions(pack.durationOptions)))}
+              </span>
+              <span className="text-right text-xs text-bordeaux/55">
+                Acompte : {depositLabel(pack.depositType, pack.depositValue)}
+              </span>
+            </>
+          )}
         </div>
       </Link>
     </Reveal>
