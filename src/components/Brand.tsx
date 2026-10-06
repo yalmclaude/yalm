@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CONTACT_EMAIL, CONTACT_PHONE, phoneHref } from "@/lib/contact";
 
 /* Shared pieces of the brand banner look: the "line ✷ line" divider, the white line icons,
    section titles with a brush-script headline, and the footer. */
@@ -126,9 +127,14 @@ export function SiteFooter() {
     <footer className="bg-bordeaux py-12 text-center text-cream">
       <p className="font-script text-5xl leading-none">Your amazing life moments</p>
       <Ornament tone="light" className="mx-auto mt-4 max-w-md px-6" />
-      <a href="mailto:yalm.events@gmail.com" className="label-caps mt-5 inline-block hover:text-cream/70">
-        yalm.events@gmail.com
-      </a>
+      <div className="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-6">
+        <a href={phoneHref(CONTACT_PHONE)} className="label-caps hover:text-cream/70">
+          {CONTACT_PHONE}
+        </a>
+        <a href={`mailto:${CONTACT_EMAIL}`} className="label-caps hover:text-cream/70">
+          {CONTACT_EMAIL}
+        </a>
+      </div>
       <p className="mt-4 text-xs text-cream/60">© {new Date().getFullYear()} YALM Events — Tous droits réservés</p>
     </footer>
   );
