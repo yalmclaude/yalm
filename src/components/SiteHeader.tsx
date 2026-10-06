@@ -9,16 +9,16 @@ const NAV_LINKS = [
 export function SiteHeader() {
   return (
     <>
-      <div className="bg-bordeaux-dark text-center text-[0.78rem] tracking-wide text-beige py-2 px-4">
+      <div className="bg-bordeaux text-center text-[0.68rem] font-medium uppercase tracking-[0.16em] text-cream py-2 px-4">
         Acompte requis pour bloquer votre date — disponibilités limitées
       </div>
-      <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-background/90 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-cream/90 backdrop-blur-md">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-2">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="YALM Events" className="h-16 w-auto sm:h-24" />
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-bordeaux">
+          <nav className="hidden md:flex items-center gap-7 label-caps text-bordeaux">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} className="hover:text-bordeaux transition-colors">
                 {l.label}
@@ -27,7 +27,7 @@ export function SiteHeader() {
             <a href="/coffret" className="hover:text-bordeaux transition-colors">
               Mon coffret
             </a>
-            <a href="/admin" className="text-xs text-bordeaux/50 hover:text-bordeaux transition-colors">
+            <a href="/admin" className="text-bordeaux/45 hover:text-bordeaux transition-colors">
               Admin
             </a>
           </nav>
@@ -38,7 +38,7 @@ export function SiteHeader() {
                 <path d="M4 7h16M4 12h16M4 17h16" />
               </svg>
             </summary>
-            <nav className="absolute right-0 mt-2 w-56 flex flex-col rounded border border-bordeaux/10 bg-background py-2 text-sm font-medium text-bordeaux shadow-lg">
+            <nav className="absolute right-0 mt-2 w-56 flex flex-col rounded border border-bordeaux/10 bg-cream-light py-2 label-caps text-bordeaux shadow-lg">
               {NAV_LINKS.map((l) => (
                 <Link key={l.href} href={l.href} className="px-5 py-3 hover:bg-bordeaux/5">
                   {l.label}
@@ -47,7 +47,7 @@ export function SiteHeader() {
               <a href="/coffret" className="px-5 py-3 hover:bg-bordeaux/5">
                 Mon coffret
               </a>
-              <a href="/admin" className="px-5 py-3 text-xs text-bordeaux/60 hover:bg-bordeaux/5">
+              <a href="/admin" className="px-5 py-3 text-bordeaux/50 hover:bg-bordeaux/5">
                 Admin
               </a>
             </nav>

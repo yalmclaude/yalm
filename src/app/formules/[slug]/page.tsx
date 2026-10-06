@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/Brand";
 import { BookingForm } from "@/components/BookingForm";
 import { formatPrice, depositLabel } from "@/lib/format";
 
@@ -32,7 +33,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
                 className="mb-5 h-64 w-full rounded-2xl object-cover shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
               />
             )}
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">Formule</p>
+            <p className="label-caps text-bordeaux/60">Formule</p>
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{pack.name}</h1>
             <p className="mt-4 text-bordeaux/70">{pack.description}</p>
 
@@ -66,9 +67,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
           />
         </div>
       </main>
-      <footer className="bg-bordeaux-dark py-9 text-center text-sm text-white/70">
-        © {new Date().getFullYear()} YALM Événements
-      </footer>
+      <SiteFooter />
     </>
   );
 }

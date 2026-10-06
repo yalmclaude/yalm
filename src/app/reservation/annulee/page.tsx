@@ -13,7 +13,7 @@ export default function BookingCancelledPage() {
         </p>
         <Link
           href="/"
-          className="mt-9 inline-block rounded-full bg-gold px-7 py-3 font-medium text-bordeaux-dark transition-all hover:-translate-y-0.5 hover:bg-gold-light"
+          className="mt-9 inline-block rounded-md bg-bordeaux px-7 py-3 label-caps text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light"
         >
           Retour au catalogue
         </Link>

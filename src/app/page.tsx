@@ -5,6 +5,7 @@ import { PackCard } from "@/components/PackCard";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { Reveal } from "@/components/Reveal";
+import { SectionTitle, SiteFooter } from "@/components/Brand";
 
 export default async function HomePage() {
   const categories = await prisma.category.findMany({
@@ -33,29 +34,10 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
-        {/* CTAs */}
-        <section className="bg-background py-16 text-center">
-          <Reveal>
-            <div className="mx-auto max-w-2xl px-6">
-              <div className="flex flex-wrap justify-center gap-4">
-                <a href="#catalogue" className="rounded-full bg-bordeaux px-8 py-3.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_28px_rgba(74,16,21,0.3)]">
-                  Voir les prestations
-                </a>
-                <a href="#formules" className="rounded-full border border-bordeaux/30 px-8 py-3.5 text-sm font-light text-bordeaux transition-all hover:-translate-y-0.5 hover:border-bordeaux hover:bg-bordeaux/5">
-                  Nos formules
-                </a>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
         {packs.length > 0 && (
-          <section id="formules" className="mx-auto max-w-6xl px-6 py-12">
+          <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
             <Reveal>
-              <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
-                Des offres combinées
-              </p>
-              <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">Nos formules</h2>
+              <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
             </Reveal>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {packs.map((pack) => (
@@ -67,12 +49,7 @@ export default async function HomePage() {
 
         <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>
-            <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
-              Notre catalogue
-            </p>
-            <h2 className="mt-2 text-center font-serif text-3xl text-bordeaux">
-              Prestations disponibles
-            </h2>
+            <SectionTitle eyebrow="Notre catalogue" title="Nos prestations" />
           </Reveal>
 
           {categories.map((category) => {
@@ -81,7 +58,7 @@ export default async function HomePage() {
             return (
               <div key={category.id} className="mt-12">
                 <Reveal>
-                  <h3 className="mb-6 border-b border-bordeaux/10 pb-3 text-sm font-semibold uppercase tracking-[0.12em] text-beige-deep">
+                  <h3 className="mb-6 border-b border-bordeaux/10 pb-3 label-caps text-bordeaux">
                     {category.name}
                   </h3>
                 </Reveal>
@@ -96,7 +73,7 @@ export default async function HomePage() {
 
           {unavailable.length > 0 && (
             <div className="mt-14">
-              <h3 className="mb-6 border-b border-bordeaux/10 pb-3 text-sm font-semibold uppercase tracking-[0.12em] text-gray-400">
+              <h3 className="mb-6 border-b border-bordeaux/10 pb-3 label-caps text-bordeaux/40">
                 Bientôt de retour
               </h3>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -110,11 +87,7 @@ export default async function HomePage() {
 
         <HowItWorksSection steps={howItWorksSteps} />
       </main>
-      <footer className="bg-bordeaux-dark py-9 text-center text-sm text-white/70">
-        <span className="font-serif italic text-beige">yalm</span>{" "}
-        <span className="text-[0.62rem] uppercase tracking-[0.32em] text-white/50">events</span>
-        <p className="mt-2">© {new Date().getFullYear()} YALM Événements — Tous droits réservés</p>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

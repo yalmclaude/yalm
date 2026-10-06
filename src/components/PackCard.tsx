@@ -20,13 +20,13 @@ export function PackCard({ pack }: { pack: PackCardData }) {
     <Reveal>
       <Link
         href={`/formules/${pack.slug}`}
-        className="group block rounded-2xl border border-gold/50 bg-background p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
+        className="group block rounded-lg border border-bordeaux/15 bg-cream-light p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
       >
         {pack.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={pack.imageUrl} alt={pack.name} className="mb-4 h-36 w-full rounded-lg object-cover" />
         ) : (
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gold to-gold-light text-bordeaux-dark">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-bordeaux to-bordeaux-light text-cream">
             ★
           </div>
         )}

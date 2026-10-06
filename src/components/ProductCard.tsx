@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
   if (!product.isAvailable) {
     return (
       <Reveal>
-        <div className="rounded-2xl border border-bordeaux/10 bg-background p-6 opacity-75">
+        <div className="rounded-lg border border-bordeaux/10 bg-cream-light p-6 opacity-75">
           {coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
     <Reveal>
       <Link
         href={`/produits/${product.slug}`}
-        className="group block rounded-2xl border border-bordeaux/15 bg-background p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
+        className="group block rounded-lg border border-bordeaux/15 bg-cream-light p-6 shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
       >
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

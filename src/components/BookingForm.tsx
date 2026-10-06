@@ -86,7 +86,7 @@ export function BookingForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border border-bordeaux/15 bg-background p-7 shadow-[0_12px_30px_rgba(74,16,21,0.1)]"
+      className="space-y-4 rounded-lg border border-bordeaux/15 bg-cream-light p-7 shadow-[0_12px_30px_rgba(74,16,21,0.1)]"
     >
       <h3 className="font-serif text-xl text-bordeaux">{title}</h3>
 
@@ -198,7 +198,7 @@ export function BookingForm({
       <button
         type="submit"
         disabled={submitting || isSoldOut || exceedsStock || !eventDate}
-        className="w-full rounded-full bg-gold px-4 py-3 font-medium text-bordeaux-dark transition-all hover:-translate-y-0.5 hover:bg-gold-light hover:shadow-[0_10px_20px_rgba(201,162,39,0.35)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+        className="w-full rounded-md bg-bordeaux px-4 py-3 label-caps text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_20px_rgba(78,13,21,0.3)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
         {submitting
           ? "Redirection vers le paiement…"

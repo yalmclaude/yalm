@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/Brand";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
 import { formatPrice, depositLabel } from "@/lib/format";
@@ -26,7 +27,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
           <div>
             <ProductGallery images={product.images} alt={product.name} />
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-beige-deep">
+            <p className="label-caps text-bordeaux/60">
               {product.category.name}
             </p>
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>
@@ -50,9 +51,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           />
         </div>
       </main>
-      <footer className="bg-bordeaux-dark py-9 text-center text-sm text-white/70">
-        © {new Date().getFullYear()} YALM Événements
-      </footer>
+      <SiteFooter />
     </>
   );
 }
