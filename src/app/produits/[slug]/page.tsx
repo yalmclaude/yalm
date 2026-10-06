@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [product] = await prisma.product.findMany({
-    where: { slug },
+    where: { slug: decodeURIComponent(slug) },
     include: { category: true, images: { orderBy: { order: "asc" } } },
     take: 1,
   });

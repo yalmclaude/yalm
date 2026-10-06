@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function PackPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [pack] = await prisma.pack.findMany({
-    where: { slug },
+    where: { slug: decodeURIComponent(slug) },
     include: { items: { include: { product: true } } },
     take: 1,
   });

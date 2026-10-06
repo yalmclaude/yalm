@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { parseDurationOptions } from "@/lib/format";
+import { deleteProducts, deletePack, uniqueSlug } from "@/lib/catalog";
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   const data = await request.json();
   const product = await prisma.product.create({
     data: {
-      slug: data.slug,
+      slug: await uniqueSlug("product", data.slug, data.name),
       name: data.name,
       categoryId: data.categoryId,
       description: data.description,

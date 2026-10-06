@@ -104,6 +104,11 @@ export function AdminDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editing),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "L'enregistrement a échoué, réessayez.");
+      return;
+    }
 
     if (isNew) {
       const data = await res.json();
@@ -123,8 +128,12 @@ export function AdminDashboard() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Supprimer ce produit ?")) return;
-    await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+    if (!confirm("Supprimer ce produit ? Il sera aussi retiré des formules qui le contiennent.")) return;
+    const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "La suppression a échoué, réessayez.");
+    }
     loadData();
   }
 
@@ -188,6 +197,23 @@ export function AdminDashboard() {
       return;
     }
     alert(data.error ?? "Erreur lors de la suppression");
+  }
+
+  async function deleteCategoryWithProducts() {
+    if (!categoryToDelete) return;
+    if (!confirm(`Supprimer "${categoryToDelete.name}" et ses ${categoryToDelete.productCount} prestation(s) ? Cette action est définitive.`)) return;
+    const res = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deleteProducts: true }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "Erreur lors de la suppression");
+      return;
+    }
+    setCategoryToDelete(null);
+    loadData();
   }
 
   async function confirmReassignAndDelete() {
@@ -395,7 +421,7 @@ export function AdminDashboard() {
             {categoryToDelete.productCount > 1 ? "s" : ""}
           </h3>
           <p className="mt-1 text-sm text-gray-600">
-            Choisissez une catégorie de destination pour ces prestations avant de supprimer
+            Déplacez ces prestations vers une autre catégorie, ou supprimez-les avec
             &quot;{categoryToDelete.name}&quot;.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -418,6 +444,12 @@ export function AdminDashboard() {
               className="rounded bg-bordeaux px-4 py-2 text-sm font-medium text-white hover:bg-bordeaux-dark disabled:opacity-50"
             >
               Déplacer et supprimer la catégorie
+            </button>
+            <button
+              onClick={deleteCategoryWithProducts}
+              className="rounded border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+            >
+              Supprimer aussi ses prestations
             </button>
             <button
               onClick={() => setCategoryToDelete(null)}

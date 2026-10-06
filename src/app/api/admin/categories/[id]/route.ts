@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { deleteProducts } from "@/lib/catalog";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdminAuthenticated())) {
@@ -26,14 +27,25 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const { id } = await params;
 
   let reassignCategoryId: string | undefined;
+  let deleteItsProducts = false;
   try {
     const body = await request.json();
     reassignCategoryId = body?.reassignCategoryId;
+    deleteItsProducts = body?.deleteProducts === true;
   } catch {
     // no body provided, that's fine
   }
 
   const productCount = await prisma.product.count({ where: { categoryId: id } });
+
+  if (productCount > 0 && deleteItsProducts) {
+    const ids = (await prisma.product.findMany({ where: { categoryId: id }, select: { id: true } })).map((p) => p.id);
+    await prisma.$transaction(async (tx) => {
+      await deleteProducts(tx, ids);
+      await tx.category.delete({ where: { id } });
+    });
+    return NextResponse.json({ success: true });
+  }
 
   if (productCount > 0) {
     if (!reassignCategoryId) {

@@ -69,7 +69,7 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
     const isNew = !editing.id;
     const url = isNew ? "/api/admin/packs" : `/api/admin/packs/${editing.id}`;
     const method = isNew ? "POST" : "PUT";
-    await fetch(url, {
+    const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -77,13 +77,22 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
         items: editing.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
       }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "L'enregistrement a échoué, réessayez.");
+      return;
+    }
     setEditing(null);
     loadPacks();
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Supprimer cette formule ?")) return;
-    await fetch(`/api/admin/packs/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/packs/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "La suppression a échoué, réessayez.");
+    }
     loadPacks();
   }
 
