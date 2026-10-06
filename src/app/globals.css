@@ -2,16 +2,16 @@
 
 /* Palette from the brand banner: deep bordeaux + warm cream, no gold. */
 :root {
-  --background: #f4e8dc;
+  --background: #e8d6c0;
   --foreground: #4e0d15;
-  --cream: #f4e8dc;
-  --cream-light: #fbf6f0;
+  --cream: #e8d6c0;
+  --cream-light: #f1e4d3;
   --bordeaux: #4e0d15;
   --bordeaux-light: #6b1a24;
   --bordeaux-dark: #35080e;
   --anthracite: #2b2b2b;
-  --beige-dark: #e6d3c0;
-  --beige: #f4e8dc;
+  --beige-dark: #d8c0a5;
+  --beige: #e8d6c0;
   --beige-deep: #7a5a52;
 }
 

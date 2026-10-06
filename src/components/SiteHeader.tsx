@@ -16,7 +16,7 @@ export function SiteHeader() {
         <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-2">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="YALM Events" className="h-16 w-auto sm:h-24" />
+            <img src="/logo-tight.png" alt="YALM Events" className="h-10 w-auto sm:h-12" />
           </Link>
           <nav className="hidden md:flex items-center gap-7 label-caps text-bordeaux">
             {NAV_LINKS.map((l) => (

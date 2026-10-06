@@ -6,10 +6,10 @@ export function HeroSection() {
   return (
     <section className="bg-cream px-4 py-10 sm:px-8 sm:py-14">
       <div className="mx-auto max-w-6xl rounded-xl bg-bordeaux px-5 py-10 sm:px-10 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:items-center lg:gap-10 lg:py-14 lg:pl-0">
-        <div className="mx-auto max-w-sm rounded-lg bg-cream px-8 py-10 text-center shadow-[0_24px_50px_rgba(0,0,0,0.45)] lg:-ml-8 lg:max-w-none">
+        <div className="mx-auto max-w-sm rounded-lg bg-cream px-8 py-12 text-center shadow-[0_24px_50px_rgba(0,0,0,0.45)] lg:-ml-8 lg:max-w-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="YALM Events" className="mx-auto -my-8 w-full max-w-[19rem]" />
-          <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.55em] text-bordeaux sm:text-[0.7rem]">
+          <img src="/logo-tight.png" alt="YALM Events" className="mx-auto w-full max-w-[16rem]" />
+          <p className="mt-8 text-[0.62rem] font-semibold uppercase tracking-[0.3em] text-bordeaux sm:text-[0.7rem] sm:tracking-[0.55em]">
             Your amazing life moments
           </p>
         </div>
