@@ -29,6 +29,7 @@ type Product = {
   totalQuantity: number;
   isAvailable: boolean;
   allowFullPayment: boolean;
+  cautionCents: number;
   images: ProductImg[];
 };
 
@@ -41,6 +42,8 @@ type Booking = {
   quantity: number;
   status: string;
   depositAmountCents: number;
+  cautionCents: number;
+  cautionMethod: "ONLINE" | "CASH" | null;
   product: { name: string } | null;
   pack: { name: string } | null;
 };
@@ -257,6 +260,7 @@ export function AdminDashboard() {
                   totalQuantity: 1,
                   isAvailable: true,
                   allowFullPayment: false,
+                  cautionCents: 0,
                   images: [],
                 });
               }}
@@ -343,6 +347,9 @@ export function AdminDashboard() {
                         </p>
                         {p.allowFullPayment && (
                           <p className="mt-1 text-xs font-medium text-beige-deep">Paiement total activé</p>
+                        )}
+                        {p.cautionCents > 0 && (
+                          <p className="mt-1 text-xs text-gray-500">Caution {formatPrice(p.cautionCents)}</p>
                         )}
                         <div className="mt-2 flex gap-3 text-xs">
                           <button onClick={() => setEditing(p)} className="text-bordeaux hover:underline">
@@ -502,6 +509,16 @@ export function AdminDashboard() {
                 <option value="true">Oui — client peut payer le total</option>
               </select>
             </Field>
+            <Field label="Caution remboursable (€) — 0 = aucune">
+              <input
+                type="number"
+                min={0}
+                step="1"
+                value={editing.cautionCents / 100}
+                onChange={(e) => setEditing({ ...editing, cautionCents: Math.round(Number(e.target.value) * 100) })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </Field>
             <Field label="Description" full>
               <textarea
                 value={editing.description}
@@ -548,6 +565,7 @@ export function AdminDashboard() {
                 <th className="px-3 py-2">Date événement</th>
                 <th className="px-3 py-2">Qté</th>
                 <th className="px-3 py-2">Acompte</th>
+                <th className="px-3 py-2">Caution</th>
                 <th className="px-3 py-2">Statut</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
@@ -565,6 +583,18 @@ export function AdminDashboard() {
                   <td className="px-3 py-2">{new Date(b.eventDate).toLocaleDateString("fr-FR")}</td>
                   <td className="px-3 py-2">{b.quantity}</td>
                   <td className="px-3 py-2">{formatPrice(b.depositAmountCents)}</td>
+                  <td className="px-3 py-2">
+                    {b.cautionCents > 0 ? (
+                      <>
+                        {formatPrice(b.cautionCents)}
+                        <div className="text-xs text-gray-500">
+                          {b.cautionMethod === "ONLINE" ? "Payée en ligne" : "En espèces le jour J"}
+                        </div>
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     <StatusBadge status={b.status} />
                   </td>
@@ -602,7 +632,7 @@ export function AdminDashboard() {
               ))}
               {bookings.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
+                  <td colSpan={8} className="px-3 py-6 text-center text-gray-400">
                     Aucune réservation pour le moment
                   </td>
                 </tr>

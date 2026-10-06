@@ -11,6 +11,7 @@ type Props = {
   depositValue: number;
   totalQuantity?: number;
   allowFullPayment?: boolean;
+  cautionCents?: number;
   title?: string;
 };
 
@@ -22,6 +23,7 @@ export function BookingForm({
   depositValue,
   totalQuantity,
   allowFullPayment = false,
+  cautionCents = 0,
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -32,6 +34,7 @@ export function BookingForm({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+  const [cautionMethod, setCautionMethod] = useState<"ONLINE" | "CASH">("ONLINE");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +55,9 @@ export function BookingForm({
 
   const deposit = depositAmountCents(priceCents, depositType, depositValue) * quantity;
   const total = priceCents * quantity;
-  const amountToPay = paymentType === "FULL" ? total : deposit;
+  const caution = cautionCents * quantity;
+  const cautionOnline = caution > 0 && cautionMethod === "ONLINE";
+  const amountToPay = (paymentType === "FULL" ? total : deposit) + (cautionOnline ? caution : 0);
   const isSoldOut = remaining !== null && remaining <= 0;
   const exceedsStock = remaining !== null && quantity > remaining;
 
@@ -64,7 +69,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, cautionMethod }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -193,6 +198,39 @@ export function BookingForm({
         </div>
       )}
 
+      {caution > 0 && (
+        <div className="rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4 space-y-2">
+          <p className="text-sm font-medium text-bordeaux/80">
+            Caution (remboursable) — <span className="font-semibold text-bordeaux">{formatPrice(caution)}</span>
+          </p>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="cautionMethod"
+              value="ONLINE"
+              checked={cautionMethod === "ONLINE"}
+              onChange={() => setCautionMethod("ONLINE")}
+              className="accent-bordeaux"
+            />
+            <span className="text-sm text-bordeaux/80">Payer la caution en ligne maintenant, par carte</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="cautionMethod"
+              value="CASH"
+              checked={cautionMethod === "CASH"}
+              onChange={() => setCautionMethod("CASH")}
+              className="accent-bordeaux"
+            />
+            <span className="text-sm text-bordeaux/80">Payer la caution en espèces le jour de l&apos;événement</span>
+          </label>
+          <p className="text-xs text-bordeaux/55">
+            Elle vous est restituée après l&apos;événement si le matériel est rendu en bon état.
+          </p>
+        </div>
+      )}
+
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <button
@@ -202,8 +240,8 @@ export function BookingForm({
       >
         {submitting
           ? "Redirection vers le paiement…"
-          : paymentType === "FULL"
-          ? `Payer ${formatPrice(amountToPay)}`
+          : paymentType === "FULL" || cautionOnline
+          ? `Réserver et payer ${formatPrice(amountToPay)}`
           : "Réserver et payer l'acompte"}
       </button>
     </form>

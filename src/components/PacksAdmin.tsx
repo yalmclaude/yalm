@@ -22,6 +22,7 @@ type Pack = {
   depositValue: number;
   isAvailable: boolean;
   allowFullPayment: boolean;
+  cautionCents: number;
   imageUrl: string | null;
   items: PackItem[];
 };
@@ -37,6 +38,7 @@ const emptyPack: EditingPack = {
   depositValue: 30,
   isAvailable: true,
   allowFullPayment: false,
+  cautionCents: 0,
   imageUrl: null,
   items: [],
 };
@@ -226,6 +228,17 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
                 <option value="false">Non — acompte uniquement</option>
                 <option value="true">Oui — client peut payer le total</option>
               </select>
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-gray-700">Caution remboursable (€) — 0 = aucune</span>
+              <input
+                type="number"
+                min={0}
+                step="1"
+                value={editing.cautionCents / 100}
+                onChange={(e) => setEditing({ ...editing, cautionCents: Math.round(Number(e.target.value) * 100) })}
+                className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
             </label>
             <label className="block text-sm sm:col-span-2">
               <span className="font-medium text-gray-700">Description</span>

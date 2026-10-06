@@ -54,6 +54,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
                 Prix : <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
               </p>
               <p>Acompte requis : {depositLabel(pack.depositType, pack.depositValue)}</p>
+              {pack.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(pack.cautionCents)}</p>}
             </div>
           </div>
 
@@ -63,6 +64,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             depositType={pack.depositType}
             depositValue={pack.depositValue}
             allowFullPayment={pack.allowFullPayment}
+            cautionCents={pack.cautionCents}
             title="Réserver cette formule"
           />
         </div>

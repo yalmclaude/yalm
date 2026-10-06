@@ -6,7 +6,7 @@ import { depositAmountCents } from "@/lib/format";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { productId, packId, customerName, email, phone, eventDate, quantity, paymentType } = body as {
+  const { productId, packId, customerName, email, phone, eventDate, quantity, paymentType, cautionMethod } = body as {
     productId?: string;
     packId?: string;
     customerName?: string;
@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     eventDate?: string;
     quantity?: number;
     paymentType?: "DEPOSIT" | "FULL";
+    cautionMethod?: "ONLINE" | "CASH";
   };
 
   if ((!productId && !packId) || !customerName || !email || !phone || !eventDate) {
@@ -48,6 +49,13 @@ export async function POST(request: NextRequest) {
   const wantsFullPayment = paymentType === "FULL" && item.allowFullPayment;
   const amountToCharge = wantsFullPayment ? fullAmount : deposit;
 
+  // Refundable security deposit: paid by card with the booking, or in cash on the day.
+  const caution = item.cautionCents * qty;
+  const cautionChoice = caution > 0 ? (cautionMethod === "ONLINE" ? "ONLINE" : "CASH") : null;
+  if (caution > 0 && cautionMethod !== "ONLINE" && cautionMethod !== "CASH") {
+    return NextResponse.json({ error: "Choisissez comment régler la caution" }, { status: 400 });
+  }
+
   const booking = await prisma.booking.create({
     data: {
       productId: packId ? null : productId,
@@ -58,6 +66,8 @@ export async function POST(request: NextRequest) {
       eventDate: parsedDate,
       quantity: qty,
       depositAmountCents: amountToCharge,
+      cautionCents: caution,
+      cautionMethod: cautionChoice,
       status: "PENDING_DEPOSIT",
     },
   });
@@ -82,6 +92,21 @@ export async function POST(request: NextRequest) {
           },
           quantity: 1,
         },
+        ...(cautionChoice === "ONLINE"
+          ? [
+              {
+                price_data: {
+                  currency: "eur",
+                  unit_amount: caution,
+                  product_data: {
+                    name: `Caution (remboursable) — ${item.name}`,
+                    description: "Restituée après l'événement si le matériel est rendu en bon état",
+                  },
+                },
+                quantity: 1,
+              },
+            ]
+          : []),
       ],
       success_url: `${origin}/reservation/succes?booking=${booking.id}`,
       cancel_url: `${origin}/reservation/annulee?booking=${booking.id}`,

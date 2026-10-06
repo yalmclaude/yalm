@@ -37,6 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 Prix : <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
               </p>
               <p>Acompte requis : {depositLabel(product.depositType, product.depositValue)}</p>
+              {product.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(product.cautionCents)}</p>}
               {product.totalQuantity > 1 && <p>{product.totalQuantity} unités disponibles dans notre flotte</p>}
             </div>
           </div>
@@ -48,6 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             depositValue={product.depositValue}
             totalQuantity={product.totalQuantity}
             allowFullPayment={product.allowFullPayment}
+            cautionCents={product.cautionCents}
           />
         </div>
       </main>

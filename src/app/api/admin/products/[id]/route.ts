@@ -21,6 +21,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       totalQuantity: Number(data.totalQuantity),
       isAvailable: Boolean(data.isAvailable),
       allowFullPayment: Boolean(data.allowFullPayment),
+      cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
     },
     include: { category: true, images: { orderBy: { order: "asc" } } },
   });

@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       totalQuantity: Number(data.totalQuantity),
       isAvailable: Boolean(data.isAvailable),
       allowFullPayment: Boolean(data.allowFullPayment),
+      cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
     },
     include: { category: true, images: true },
   });

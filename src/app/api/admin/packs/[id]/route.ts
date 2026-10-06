@@ -25,6 +25,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       depositValue: Number(data.depositValue),
       isAvailable: Boolean(data.isAvailable),
       allowFullPayment: Boolean(data.allowFullPayment),
+      cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
       imageUrl: data.imageUrl ?? null,
       items: {
         create: items
