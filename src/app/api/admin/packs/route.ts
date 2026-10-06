@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { parseDurationOptions } from "@/lib/format";
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
       isAvailable: Boolean(data.isAvailable),
       allowFullPayment: Boolean(data.allowFullPayment),
       cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
+      durationOptions: parseDurationOptions(data.durationOptions),
       imageUrl: data.imageUrl ?? null,
       items: {
         create: items

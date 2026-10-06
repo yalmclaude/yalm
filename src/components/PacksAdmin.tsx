@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, parseDurationOptions, type DurationOption } from "@/lib/format";
+import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
 import { ImageUploadField } from "@/components/ImageUploadField";
 
 type ProductOption = { id: string; name: string };
@@ -23,6 +24,7 @@ type Pack = {
   isAvailable: boolean;
   allowFullPayment: boolean;
   cautionCents: number;
+  durationOptions: DurationOption[];
   imageUrl: string | null;
   items: PackItem[];
 };
@@ -39,6 +41,7 @@ const emptyPack: EditingPack = {
   isAvailable: true,
   allowFullPayment: false,
   cautionCents: 0,
+  durationOptions: [],
   imageUrl: null,
   items: [],
 };
@@ -140,6 +143,7 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
                 onClick={() =>
                   setEditing({
                     ...pack,
+                    durationOptions: parseDurationOptions(pack.durationOptions),
                     items: pack.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
                   })
                 }
@@ -240,6 +244,15 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
                 className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
+            <div className="block text-sm sm:col-span-2">
+              <span className="font-medium text-gray-700">Options d&apos;heures (prix selon la durée)</span>
+              <div className="mt-1">
+                <DurationOptionsEditor
+                  value={editing.durationOptions}
+                  onChange={(durationOptions) => setEditing({ ...editing, durationOptions })}
+                />
+              </div>
+            </div>
             <label className="block text-sm sm:col-span-2">
               <span className="font-medium text-gray-700">Description</span>
               <textarea

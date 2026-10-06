@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
 import { BookingForm } from "@/components/BookingForm";
-import { formatPrice, depositLabel } from "@/lib/format";
+import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
   if (!pack || !pack.isAvailable) {
     notFound();
   }
+  const durations = parseDurationOptions(pack.durationOptions);
 
   return (
     <>
@@ -50,9 +51,22 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             </div>
 
             <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
-              <p>
-                Prix : <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
-              </p>
+              {durations.length > 0 ? (
+                <div>
+                  <p>Tarifs selon la durée :</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {durations.map((d) => (
+                      <li key={d.hours}>
+                        {formatHours(d.hours)} — <span className="font-semibold text-bordeaux">{formatPrice(d.priceCents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p>
+                  Prix : <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
+                </p>
+              )}
               <p>Acompte requis : {depositLabel(pack.depositType, pack.depositValue)}</p>
               {pack.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(pack.cautionCents)}</p>}
             </div>
@@ -65,6 +79,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             depositValue={pack.depositValue}
             allowFullPayment={pack.allowFullPayment}
             cautionCents={pack.cautionCents}
+            durationOptions={durations}
             title="Réserver cette formule"
           />
         </div>

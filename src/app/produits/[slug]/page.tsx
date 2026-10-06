@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
-import { formatPrice, depositLabel } from "@/lib/format";
+import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +19,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product || !product.isAvailable) {
     notFound();
   }
+  const durations = parseDurationOptions(product.durationOptions);
 
   return (
     <>
@@ -33,9 +34,22 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>
             <p className="mt-4 text-bordeaux/70">{product.description}</p>
             <div className="mt-6 space-y-1.5 text-sm text-bordeaux/75">
-              <p>
-                Prix : <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
-              </p>
+              {durations.length > 0 ? (
+                <div>
+                  <p>Tarifs selon la durée :</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {durations.map((d) => (
+                      <li key={d.hours}>
+                        {formatHours(d.hours)} — <span className="font-semibold text-bordeaux">{formatPrice(d.priceCents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p>
+                  Prix : <span className="font-semibold text-bordeaux">{formatPrice(product.priceCents)}</span>
+                </p>
+              )}
               <p>Acompte requis : {depositLabel(product.depositType, product.depositValue)}</p>
               {product.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(product.cautionCents)}</p>}
               {product.totalQuantity > 1 && <p>{product.totalQuantity} unités disponibles dans notre flotte</p>}
@@ -50,6 +64,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             totalQuantity={product.totalQuantity}
             allowFullPayment={product.allowFullPayment}
             cautionCents={product.cautionCents}
+            durationOptions={durations}
           />
         </div>
       </main>

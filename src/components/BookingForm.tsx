@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatPrice, depositAmountCents } from "@/lib/format";
+import { formatPrice, formatHours, depositAmountCents, type DurationOption } from "@/lib/format";
 
 type Props = {
   productId?: string;
@@ -12,6 +12,7 @@ type Props = {
   totalQuantity?: number;
   allowFullPayment?: boolean;
   cautionCents?: number;
+  durationOptions?: DurationOption[];
   title?: string;
 };
 
@@ -24,6 +25,7 @@ export function BookingForm({
   totalQuantity,
   allowFullPayment = false,
   cautionCents = 0,
+  durationOptions = [],
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -34,7 +36,7 @@ export function BookingForm({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
-  const [cautionMethod, setCautionMethod] = useState<"ONLINE" | "CASH">("ONLINE");
+  const [durationHours, setDurationHours] = useState<number | null>(durationOptions[0]?.hours ?? null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,11 +55,13 @@ export function BookingForm({
       .finally(() => setCheckingAvailability(false));
   }, [eventDate, idParam]);
 
-  const deposit = depositAmountCents(priceCents, depositType, depositValue) * quantity;
-  const total = priceCents * quantity;
+  const chosenDuration = durationOptions.find((d) => d.hours === durationHours) ?? null;
+  const unitPrice = chosenDuration ? chosenDuration.priceCents : priceCents;
+  const deposit = depositAmountCents(unitPrice, depositType, depositValue) * quantity;
+  const total = unitPrice * quantity;
   const caution = cautionCents * quantity;
-  const cautionOnline = caution > 0 && cautionMethod === "ONLINE";
-  const amountToPay = (paymentType === "FULL" ? total : deposit) + (cautionOnline ? caution : 0);
+  const amountToPay = (paymentType === "FULL" ? total : deposit) + caution;
+  const needsDuration = durationOptions.length > 0 && !chosenDuration;
   const isSoldOut = remaining !== null && remaining <= 0;
   const exceedsStock = remaining !== null && quantity > remaining;
 
@@ -69,7 +73,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, cautionMethod }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -124,6 +128,35 @@ export function BookingForm({
             onChange={(e) => setQuantity(Number(e.target.value))}
             className={`${inputClass} w-24`}
           />
+        </div>
+      )}
+
+      {durationOptions.length > 0 && (
+        <div>
+          <p className={labelClass}>Durée</p>
+          <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {durationOptions.map((d) => {
+              const active = d.hours === durationHours;
+              return (
+                <button
+                  key={d.hours}
+                  type="button"
+                  onClick={() => setDurationHours(d.hours)}
+                  aria-pressed={active}
+                  className={`rounded-lg border px-3 py-2.5 text-center transition-colors ${
+                    active
+                      ? "border-bordeaux bg-bordeaux text-cream"
+                      : "border-bordeaux/20 bg-background text-bordeaux hover:border-bordeaux"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{formatHours(d.hours)}</span>
+                  <span className={`block text-xs ${active ? "text-cream/80" : "text-bordeaux/60"}`}>
+                    {formatPrice(d.priceCents)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -199,34 +232,11 @@ export function BookingForm({
       )}
 
       {caution > 0 && (
-        <div className="rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4 space-y-2">
-          <p className="text-sm font-medium text-bordeaux/80">
-            Caution (remboursable) — <span className="font-semibold text-bordeaux">{formatPrice(caution)}</span>
-          </p>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="cautionMethod"
-              value="ONLINE"
-              checked={cautionMethod === "ONLINE"}
-              onChange={() => setCautionMethod("ONLINE")}
-              className="accent-bordeaux"
-            />
-            <span className="text-sm text-bordeaux/80">Payer la caution en ligne maintenant, par carte</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="cautionMethod"
-              value="CASH"
-              checked={cautionMethod === "CASH"}
-              onChange={() => setCautionMethod("CASH")}
-              className="accent-bordeaux"
-            />
-            <span className="text-sm text-bordeaux/80">Payer la caution en espèces le jour de l&apos;événement</span>
-          </label>
-          <p className="text-xs text-bordeaux/55">
-            Elle vous est restituée après l&apos;événement si le matériel est rendu en bon état.
+        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
+          Caution remboursable, réglée avec la réservation :{" "}
+          <span className="font-semibold text-bordeaux">{formatPrice(caution)}</span>
+          <p className="mt-1 text-xs text-bordeaux/55">
+            Restituée après l&apos;événement si le matériel est rendu en bon état.
           </p>
         </div>
       )}
@@ -235,12 +245,12 @@ export function BookingForm({
 
       <button
         type="submit"
-        disabled={submitting || isSoldOut || exceedsStock || !eventDate}
+        disabled={submitting || isSoldOut || exceedsStock || !eventDate || needsDuration}
         className="w-full rounded-md bg-bordeaux px-4 py-3 label-caps text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_20px_rgba(78,13,21,0.3)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
         {submitting
           ? "Redirection vers le paiement…"
-          : paymentType === "FULL" || cautionOnline
+          : paymentType === "FULL" || caution > 0
           ? `Réserver et payer ${formatPrice(amountToPay)}`
           : "Réserver et payer l'acompte"}
       </button>

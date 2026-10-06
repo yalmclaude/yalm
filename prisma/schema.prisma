@@ -15,11 +15,6 @@ enum DepositType {
   PERCENT
 }
 
-enum CautionMethod {
-  ONLINE
-  CASH
-}
-
 enum BookingStatus {
   PENDING_DEPOSIT
   CONFIRMED
@@ -50,6 +45,7 @@ model Product {
   isAvailable      Boolean        @default(true)
   allowFullPayment Boolean        @default(false)
   cautionCents     Int            @default(0)
+  durationOptions  Json           @default("[]")
   createdAt        DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   bookings      Booking[]
@@ -80,6 +76,7 @@ model Pack {
   isAvailable      Boolean     @default(true)
   allowFullPayment Boolean     @default(false)
   cautionCents     Int         @default(0)
+  durationOptions  Json        @default("[]")
   createdAt        DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         PackItem[]
@@ -118,7 +115,7 @@ model Booking {
   status                BookingStatus @default(PENDING_DEPOSIT)
   depositAmountCents    Int
   cautionCents          Int           @default(0)
-  cautionMethod         CautionMethod?
+  durationHours         Float?
   stripeSessionId       String?
   stripePaymentIntentId String?
   createdAt             DateTime      @default(now())

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { parseDurationOptions } from "@/lib/format";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdminAuthenticated())) {
@@ -22,6 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       isAvailable: Boolean(data.isAvailable),
       allowFullPayment: Boolean(data.allowFullPayment),
       cautionCents: Math.max(0, Math.round(Number(data.cautionCents) || 0)),
+      durationOptions: parseDurationOptions(data.durationOptions),
     },
     include: { category: true, images: { orderBy: { order: "asc" } } },
   });

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
-import { depositAmountCents } from "@/lib/format";
+import { depositAmountCents, formatHours, parseDurationOptions } from "@/lib/format";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { productId, packId, customerName, email, phone, eventDate, quantity, paymentType, cautionMethod } = body as {
+  const { productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours } = body as {
     productId?: string;
     packId?: string;
     customerName?: string;
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     eventDate?: string;
     quantity?: number;
     paymentType?: "DEPOSIT" | "FULL";
-    cautionMethod?: "ONLINE" | "CASH";
+    durationHours?: number;
   };
 
   if ((!productId && !packId) || !customerName || !email || !phone || !eventDate) {
@@ -44,17 +44,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Stock insuffisant pour cette date" }, { status: 409 });
   }
 
-  const deposit = depositAmountCents(item.priceCents, item.depositType, item.depositValue) * qty;
-  const fullAmount = item.priceCents * qty;
+  // With hour options the chosen duration sets the price; otherwise the base price applies.
+  const durations = parseDurationOptions(item.durationOptions);
+  const chosenDuration = durations.find((d) => d.hours === Number(durationHours)) ?? null;
+  if (durations.length > 0 && !chosenDuration) {
+    return NextResponse.json({ error: "Choisissez une durée" }, { status: 400 });
+  }
+  const unitPrice = chosenDuration ? chosenDuration.priceCents : item.priceCents;
+
+  const deposit = depositAmountCents(unitPrice, item.depositType, item.depositValue) * qty;
+  const fullAmount = unitPrice * qty;
   const wantsFullPayment = paymentType === "FULL" && item.allowFullPayment;
   const amountToCharge = wantsFullPayment ? fullAmount : deposit;
 
-  // Refundable security deposit: paid by card with the booking, or in cash on the day.
+  // Refundable security deposit, paid by card together with the booking.
   const caution = item.cautionCents * qty;
-  const cautionChoice = caution > 0 ? (cautionMethod === "ONLINE" ? "ONLINE" : "CASH") : null;
-  if (caution > 0 && cautionMethod !== "ONLINE" && cautionMethod !== "CASH") {
-    return NextResponse.json({ error: "Choisissez comment régler la caution" }, { status: 400 });
-  }
 
   const booking = await prisma.booking.create({
     data: {
@@ -67,13 +71,14 @@ export async function POST(request: NextRequest) {
       quantity: qty,
       depositAmountCents: amountToCharge,
       cautionCents: caution,
-      cautionMethod: cautionChoice,
+      durationHours: chosenDuration?.hours ?? null,
       status: "PENDING_DEPOSIT",
     },
   });
 
   const origin = request.nextUrl.origin;
-  const label = wantsFullPayment ? `Paiement intégral — ${item.name}` : `Acompte — ${item.name}`;
+  const itemLabel = chosenDuration ? `${item.name} (${formatHours(chosenDuration.hours)})` : item.name;
+  const label = wantsFullPayment ? `Paiement intégral — ${itemLabel}` : `Acompte — ${itemLabel}`;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -92,7 +97,7 @@ export async function POST(request: NextRequest) {
           },
           quantity: 1,
         },
-        ...(cautionChoice === "ONLINE"
+        ...(caution > 0
           ? [
               {
                 price_data: {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPrice, depositLabel } from "@/lib/format";
+import { formatPrice, depositLabel, parseDurationOptions, startingPriceCents } from "@/lib/format";
 import { Reveal } from "@/components/Reveal";
 
 type PackCardProduct = { product: { name: string }; quantity: number };
@@ -12,6 +12,7 @@ type PackCardData = {
   depositType: "FIXED" | "PERCENT";
   depositValue: number;
   imageUrl: string | null;
+  durationOptions: unknown;
   items: PackCardProduct[];
 };
 
@@ -43,7 +44,10 @@ export function PackCard({ pack }: { pack: PackCardData }) {
           ))}
         </ul>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
-          <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
+          <span className="font-semibold text-bordeaux">
+            {parseDurationOptions(pack.durationOptions).length > 0 && "Dès "}
+            {formatPrice(startingPriceCents(pack.priceCents, parseDurationOptions(pack.durationOptions)))}
+          </span>
           <span className="text-right text-xs text-bordeaux/55">
             Acompte : {depositLabel(pack.depositType, pack.depositValue)}
           </span>

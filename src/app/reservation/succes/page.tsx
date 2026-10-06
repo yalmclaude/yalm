@@ -30,17 +30,8 @@ export default async function BookingSuccessPage({
         )}
         {booking && booking.cautionCents > 0 && (
           <p className="mt-4 rounded-lg border border-bordeaux/15 bg-cream-light p-4 text-sm text-bordeaux/80">
-            {booking.cautionMethod === "ONLINE" ? (
-              <>
-                Votre caution de <strong>{formatPrice(booking.cautionCents)}</strong> a été réglée en ligne. Elle vous
-                sera restituée après l&apos;événement si le matériel est rendu en bon état.
-              </>
-            ) : (
-              <>
-                Pensez à prévoir votre caution de <strong>{formatPrice(booking.cautionCents)}</strong> en espèces le
-                jour de l&apos;événement. Elle vous sera restituée si le matériel est rendu en bon état.
-              </>
-            )}
+            Votre caution de <strong>{formatPrice(booking.cautionCents)}</strong> a bien été réglée. Elle vous sera
+            restituée après l&apos;événement si le matériel est rendu en bon état.
           </p>
         )}
         <Link

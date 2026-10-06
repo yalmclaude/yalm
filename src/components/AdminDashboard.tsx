@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatHours, parseDurationOptions, type DurationOption } from "@/lib/format";
+import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
 import { PacksAdmin } from "@/components/PacksAdmin";
 import { HowItWorksAdmin } from "@/components/HowItWorksAdmin";
 import { ProductImageGalleryAdmin } from "@/components/ProductImageGalleryAdmin";
@@ -30,6 +31,7 @@ type Product = {
   isAvailable: boolean;
   allowFullPayment: boolean;
   cautionCents: number;
+  durationOptions: DurationOption[];
   images: ProductImg[];
 };
 
@@ -43,7 +45,7 @@ type Booking = {
   status: string;
   depositAmountCents: number;
   cautionCents: number;
-  cautionMethod: "ONLINE" | "CASH" | null;
+  durationHours: number | null;
   product: { name: string } | null;
   pack: { name: string } | null;
 };
@@ -261,6 +263,7 @@ export function AdminDashboard() {
                   isAvailable: true,
                   allowFullPayment: false,
                   cautionCents: 0,
+                  durationOptions: [],
                   images: [],
                 });
               }}
@@ -348,11 +351,19 @@ export function AdminDashboard() {
                         {p.allowFullPayment && (
                           <p className="mt-1 text-xs font-medium text-beige-deep">Paiement total activé</p>
                         )}
+                        {p.durationOptions?.length > 0 && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {p.durationOptions.map((d) => `${formatHours(d.hours)} ${formatPrice(d.priceCents)}`).join(" · ")}
+                          </p>
+                        )}
                         {p.cautionCents > 0 && (
                           <p className="mt-1 text-xs text-gray-500">Caution {formatPrice(p.cautionCents)}</p>
                         )}
                         <div className="mt-2 flex gap-3 text-xs">
-                          <button onClick={() => setEditing(p)} className="text-bordeaux hover:underline">
+                          <button
+                            onClick={() => setEditing({ ...p, durationOptions: parseDurationOptions(p.durationOptions) })}
+                            className="text-bordeaux hover:underline"
+                          >
                             Modifier
                           </button>
                           <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">
@@ -519,6 +530,15 @@ export function AdminDashboard() {
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
             </Field>
+            <div className="block text-sm sm:col-span-2">
+              <span className="font-medium text-gray-700">Options d&apos;heures (prix selon la durée)</span>
+              <div className="mt-1">
+                <DurationOptionsEditor
+                  value={editing.durationOptions}
+                  onChange={(durationOptions) => setEditing({ ...editing, durationOptions })}
+                />
+              </div>
+            </div>
             <Field label="Description" full>
               <textarea
                 value={editing.description}
@@ -579,7 +599,10 @@ export function AdminDashboard() {
                       {b.email} · {b.phone}
                     </div>
                   </td>
-                  <td className="px-3 py-2">{b.product?.name ?? b.pack?.name ?? "—"}</td>
+                  <td className="px-3 py-2">
+                    {b.product?.name ?? b.pack?.name ?? "—"}
+                    {b.durationHours ? <div className="text-xs text-gray-500">{formatHours(b.durationHours)}</div> : null}
+                  </td>
                   <td className="px-3 py-2">{new Date(b.eventDate).toLocaleDateString("fr-FR")}</td>
                   <td className="px-3 py-2">{b.quantity}</td>
                   <td className="px-3 py-2">{formatPrice(b.depositAmountCents)}</td>
@@ -588,7 +611,7 @@ export function AdminDashboard() {
                       <>
                         {formatPrice(b.cautionCents)}
                         <div className="text-xs text-gray-500">
-                          {b.cautionMethod === "ONLINE" ? "Payée en ligne" : "En espèces le jour J"}
+                          Payée en ligne
                         </div>
                       </>
                     ) : (
