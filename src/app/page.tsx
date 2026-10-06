@@ -7,6 +7,9 @@ import { HeroSection } from "@/components/HeroSection";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
 
+// Rendered on every request so admin changes (prices, "sur devis", new offers) show up immediately.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const categories = await prisma.category.findMany({
     orderBy: { order: "asc" },
