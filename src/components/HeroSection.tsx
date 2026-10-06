@@ -5,17 +5,17 @@ import { Ornament, ServiceIcons } from "@/components/Brand";
 export function HeroSection() {
   return (
     <section className="bg-cream px-4 py-10 sm:px-8 sm:py-14">
-      <div className="mx-auto max-w-6xl rounded-xl bg-bordeaux px-5 py-10 sm:px-10 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:items-center lg:gap-10 lg:py-14 lg:pl-0">
-        <div className="mx-auto max-w-sm rounded-lg bg-cream px-8 py-12 text-center shadow-[0_24px_50px_rgba(0,0,0,0.45)] lg:-ml-8 lg:max-w-none">
+      <div className="mx-auto max-w-6xl rounded-xl bg-bordeaux px-5 py-10 sm:px-10 xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] xl:items-center xl:gap-10 xl:py-14">
+        <div className="mx-auto max-w-sm rounded-lg bg-cream px-6 py-12 text-center shadow-[0_24px_50px_rgba(0,0,0,0.45)] xl:max-w-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-tight.png" alt="YALM Events" className="mx-auto w-full max-w-[16rem]" />
-          <p className="mt-8 text-[0.62rem] font-semibold uppercase tracking-[0.3em] text-bordeaux sm:text-[0.7rem] sm:tracking-[0.55em]">
+          <p className="mt-8 text-[0.62rem] font-semibold uppercase tracking-[0.3em] text-bordeaux sm:text-[0.7rem] sm:tracking-[0.45em] lg:text-[0.62rem] lg:tracking-[0.32em]">
             Your amazing life moments
           </p>
         </div>
 
-        <div className="mt-10 lg:mt-0">
-          <h1 className="font-script text-center text-5xl leading-tight text-cream sm:text-6xl lg:text-[3.2rem] xl:whitespace-nowrap xl:text-[3.6rem]">
+        <div className="mt-10 xl:mt-0">
+          <h1 className="font-script text-center text-5xl leading-tight text-cream sm:text-6xl lg:text-[2.9rem] xl:whitespace-nowrap xl:text-[3.15rem]">
             Créons ensemble vos moments inoubliables
           </h1>
           <Ornament tone="light" className="mt-3" />
