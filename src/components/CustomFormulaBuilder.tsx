@@ -319,9 +319,19 @@ export function CustomFormulaBuilder({
                 </span>
               </label>
               {caution > 0 && (
-                <p className="text-xs text-bordeaux/60">
-                  + caution remboursable de {formatPrice(caution)}, réglée avec la réservation.
-                </p>
+                <div className="text-xs text-bordeaux/60">
+                  <p>+ caution remboursable de {formatPrice(caution)}, réglée avec la réservation :</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {lines
+                      .filter((l) => l.cautionCents > 0)
+                      .map((l) => (
+                        <li key={l.product.id} className="flex justify-between gap-3">
+                          <span>{l.product.name}</span>
+                          <span>{formatPrice(l.cautionCents)}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
               )}
             </div>
           </>

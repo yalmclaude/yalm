@@ -1,12 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { parseCustomLines } from "@/lib/pricing";
 
-const PENDING_EXPIRY_MINUTES = 30;
-
-function pendingCutoff() {
-  return new Date(Date.now() - PENDING_EXPIRY_MINUTES * 60 * 1000);
-}
-
 function dayRange(eventDate: Date) {
   const dayStart = new Date(eventDate);
   dayStart.setHours(0, 0, 0, 0);
@@ -15,12 +9,8 @@ function dayRange(eventDate: Date) {
   return { dayStart, dayEnd };
 }
 
-const ACTIVE_STATUS_FILTER = {
-  OR: [
-    { status: "CONFIRMED" as const },
-    { status: "PENDING_DEPOSIT" as const, createdAt: { gte: pendingCutoff() } },
-  ],
-};
+// Only paid bookings take a product out of stock for their date; unpaid checkouts don't block anyone.
+const ACTIVE_STATUS_FILTER = { status: "CONFIRMED" as const };
 
 export async function getRemainingStock(productId: string, eventDate: Date) {
   const product = await prisma.product.findMany({ where: { id: productId }, take: 1 }).then((r) => r[0] ?? null);

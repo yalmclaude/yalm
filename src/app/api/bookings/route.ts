@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
-import { formatHours } from "@/lib/format";
+import { depositLabel, formatHours, formatPrice } from "@/lib/format";
 import { getCustomFormulaSettings } from "@/lib/settings";
-import {
-  depositFor,
-  discounted,
-  resolvePrice,
-  type CustomLine,
-  type Mode,
-} from "@/lib/pricing";
+import { depositFor, discounted, resolvePrice, type CustomLine, type Mode } from "@/lib/pricing";
 
 type CustomItemInput = { productId?: string; mode?: Mode; durationHours?: number | null };
 
@@ -28,13 +22,20 @@ type Body = {
   mode?: Mode;
 };
 
+// One thing the client pays for, shown as its own line (name + detail) in the Stripe checkout.
+type PaymentLine = {
+  name: string;
+  detail: string;
+  quantity: number;
+  unitFullCents: number;
+  unitDepositCents: number;
+  unitCautionCents: number;
+};
+
 // What a booking costs, worked out by one of the three paths below.
 type Quote = {
-  label: string;
-  fullCents: number;
-  depositCents: number;
+  lines: PaymentLine[];
   allowFullPayment: boolean;
-  cautionCents: number;
   data: {
     productId: string | null;
     packId: string | null;
@@ -49,6 +50,21 @@ class BookingError extends Error {
   constructor(message: string, public status = 400) {
     super(message);
   }
+}
+
+const sum = (lines: PaymentLine[], pick: (l: PaymentLine) => number) =>
+  lines.reduce((total, l) => total + pick(l) * l.quantity, 0);
+
+// "Location · 3 h · prix 300,00 € · acompte 35 % du prix"
+function describe(mode: Mode, durationHours: number | null, priceCents: number, deposit: string) {
+  return [
+    mode === "BUY" ? "Achat (à garder)" : "Location",
+    durationHours ? formatHours(durationHours) : null,
+    `prix ${formatPrice(priceCents)}`,
+    `acompte ${deposit}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 export async function POST(request: NextRequest) {
@@ -77,7 +93,9 @@ export async function POST(request: NextRequest) {
   }
 
   const wantsFullPayment = paymentType === "FULL" && quote.allowFullPayment;
-  const amountToCharge = wantsFullPayment ? quote.fullCents : quote.depositCents;
+  const unitCharge = (l: PaymentLine) => (wantsFullPayment ? l.unitFullCents : l.unitDepositCents);
+  const amountToCharge = sum(quote.lines, unitCharge);
+  const cautionCents = sum(quote.lines, (l) => l.unitCautionCents);
 
   const booking = await prisma.booking.create({
     data: {
@@ -88,47 +106,48 @@ export async function POST(request: NextRequest) {
       phone,
       eventDate: parsedDate,
       depositAmountCents: amountToCharge,
-      cautionCents: quote.cautionCents,
+      cautionCents,
       status: "PENDING_DEPOSIT",
     },
   });
 
   const origin = request.nextUrl.origin;
-  const label = wantsFullPayment ? `Paiement intégral — ${quote.label}` : `Acompte — ${quote.label}`;
+  const dateLabel = parsedDate.toLocaleDateString("fr-FR");
+  const lineItem = (name: string, description: string, unitAmount: number, quantity: number) => ({
+    price_data: { currency: "eur", unit_amount: unitAmount, product_data: { name, description } },
+    quantity,
+  });
+
+  // Stripe refuses zero-amount lines, so free items (and items without caution) are skipped.
+  const lineItems = [
+    ...quote.lines
+      .filter((l) => unitCharge(l) > 0)
+      .map((l) =>
+        lineItem(
+          wantsFullPayment ? l.name : `Acompte — ${l.name}`,
+          `${l.detail} · événement du ${dateLabel}`,
+          unitCharge(l),
+          l.quantity
+        )
+      ),
+    ...quote.lines
+      .filter((l) => l.unitCautionCents > 0)
+      .map((l) =>
+        lineItem(
+          `Caution remboursable — ${l.name}`,
+          "Restituée après l'événement si le matériel est rendu en bon état",
+          l.unitCautionCents,
+          l.quantity
+        )
+      ),
+  ];
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: "eur",
-            unit_amount: amountToCharge,
-            product_data: {
-              name: label,
-              description: `Réservation du ${parsedDate.toLocaleDateString("fr-FR")}`,
-            },
-          },
-          quantity: 1,
-        },
-        ...(quote.cautionCents > 0
-          ? [
-              {
-                price_data: {
-                  currency: "eur",
-                  unit_amount: quote.cautionCents,
-                  product_data: {
-                    name: `Caution (remboursable) — ${quote.label}`,
-                    description: "Restituée après l'événement si le matériel est rendu en bon état",
-                  },
-                },
-                quantity: 1,
-              },
-            ]
-          : []),
-      ],
+      line_items: lineItems,
       success_url: `${origin}/reservation/succes?booking=${booking.id}`,
       cancel_url: `${origin}/reservation/annulee?booking=${booking.id}`,
       metadata: { bookingId: booking.id },
@@ -160,15 +179,18 @@ async function quoteProduct(productId: string, body: Body, date: Date): Promise<
     throw new BookingError("Stock insuffisant pour cette date", 409);
   }
 
-  const details = [price.mode === "BUY" ? "achat" : null, price.durationHours ? formatHours(price.durationHours) : null]
-    .filter(Boolean)
-    .join(", ");
   return {
-    label: details ? `${product.name} (${details})` : product.name,
-    fullCents: price.priceCents * qty,
-    depositCents: depositFor(product, price.priceCents) * qty,
+    lines: [
+      {
+        name: product.name,
+        detail: describe(price.mode, price.durationHours, price.priceCents, depositLabel(product.depositType, product.depositValue)),
+        quantity: qty,
+        unitFullCents: price.priceCents,
+        unitDepositCents: depositFor(product, price.priceCents),
+        unitCautionCents: price.mode === "RENT" ? product.cautionCents : 0,
+      },
+    ],
     allowFullPayment: product.allowFullPayment,
-    cautionCents: price.mode === "RENT" ? product.cautionCents * qty : 0,
     data: {
       productId,
       packId: null,
@@ -180,7 +202,7 @@ async function quoteProduct(productId: string, body: Body, date: Date): Promise<
 }
 
 async function quotePack(packId: string, body: Body, date: Date): Promise<Quote> {
-  const pack = await prisma.pack.findMany({ where: { id: packId }, take: 1 }).then((r) => r[0] ?? null);
+  const pack = await prisma.pack.findMany({ where: { id: packId }, include: { items: { include: { product: true } } }, take: 1 }).then((r) => r[0] ?? null);
   if (!pack || !pack.isAvailable) throw new BookingError("Cette offre est indisponible");
   if (pack.quoteOnly) throw new BookingError("Cette offre est sur devis : contactez-nous par téléphone");
 
@@ -189,17 +211,33 @@ async function quotePack(packId: string, body: Body, date: Date): Promise<Quote>
   if (!price.ok) throw new BookingError(price.error);
   if ((await getRemainingStockForPack(packId, date)) < qty) throw new BookingError("Stock insuffisant pour cette date", 409);
 
+  const contents = pack.items
+    .map((i) => `${i.quantity > 1 ? `${i.quantity}× ` : ""}${i.product.name}`)
+    .filter((n) => n.trim())
+    .join(", ");
   return {
-    label: price.durationHours ? `${pack.name} (${formatHours(price.durationHours)})` : pack.name,
-    fullCents: price.priceCents * qty,
-    depositCents: depositFor(pack, price.priceCents) * qty,
+    lines: [
+      {
+        name: pack.name,
+        detail: [
+          describe("RENT", price.durationHours, price.priceCents, depositLabel(pack.depositType, pack.depositValue)),
+          contents ? `comprend : ${contents}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        quantity: qty,
+        unitFullCents: price.priceCents,
+        unitDepositCents: depositFor(pack, price.priceCents),
+        unitCautionCents: pack.cautionCents,
+      },
+    ],
     allowFullPayment: pack.allowFullPayment,
-    cautionCents: pack.cautionCents * qty,
     data: { productId: null, packId, quantity: qty, durationHours: price.durationHours, purchase: false },
   };
 }
 
 // "Formule personnalisée": at least minItems distinct products, each discounted by discountPercent (admin settings).
+// The discount is never named to the client: lines simply carry the discounted prices.
 async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise<Quote> {
   const { enabled, minItems, discountPercent } = await getCustomFormulaSettings();
   if (!enabled) throw new BookingError("La formule personnalisée n'est pas disponible pour le moment");
@@ -209,9 +247,8 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
   }
 
   const products = await prisma.product.findMany({ where: { id: { in: ids } } });
-  const lines: CustomLine[] = [];
-  let depositCents = 0;
-  let cautionCents = 0;
+  const stored: CustomLine[] = [];
+  const lines: PaymentLine[] = [];
 
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId);
@@ -225,7 +262,7 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
     }
 
     const discountedCents = discounted(price.priceCents, discountPercent);
-    lines.push({
+    stored.push({
       productId: product.id,
       name: product.name,
       mode: price.mode,
@@ -233,16 +270,19 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
       priceCents: price.priceCents,
       discountedCents,
     });
-    depositCents += depositFor(product, discountedCents);
-    if (price.mode === "RENT") cautionCents += product.cautionCents;
+    lines.push({
+      name: `${product.name} (formule personnalisée)`,
+      detail: describe(price.mode, price.durationHours, discountedCents, depositLabel(product.depositType, product.depositValue)),
+      quantity: 1,
+      unitFullCents: discountedCents,
+      unitDepositCents: depositFor(product, discountedCents),
+      unitCautionCents: price.mode === "RENT" ? product.cautionCents : 0,
+    });
   }
 
   return {
-    label: `Formule personnalisée — ${lines.length} prestations`,
-    fullCents: lines.reduce((sum, l) => sum + l.discountedCents, 0),
-    depositCents,
+    lines,
     allowFullPayment: true,
-    cautionCents,
-    data: { productId: null, packId: null, quantity: 1, durationHours: null, purchase: false, items: lines },
+    data: { productId: null, packId: null, quantity: 1, durationHours: null, purchase: false, items: stored },
   };
 }
