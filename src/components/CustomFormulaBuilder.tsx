@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
 import {
-  CUSTOM_DISCOUNT_PERCENT,
   CUSTOM_MIN_ITEMS,
   canBuy,
   canRent,
@@ -99,7 +98,6 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
 
   const count = lines.length;
   const missing = Math.max(0, CUSTOM_MIN_ITEMS - count);
-  const subtotal = lines.reduce((s, l) => s + l.priceCents, 0);
   const total = lines.reduce((s, l) => s + l.discountedCents, 0);
   const deposit = lines.reduce((s, l) => s + l.depositCents, 0);
   const caution = lines.reduce((s, l) => s + l.cautionCents, 0);
@@ -222,7 +220,6 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
                           if (!price.ok) return null;
                           return (
                             <>
-                              <span className="mr-2 text-xs text-bordeaux/45 line-through">{formatPrice(price.priceCents)}</span>
                               <span className="font-semibold text-bordeaux">{formatPrice(discounted(price.priceCents))}</span>
                             </>
                           );
@@ -244,7 +241,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
 
         {count === 0 ? (
           <p className="text-sm text-bordeaux/60">
-            Cochez au moins {CUSTOM_MIN_ITEMS} prestations pour profiter de -{CUSTOM_DISCOUNT_PERCENT} % sur chacune.
+            Cochez au moins {CUSTOM_MIN_ITEMS} prestations pour composer votre formule.
           </p>
         ) : (
           <ul className="space-y-1.5 text-sm text-bordeaux/80">
@@ -269,14 +266,6 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
           </p>
         ) : (
           <div className="space-y-1 border-t border-dashed border-bordeaux/15 pt-3 text-sm text-bordeaux/80">
-            <p className="flex justify-between">
-              <span>Sous-total</span>
-              <span>{formatPrice(subtotal)}</span>
-            </p>
-            <p className="flex justify-between text-green-800">
-              <span>Remise -{CUSTOM_DISCOUNT_PERCENT} % par prestation</span>
-              <span>-{formatPrice(subtotal - total)}</span>
-            </p>
             <p className="flex justify-between text-base font-semibold text-bordeaux">
               <span>Total</span>
               <span>{formatPrice(total)}</span>

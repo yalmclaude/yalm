@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { CustomFormulaCard, PackCard } from "@/components/PackCard";
-import { CUSTOM_DISCOUNT_PERCENT, CUSTOM_MIN_ITEMS } from "@/lib/pricing";
+import { CUSTOM_MIN_ITEMS } from "@/lib/pricing";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { Reveal } from "@/components/Reveal";
@@ -46,7 +46,7 @@ export default async function HomePage() {
             {packs.map((pack) => (
               <PackCard key={pack.id} pack={pack} />
             ))}
-            <CustomFormulaCard minItems={CUSTOM_MIN_ITEMS} discountPercent={CUSTOM_DISCOUNT_PERCENT} />
+            <CustomFormulaCard minItems={CUSTOM_MIN_ITEMS} />
           </div>
         </section>
 

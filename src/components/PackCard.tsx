@@ -68,7 +68,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
 }
 
 // Entry point to the "formule personnalisée" builder, shown alongside the ready-made formules.
-export function CustomFormulaCard({ minItems, discountPercent }: { minItems: number; discountPercent: number }) {
+export function CustomFormulaCard({ minItems }: { minItems: number }) {
   return (
     <Reveal>
       <Link
@@ -78,10 +78,10 @@ export function CustomFormulaCard({ minItems, discountPercent }: { minItems: num
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-cream text-bordeaux">✦</div>
         <h4 className="font-serif text-lg">Formule personnalisée</h4>
         <p className="mt-2 flex-1 text-sm text-cream/75">
-          Composez votre propre formule à partir de {minItems} prestations et profitez de -{discountPercent} % sur chacune.
+          Composez votre propre formule à partir de {minItems} prestations, à un tarif avantageux.
         </p>
         <div className="mt-4 flex items-center justify-between border-t border-dashed border-cream/25 pt-3.5">
-          <span className="font-semibold">-{discountPercent} % par prestation</span>
+          <span className="font-semibold">Sur mesure</span>
           <span className="label-caps text-cream/80 transition-transform group-hover:translate-x-1">Composer →</span>
         </div>
       </Link>

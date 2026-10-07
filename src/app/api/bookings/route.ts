@@ -4,7 +4,6 @@ import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
 import { formatHours } from "@/lib/format";
 import {
-  CUSTOM_DISCOUNT_PERCENT,
   CUSTOM_MIN_ITEMS,
   depositFor,
   discounted,
@@ -237,7 +236,7 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
   }
 
   return {
-    label: `Formule personnalisée — ${lines.length} prestations (-${CUSTOM_DISCOUNT_PERCENT} %)`,
+    label: `Formule personnalisée — ${lines.length} prestations`,
     fullCents: lines.reduce((sum, l) => sum + l.discountedCents, 0),
     depositCents,
     allowFullPayment: true,

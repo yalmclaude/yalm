@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
 import { CustomFormulaBuilder, type BuilderProduct } from "@/components/CustomFormulaBuilder";
 import { parseDurationOptions } from "@/lib/format";
-import { CUSTOM_DISCOUNT_PERCENT, CUSTOM_MIN_ITEMS } from "@/lib/pricing";
+import { CUSTOM_MIN_ITEMS } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +36,8 @@ export default async function CustomFormulaPage() {
         <div className="mx-auto max-w-6xl px-6 py-14">
           <SectionTitle eyebrow="Sur mesure" title="Votre formule personnalisée" />
           <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-relaxed text-bordeaux/70">
-            Composez votre formule avec au moins {CUSTOM_MIN_ITEMS} prestations : chacune bénéficie de{" "}
-            <strong className="text-bordeaux">-{CUSTOM_DISCOUNT_PERCENT} %</strong> sur son prix. Choisissez vos options, puis
-            réservez votre date.
+            Composez votre formule avec au moins {CUSTOM_MIN_ITEMS} prestations, à un tarif avantageux. Choisissez vos
+            options, puis réservez votre date.
           </p>
           <div className="mt-12">
             <CustomFormulaBuilder products={items} />
