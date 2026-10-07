@@ -118,6 +118,7 @@ model Booking {
   quantity              Int           @default(1)
   status                BookingStatus @default(PENDING_DEPOSIT)
   depositAmountCents    Int
+  totalCents            Int           @default(0)
   cautionCents          Int           @default(0)
   durationHours         Float?
   purchase              Boolean       @default(false)

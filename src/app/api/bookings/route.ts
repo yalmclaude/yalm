@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
       phone,
       eventDate: parsedDate,
       depositAmountCents: amountToCharge,
+      totalCents: sum(quote.lines, (l) => l.unitFullCents),
       cautionCents,
       cautionLater: deferCaution,
       status: "PENDING_DEPOSIT",
