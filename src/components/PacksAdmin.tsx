@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { formatPrice, parseDurationOptions, type DurationOption } from "@/lib/format";
 import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
+import { CustomFormulaAdmin } from "@/components/CustomFormulaAdmin";
 import { ImageUploadField } from "@/components/ImageUploadField";
 
 type ProductOption = { id: string; name: string };
@@ -128,6 +129,8 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
           + Ajouter une formule
         </button>
       </div>
+
+      <CustomFormulaAdmin />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {packs.map((pack) => (

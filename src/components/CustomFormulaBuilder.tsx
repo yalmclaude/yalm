@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
 import {
-  CUSTOM_MIN_ITEMS,
   canBuy,
   canRent,
   defaultMode,
@@ -30,7 +29,15 @@ export type BuilderProduct = {
 
 type Choice = { mode: Mode; durationHours: number | null };
 
-export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] }) {
+export function CustomFormulaBuilder({
+  products,
+  minItems,
+  discountPercent,
+}: {
+  products: BuilderProduct[];
+  minItems: number;
+  discountPercent: number;
+}) {
   const [selected, setSelected] = useState<Record<string, Choice>>({});
   const [eventDate, setEventDate] = useState("");
   const [unavailable, setUnavailable] = useState<string[]>([]);
@@ -63,7 +70,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
         .map((p) => {
           const price = resolvePrice(p, selected[p.id]);
           const priceCents = price.ok ? price.priceCents : 0;
-          const discountedCents = discounted(priceCents);
+          const discountedCents = discounted(priceCents, discountPercent);
           return {
             product: p,
             choice: selected[p.id],
@@ -73,7 +80,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
             cautionCents: selected[p.id].mode === "RENT" ? p.cautionCents : 0,
           };
         }),
-    [products, selected]
+    [products, selected, discountPercent]
   );
 
   // Rented products must still have a unit free on the chosen date.
@@ -97,7 +104,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
   }, [eventDate, rentedIds]);
 
   const count = lines.length;
-  const missing = Math.max(0, CUSTOM_MIN_ITEMS - count);
+  const missing = Math.max(0, minItems - count);
   const total = lines.reduce((s, l) => s + l.discountedCents, 0);
   const deposit = lines.reduce((s, l) => s + l.depositCents, 0);
   const caution = lines.reduce((s, l) => s + l.cautionCents, 0);
@@ -220,7 +227,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
                           if (!price.ok) return null;
                           return (
                             <>
-                              <span className="font-semibold text-bordeaux">{formatPrice(discounted(price.priceCents))}</span>
+                              <span className="font-semibold text-bordeaux">{formatPrice(discounted(price.priceCents, discountPercent))}</span>
                             </>
                           );
                         })()}
@@ -241,7 +248,7 @@ export function CustomFormulaBuilder({ products }: { products: BuilderProduct[] 
 
         {count === 0 ? (
           <p className="text-sm text-bordeaux/60">
-            Cochez au moins {CUSTOM_MIN_ITEMS} prestations pour composer votre formule.
+            Cochez au moins {minItems} prestations pour composer votre formule.
           </p>
         ) : (
           <ul className="space-y-1.5 text-sm text-bordeaux/80">

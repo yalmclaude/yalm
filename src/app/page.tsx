@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { CustomFormulaCard, PackCard } from "@/components/PackCard";
-import { CUSTOM_MIN_ITEMS } from "@/lib/pricing";
+import { getCustomFormulaSettings } from "@/lib/settings";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { Reveal } from "@/components/Reveal";
@@ -29,6 +29,7 @@ export default async function HomePage() {
   });
 
   const howItWorksSteps = await prisma.howItWorksStep.findMany({ orderBy: { order: "asc" } });
+  const customFormula = await getCustomFormulaSettings();
 
   const unavailable = categories.flatMap((c) => c.products.filter((p) => !p.isAvailable));
 
@@ -38,6 +39,7 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
+        {(packs.length > 0 || customFormula.enabled) && (
         <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>
             <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
@@ -46,9 +48,10 @@ export default async function HomePage() {
             {packs.map((pack) => (
               <PackCard key={pack.id} pack={pack} />
             ))}
-            <CustomFormulaCard minItems={CUSTOM_MIN_ITEMS} />
+            {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
           </div>
         </section>
+        )}
 
         <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>

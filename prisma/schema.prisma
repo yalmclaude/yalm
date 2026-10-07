@@ -204,3 +204,10 @@ model CoffretProduct {
 
   @@index([coffretId, order])
 }
+
+// Site-wide settings stored as JSON by key (e.g. "customFormula").
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

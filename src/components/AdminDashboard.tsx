@@ -680,7 +680,7 @@ export function AdminDashboard() {
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    {b.product?.name ?? b.pack?.name ?? (b.items ? "Formule personnalisée (-5 %)" : "—")}
+                    {b.product?.name ?? b.pack?.name ?? (b.items ? "Formule personnalisée" : "—")}
                     {b.purchase && <div className="text-xs font-medium text-bordeaux">Achat (à garder)</div>}
                     {b.durationHours ? <div className="text-xs text-gray-500">{formatHours(b.durationHours)}</div> : null}
                     {parseCustomLines(b.items).map((l) => (

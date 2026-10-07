@@ -5,9 +5,6 @@ import { depositAmountCents, parseDurationOptions, type DurationOption } from "@
 export type SaleMode = "RENT" | "BUY" | "BOTH";
 export type Mode = "RENT" | "BUY";
 
-export const CUSTOM_MIN_ITEMS = 4;
-export const CUSTOM_DISCOUNT_PERCENT = 5;
-
 export type PricedProduct = {
   priceCents: number;
   saleMode: string;
@@ -59,8 +56,9 @@ export function depositFor(p: Pick<PricedProduct, "depositType" | "depositValue"
   return depositAmountCents(priceCents, p.depositType, p.depositValue);
 }
 
-export function discounted(priceCents: number) {
-  return Math.round((priceCents * (100 - CUSTOM_DISCOUNT_PERCENT)) / 100);
+// Price after the custom-formule discount (percentage set in the admin).
+export function discounted(priceCents: number, discountPercent: number) {
+  return Math.round((priceCents * (100 - discountPercent)) / 100);
 }
 
 // Lowest price a product can be had for, for "Dès …" labels.

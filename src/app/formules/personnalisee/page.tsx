@@ -3,11 +3,15 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
 import { CustomFormulaBuilder, type BuilderProduct } from "@/components/CustomFormulaBuilder";
 import { parseDurationOptions } from "@/lib/format";
-import { CUSTOM_MIN_ITEMS } from "@/lib/pricing";
+import { getCustomFormulaSettings } from "@/lib/settings";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomFormulaPage() {
+  const settings = await getCustomFormulaSettings();
+  if (!settings.enabled) notFound();
+
   const products = await prisma.product.findMany({
     where: { isAvailable: true, quoteOnly: false },
     include: { category: true, images: { orderBy: { order: "asc" }, take: 1 } },
@@ -36,11 +40,11 @@ export default async function CustomFormulaPage() {
         <div className="mx-auto max-w-6xl px-6 py-14">
           <SectionTitle eyebrow="Sur mesure" title="Votre formule personnalisée" />
           <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-relaxed text-bordeaux/70">
-            Composez votre formule avec au moins {CUSTOM_MIN_ITEMS} prestations, à un tarif avantageux. Choisissez vos
+            Composez votre formule avec au moins {settings.minItems} prestations, à un tarif avantageux. Choisissez vos
             options, puis réservez votre date.
           </p>
           <div className="mt-12">
-            <CustomFormulaBuilder products={items} />
+            <CustomFormulaBuilder products={items} minItems={settings.minItems} discountPercent={settings.discountPercent} />
           </div>
         </div>
       </main>

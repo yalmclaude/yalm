@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
 import { formatHours } from "@/lib/format";
+import { getCustomFormulaSettings } from "@/lib/settings";
 import {
-  CUSTOM_MIN_ITEMS,
   depositFor,
   discounted,
   resolvePrice,
@@ -199,11 +199,13 @@ async function quotePack(packId: string, body: Body, date: Date): Promise<Quote>
   };
 }
 
-// "Formule personnalisée": at least CUSTOM_MIN_ITEMS distinct products, each discounted by CUSTOM_DISCOUNT_PERCENT.
+// "Formule personnalisée": at least minItems distinct products, each discounted by discountPercent (admin settings).
 async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise<Quote> {
+  const { enabled, minItems, discountPercent } = await getCustomFormulaSettings();
+  if (!enabled) throw new BookingError("La formule personnalisée n'est pas disponible pour le moment");
   const ids = [...new Set(items.map((i) => i.productId).filter((id): id is string => Boolean(id)))];
-  if (ids.length < CUSTOM_MIN_ITEMS || ids.length !== items.length) {
-    throw new BookingError(`Choisissez au moins ${CUSTOM_MIN_ITEMS} prestations différentes`);
+  if (ids.length < minItems || ids.length !== items.length) {
+    throw new BookingError(`Choisissez au moins ${minItems} prestations différentes`);
   }
 
   const products = await prisma.product.findMany({ where: { id: { in: ids } } });
@@ -222,7 +224,7 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
       throw new BookingError(`${product.name} n'est plus disponible à cette date`, 409);
     }
 
-    const discountedCents = discounted(price.priceCents);
+    const discountedCents = discounted(price.priceCents, discountPercent);
     lines.push({
       productId: product.id,
       name: product.name,
