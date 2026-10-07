@@ -35,3 +35,14 @@ export function formatHours(hours: number) {
 export function startingPriceCents(priceCents: number, options: DurationOption[]) {
   return options.length ? Math.min(...options.map((o) => o.priceCents)) : priceCents;
 }
+
+// An offer with a 0 deposit can't be booked with a deposit: the whole price is paid at booking.
+export function hasDeposit(depositType: "FIXED" | "PERCENT", depositValue: number) {
+  return depositValue > 0;
+}
+
+export function paymentTermsLabel(depositType: "FIXED" | "PERCENT", depositValue: number) {
+  return hasDeposit(depositType, depositValue)
+    ? `Acompte : ${depositLabel(depositType, depositValue)}`
+    : "Paiement intégral à la réservation";
+}

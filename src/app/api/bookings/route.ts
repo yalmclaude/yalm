@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
-import { depositLabel, formatHours, formatPrice } from "@/lib/format";
+import { depositLabel, formatHours, formatPrice, hasDeposit } from "@/lib/format";
 import { getCustomFormulaSettings } from "@/lib/settings";
 import { depositFor, discounted, resolvePrice, type CustomLine, type Mode } from "@/lib/pricing";
 
@@ -62,7 +62,7 @@ function describe(mode: Mode, durationHours: number | null, priceCents: number, 
     mode === "BUY" ? "Achat (à garder)" : "Location",
     durationHours ? formatHours(durationHours) : null,
     `prix ${formatPrice(priceCents)}`,
-    `acompte ${deposit}`,
+    deposit ? `acompte ${deposit}` : "paiement intégral",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
     throw err;
   }
 
-  const wantsFullPayment = paymentType === "FULL" && quote.allowFullPayment;
+  // Offers without a deposit are always paid in full.
+  const noDeposit = quote.lines.every((l) => l.unitDepositCents >= l.unitFullCents);
+  const wantsFullPayment = noDeposit || (paymentType === "FULL" && quote.allowFullPayment);
   const unitCharge = (l: PaymentLine) => (wantsFullPayment ? l.unitFullCents : l.unitDepositCents);
   const amountToCharge = sum(quote.lines, unitCharge);
   const cautionCents = sum(quote.lines, (l) => l.unitCautionCents);
@@ -187,7 +189,7 @@ async function quoteProduct(productId: string, body: Body, date: Date): Promise<
     lines: [
       {
         name: product.name,
-        detail: describe(price.mode, price.durationHours, price.priceCents, depositLabel(product.depositType, product.depositValue)),
+        detail: describe(price.mode, price.durationHours, price.priceCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : ""),
         quantity: qty,
         unitFullCents: price.priceCents,
         unitDepositCents: depositFor(product, price.priceCents),
@@ -224,7 +226,7 @@ async function quotePack(packId: string, body: Body, date: Date): Promise<Quote>
       {
         name: pack.name,
         detail: [
-          describe("RENT", price.durationHours, price.priceCents, depositLabel(pack.depositType, pack.depositValue)),
+          describe("RENT", price.durationHours, price.priceCents, hasDeposit(pack.depositType, pack.depositValue) ? depositLabel(pack.depositType, pack.depositValue) : ""),
           contents ? `comprend : ${contents}` : null,
         ]
           .filter(Boolean)
@@ -276,7 +278,7 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
     });
     lines.push({
       name: `${product.name} (formule personnalisée)`,
-      detail: describe(price.mode, price.durationHours, discountedCents, depositLabel(product.depositType, product.depositValue)),
+      detail: describe(price.mode, price.durationHours, discountedCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : ""),
       quantity: 1,
       unitFullCents: discountedCents,
       unitDepositCents: depositFor(product, discountedCents),

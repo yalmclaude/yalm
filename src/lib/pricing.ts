@@ -52,8 +52,10 @@ export function resolvePrice(p: PricedProduct, sel: Selection): ResolvedPrice {
   return { ok: true, mode, durationHours: chosen.hours, priceCents: chosen.priceCents };
 }
 
+// Amount due at booking to secure the date. Without a deposit (0), the whole price is due.
 export function depositFor(p: Pick<PricedProduct, "depositType" | "depositValue">, priceCents: number) {
-  return depositAmountCents(priceCents, p.depositType, p.depositValue);
+  const deposit = depositAmountCents(priceCents, p.depositType, p.depositValue);
+  return deposit > 0 ? Math.min(deposit, priceCents) : priceCents;
 }
 
 // Price after the custom-formule discount (percentage set in the admin).

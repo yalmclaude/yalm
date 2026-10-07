@@ -110,7 +110,10 @@ export function CustomFormulaBuilder({
   const total = lines.reduce((s, l) => s + l.discountedCents, 0);
   const deposit = lines.reduce((s, l) => s + l.depositCents, 0);
   const caution = lines.reduce((s, l) => s + l.cautionCents, 0);
-  const amountToPay = (paymentType === "FULL" ? total : deposit) + (cautionLater ? 0 : caution);
+  // When none of the chosen products takes a deposit, the formule is paid in full.
+  const fullOnly = deposit >= total;
+  const payNow = fullOnly ? "FULL" : paymentType;
+  const amountToPay = (payNow === "FULL" ? total : deposit) + (cautionLater ? 0 : caution);
   const blockedLines = lines.filter((l) => l.choice.mode === "RENT" && unavailable.includes(l.product.id));
 
   async function handleSubmit(e: React.FormEvent) {
@@ -131,7 +134,7 @@ export function CustomFormulaBuilder({
           email,
           phone,
           eventDate,
-          paymentType,
+          paymentType: payNow,
           cautionLater,
         }),
       });
@@ -307,6 +310,11 @@ export function CustomFormulaBuilder({
               <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
             </div>
 
+            {fullOnly ? (
+              <div className="rounded-lg border border-bordeaux/10 bg-beige-dark/40 p-3.5 text-sm text-bordeaux/80">
+                Paiement de la totalité à la réservation : <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
+              </div>
+            ) : (
             <div className="space-y-2 rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4">
               <p className="text-sm font-medium text-bordeaux/80">Mode de paiement</p>
               <label className="flex cursor-pointer items-center gap-3">
@@ -322,6 +330,7 @@ export function CustomFormulaBuilder({
                 </span>
               </label>
             </div>
+            )}
 
             <CautionChoice
               cautionCents={caution}

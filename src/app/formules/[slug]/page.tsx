@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
-import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
+import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +73,11 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
                   Prix : <span className="font-semibold text-bordeaux">{formatPrice(pack.priceCents)}</span>
                 </p>
               )}
-              <p>Acompte requis : {depositLabel(pack.depositType, pack.depositValue)}</p>
+              <p>
+                {hasDeposit(pack.depositType, pack.depositValue)
+                  ? `Acompte requis : ${depositLabel(pack.depositType, pack.depositValue)}`
+                  : "Paiement intégral à la réservation"}
+              </p>
               {pack.cautionCents > 0 && <p>Caution (remboursable) : {formatPrice(pack.cautionCents)}</p>}
             </div>
             )}

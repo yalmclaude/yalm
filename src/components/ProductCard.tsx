@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPrice, depositLabel, parseDurationOptions } from "@/lib/format";
+import { formatPrice, parseDurationOptions, paymentTermsLabel } from "@/lib/format";
 import { canBuy, canRent, startingPrice } from "@/lib/pricing";
 import type { Product } from "@prisma/client";
 import { Reveal } from "@/components/Reveal";
@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
                   ? "À louer ou à garder"
                   : canBuy(product)
                     ? "À garder"
-                    : `Acompte : ${depositLabel(product.depositType, product.depositValue)}`}
+                    : paymentTermsLabel(product.depositType, product.depositValue)}
               </span>
             </>
           )}

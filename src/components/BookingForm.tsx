@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatPrice, formatHours, depositAmountCents, type DurationOption } from "@/lib/format";
+import { formatPrice, formatHours, type DurationOption } from "@/lib/format";
 import { CautionChoice } from "@/components/CautionChoice";
+import { depositFor } from "@/lib/pricing";
 
 type Props = {
   productId?: string;
@@ -67,12 +68,15 @@ export function BookingForm({
   const chosenDuration = rentalDurations.find((d) => d.hours === durationHours) ?? null;
   const rentPrice = chosenDuration ? chosenDuration.priceCents : priceCents;
   const unitPrice = buying ? purchasePriceCents : rentPrice;
-  const deposit = depositAmountCents(unitPrice, depositType, depositValue) * quantity;
+  const deposit = depositFor({ depositType, depositValue }, unitPrice) * quantity;
   const total = unitPrice * quantity;
+  // No deposit on this offer: the client can only pay the whole price.
+  const fullOnly = deposit >= total;
+  const payNow = fullOnly ? "FULL" : paymentType;
   // Bought items stay with the client: no caution, and the rental stock doesn't apply.
   const caution = buying ? 0 : cautionCents * quantity;
   const cautionNow = cautionLater ? 0 : caution;
-  const amountToPay = (paymentType === "FULL" ? total : deposit) + cautionNow;
+  const amountToPay = (payNow === "FULL" ? total : deposit) + cautionNow;
   const needsDuration = rentalDurations.length > 0 && !chosenDuration;
   const isSoldOut = !buying && remaining !== null && remaining <= 0;
   const exceedsStock = !buying && remaining !== null && quantity > remaining;
@@ -85,7 +89,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours: buying ? null : durationHours, mode, cautionLater }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType: payNow, durationHours: buying ? null : durationHours, mode, cautionLater }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -243,7 +247,7 @@ export function BookingForm({
         />
       </div>
 
-      {allowFullPayment && (
+      {allowFullPayment && !fullOnly && (
         <div className="rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4 space-y-2">
           <p className="text-sm font-medium text-bordeaux/80">Mode de paiement</p>
           <label className="flex items-center gap-3 cursor-pointer">
@@ -275,9 +279,15 @@ export function BookingForm({
         </div>
       )}
 
-      {!allowFullPayment && (
+      {!allowFullPayment && !fullOnly && (
         <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
           Acompte à régler pour bloquer la date : <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
+        </div>
+      )}
+
+      {fullOnly && (
+        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
+          Paiement de la totalité à la réservation : <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
         </div>
       )}
 
@@ -292,7 +302,7 @@ export function BookingForm({
       >
         {submitting
           ? "Redirection vers le paiement…"
-          : paymentType === "FULL" || cautionNow > 0
+          : payNow === "FULL" || cautionNow > 0
           ? `Réserver et payer ${formatPrice(amountToPay)}`
           : "Réserver et payer l'acompte"}
       </button>

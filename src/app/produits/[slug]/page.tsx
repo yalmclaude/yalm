@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
-import { formatPrice, formatHours, depositLabel, parseDurationOptions } from "@/lib/format";
+import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
 import { canBuy, canRent } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +64,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <span className="font-semibold text-bordeaux">{formatPrice(product.purchasePriceCents)}</span>
                 </p>
               )}
-              <p>Acompte requis : {depositLabel(product.depositType, product.depositValue)}</p>
+              <p>
+                {hasDeposit(product.depositType, product.depositValue)
+                  ? `Acompte requis : ${depositLabel(product.depositType, product.depositValue)}`
+                  : "Paiement intégral à la réservation"}
+              </p>
               {product.cautionCents > 0 && canRent(product) && (
                 <p>
                   Caution (remboursable{canBuy(product) ? ", en location" : ""}) : {formatPrice(product.cautionCents)}

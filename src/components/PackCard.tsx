@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPrice, depositLabel, parseDurationOptions, startingPriceCents } from "@/lib/format";
+import { formatPrice, parseDurationOptions, paymentTermsLabel, startingPriceCents } from "@/lib/format";
 import { Reveal } from "@/components/Reveal";
 
 type PackCardProduct = { product: { name: string }; quantity: number };
@@ -57,7 +57,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
                 {formatPrice(startingPriceCents(pack.priceCents, parseDurationOptions(pack.durationOptions)))}
               </span>
               <span className="text-right text-xs text-bordeaux/55">
-                Acompte : {depositLabel(pack.depositType, pack.depositValue)}
+                {paymentTermsLabel(pack.depositType, pack.depositValue)}
               </span>
             </>
           )}
