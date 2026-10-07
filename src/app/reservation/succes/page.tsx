@@ -21,7 +21,7 @@ export default async function BookingSuccessPage({
         <h1 className="font-serif text-3xl text-bordeaux">Merci pour votre réservation !</h1>
         {booking ? (
           <p className="mt-4 text-gray-600">
-            Votre acompte pour <strong>{itemName}</strong> le{" "}
+            Votre acompte pour <strong>{itemName}</strong>{" "}le{" "}
             {booking.eventDate.toLocaleDateString("fr-FR")} a bien été reçu. Un email de confirmation vous
             a été envoyé à {booking.email}.
           </p>
@@ -32,12 +32,12 @@ export default async function BookingSuccessPage({
           <p className="mt-4 rounded-lg border border-bordeaux/15 bg-cream-light p-4 text-sm text-bordeaux/80">
             {booking.cautionLater ? (
               <>
-                Pensez à régler votre caution de <strong>{formatPrice(booking.cautionCents)}</strong> au plus tard le jour
+                Pensez à régler votre caution de <strong>{formatPrice(booking.cautionCents)}</strong>{" "}au plus tard le jour
                 de l&apos;événement. Elle vous sera restituée si le matériel est rendu en bon état.
               </>
             ) : (
               <>
-                Votre caution de <strong>{formatPrice(booking.cautionCents)}</strong> a bien été réglée. Elle vous sera
+                Votre caution de <strong>{formatPrice(booking.cautionCents)}</strong>{" "}a bien été réglée. Elle vous sera
                 restituée après l&apos;événement si le matériel est rendu en bon état.
               </>
             )}

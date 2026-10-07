@@ -272,7 +272,7 @@ export function CustomFormulaBuilder({
 
         {missing > 0 ? (
           <p className="rounded-lg bg-beige-dark/40 p-3 text-sm text-bordeaux/80">
-            Encore <strong>{missing}</strong> prestation{missing > 1 ? "s" : ""} à choisir pour valider votre formule.
+            Encore <strong>{missing}</strong>{" "}prestation{missing > 1 ? "s" : ""} à choisir pour valider votre formule.
           </p>
         ) : (
           <div className="space-y-1 border-t border-dashed border-bordeaux/15 pt-3 text-sm text-bordeaux/80">
