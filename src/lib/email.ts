@@ -26,11 +26,10 @@ type BookingForEmail = {
 const BORDEAUX = "#4e0d15";
 const CREAM = "#f7ead5";
 
-async function sendEmail(to: { email: string; name?: string }[], subject: string, html: string, replyTo?: string) {
-  const apiKey = process.env.BREVO_API_KEY;
+export async function sendEmail(to: { email: string; name?: string }[], subject: string, html: string, replyTo?: string) {
+  const apiKey = process.env.BREVO_API_KEY?.trim();
   if (!apiKey) {
-    console.warn("BREVO_API_KEY manquante : email non envoyé —", subject);
-    return;
+    throw new Error("La variable BREVO_API_KEY est absente sur Vercel (ou le site n'a pas été redéployé depuis son ajout).");
   }
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -43,7 +42,7 @@ async function sendEmail(to: { email: string; name?: string }[], subject: string
       ...(replyTo ? { replyTo: { email: replyTo } } : {}),
     }),
   });
-  if (!res.ok) throw new Error(`Brevo ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Brevo a refusé l'envoi (${res.status}) : ${await res.text()}`);
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -120,7 +119,16 @@ function layout(title: string, body: string) {
   </div>`;
 }
 
-export async function sendOrderEmails(b: BookingForEmail) {
+// Returns the errors (empty when both emails were accepted by Brevo).
+export async function sendTestEmail() {
+  await sendEmail(
+    [{ email: CONTACT_EMAIL, name: "YALM Events" }],
+    "Test d'envoi — YALM Events",
+    layout("Test d'envoi réussi", "<p>Si vous lisez ce message, les emails de commande fonctionnent : vos clients recevront leur confirmation et vous recevrez leurs commandes.</p>")
+  );
+}
+
+export async function sendOrderEmails(b: BookingForEmail): Promise<string[]> {
   const title = orderTitle(b);
   const firstName = esc(b.customerName.split(" ")[0] || b.customerName);
 
@@ -149,5 +157,9 @@ export async function sendOrderEmails(b: BookingForEmail) {
     sendEmail([{ email: b.email, name: b.customerName }], `Confirmation de votre commande — ${title}`, clientHtml, CONTACT_EMAIL),
     sendEmail([{ email: CONTACT_EMAIL, name: "YALM Events" }], `🎉 Nouvelle commande — ${title} — ${b.customerName}`, adminHtml, b.email),
   ]);
-  for (const r of results) if (r.status === "rejected") console.error("Envoi email échoué:", r.reason);
+  const errors = results.flatMap((r, i) =>
+    r.status === "rejected" ? [`${i === 0 ? "Email client" : "Email YALM"} : ${(r.reason as Error)?.message ?? r.reason}`] : []
+  );
+  for (const e of errors) console.error("Envoi email échoué —", e);
+  return errors;
 }

@@ -658,7 +658,25 @@ export function AdminDashboard() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-semibold text-anthracite">Réservations</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-anthracite">Réservations</h2>
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/admin/email-test", { method: "POST" });
+              const data = await res.json().catch(() => ({}));
+              alert(
+                data.ok
+                  ? "Email de test envoyé à yalm.events@gmail.com. Vérifiez votre boîte (et les spams)."
+                  : `L'envoi a échoué :
+
+${data.error ?? "erreur inconnue"}`
+              );
+            }}
+            className="rounded border border-bordeaux/40 px-3 py-1.5 text-xs font-medium text-bordeaux hover:bg-bordeaux/5"
+          >
+            Tester l&apos;envoi d&apos;emails
+          </button>
+        </div>
         <div className="mt-4 overflow-x-auto rounded border border-gray-200">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600">
@@ -713,6 +731,21 @@ export function AdminDashboard() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
+                      {b.status === "CONFIRMED" && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Renvoyer la confirmation à ${b.email} et la commande à yalm.events@gmail.com ?`)) return;
+                            const res = await fetch(`/api/admin/bookings/${b.id}/emails`, { method: "POST" });
+                            const data = await res.json().catch(() => ({}));
+                            alert(data.ok ? "Emails renvoyés." : `L'envoi a échoué :
+
+${data.error ?? "erreur inconnue"}`);
+                          }}
+                          className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                        >
+                          Renvoyer les emails
+                        </button>
+                      )}
                       {b.status !== "CANCELLED" && (
                         <button
                           onClick={async () => {
