@@ -26,9 +26,10 @@ export type BuilderProduct = {
   depositType: "FIXED" | "PERCENT";
   depositValue: number;
   cautionCents: number;
+  askCustomText: boolean;
 };
 
-type Choice = { mode: Mode; durationHours: number | null };
+type Choice = { mode: Mode; durationHours: number | null; customText?: string };
 
 export function CustomFormulaBuilder({
   products,
@@ -129,6 +130,7 @@ export function CustomFormulaBuilder({
             productId: l.product.id,
             mode: l.choice.mode,
             durationHours: l.choice.mode === "RENT" ? l.choice.durationHours : null,
+            customText: l.product.askCustomText ? l.choice.customText : undefined,
           })),
           customerName,
           email,
@@ -208,6 +210,19 @@ export function CustomFormulaBuilder({
                               <button type="button" className={chip(choice.mode === "BUY")} onClick={() => choose(p.id, { mode: "BUY" })}>
                                 Le garder — {formatPrice(p.purchasePriceCents)}
                               </button>
+                            </div>
+                          )}
+                          {p.askCustomText && (
+                            <div>
+                              <label className="block text-xs font-medium text-bordeaux/80">Texte à afficher</label>
+                              <textarea
+                                value={choice.customText ?? ""}
+                                onChange={(e) => choose(p.id, { customText: e.target.value })}
+                                maxLength={500}
+                                rows={2}
+                                placeholder="Prénoms, date, message…"
+                                className="mt-1 w-full rounded-md border border-bordeaux/20 bg-background px-3 py-2 text-sm text-bordeaux placeholder:text-bordeaux/40 focus:border-bordeaux focus:outline-none"
+                              />
                             </div>
                           )}
                           {choice.mode === "RENT" && p.durationOptions.length > 0 && (

@@ -17,6 +17,7 @@ type Props = {
   durationOptions?: DurationOption[];
   saleMode?: string;
   purchasePriceCents?: number;
+  askCustomText?: boolean;
   title?: string;
 };
 
@@ -32,6 +33,7 @@ export function BookingForm({
   durationOptions = [],
   saleMode = "RENT",
   purchasePriceCents = 0,
+  askCustomText = false,
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -45,6 +47,7 @@ export function BookingForm({
   const [durationHours, setDurationHours] = useState<number | null>(durationOptions[0]?.hours ?? null);
   const [mode, setMode] = useState<"RENT" | "BUY">(saleMode === "BUY" ? "BUY" : "RENT");
   const [cautionLater, setCautionLater] = useState(false);
+  const [customText, setCustomText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +92,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType: payNow, durationHours: buying ? null : durationHours, mode, cautionLater }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType: payNow, durationHours: buying ? null : durationHours, mode, cautionLater, customText: askCustomText ? customText : undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -211,6 +214,24 @@ export function BookingForm({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {askCustomText && (
+        <div>
+          <label className={labelClass}>Texte à afficher</label>
+          <textarea
+            value={customText}
+            onChange={(e) => setCustomText(e.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="Ex. : Bienvenue au mariage de Nadia & Souleymane — 12 juin 2027"
+            className={inputClass}
+          />
+          <p className="mt-1 text-xs text-bordeaux/55">
+            Prénoms, date, message… tel que vous voulez qu&apos;il apparaisse. Vous pourrez l&apos;ajuster avec nous avant
+            l&apos;événement.
+          </p>
         </div>
       )}
 

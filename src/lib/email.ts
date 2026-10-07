@@ -19,6 +19,7 @@ type BookingForEmail = {
   totalCents: number;
   cautionCents: number;
   cautionLater: boolean;
+  customText: string;
   product: { name: string } | null;
   pack: { name: string } | null;
 };
@@ -56,6 +57,7 @@ function orderLines(b: BookingForEmail) {
         .filter(Boolean)
         .join(" · "),
       price: formatPrice(l.discountedCents),
+      text: l.customText ?? "",
     }));
   }
   const name = b.product?.name ?? b.pack?.name ?? "Prestation";
@@ -66,7 +68,7 @@ function orderLines(b: BookingForEmail) {
   ]
     .filter(Boolean)
     .join(" · ");
-  return [{ name, detail, price: b.totalCents ? formatPrice(b.totalCents) : "" }];
+  return [{ name, detail, price: b.totalCents ? formatPrice(b.totalCents) : "", text: b.customText }];
 }
 
 export function orderTitle(b: BookingForEmail) {
@@ -79,7 +81,7 @@ function summaryTable(b: BookingForEmail) {
   const items = orderLines(b)
     .map(
       (l) =>
-        `<tr><td style="padding:9px 0;border-bottom:1px solid #eadfcf"><strong>${esc(l.name)}</strong><br><span style="color:#7a5a52;font-size:13px">${esc(l.detail)}</span></td><td style="padding:9px 0;border-bottom:1px solid #eadfcf;text-align:right;white-space:nowrap">${l.price}</td></tr>`
+        `<tr><td style="padding:9px 0;border-bottom:1px solid #eadfcf"><strong>${esc(l.name)}</strong><br><span style="color:#7a5a52;font-size:13px">${esc(l.detail)}</span>${l.text ? `<br><span style="display:inline-block;margin-top:4px;padding:4px 8px;background:#f7ead5;border-radius:4px;font-size:13px;white-space:pre-line">Texte à afficher : « ${esc(l.text)} »</span>` : ""}</td><td style="padding:9px 0;border-bottom:1px solid #eadfcf;text-align:right;white-space:nowrap">${l.price}</td></tr>`
     )
     .join("");
   const remaining = Math.max(0, b.totalCents - b.depositAmountCents);

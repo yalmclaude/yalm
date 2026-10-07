@@ -49,6 +49,7 @@ model Product {
   quoteOnly        Boolean        @default(false)
   saleMode           String         @default("RENT") // RENT | BUY | BOTH
   purchasePriceCents Int            @default(0)
+  askCustomText      Boolean        @default(false) // client writes the text to display (miroir, plexiglas…)
   createdAt        DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   bookings      Booking[]
@@ -123,6 +124,7 @@ model Booking {
   durationHours         Float?
   purchase              Boolean       @default(false)
   cautionLater          Boolean       @default(false)
+  customText            String        @default("")
   items                 Json?
   stripeSessionId       String?
   stripePaymentIntentId String?

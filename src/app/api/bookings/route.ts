@@ -4,9 +4,9 @@ import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
 import { depositLabel, formatHours, formatPrice, hasDeposit } from "@/lib/format";
 import { getCustomFormulaSettings } from "@/lib/settings";
-import { depositFor, discounted, resolvePrice, type CustomLine, type Mode } from "@/lib/pricing";
+import { cleanCustomText, depositFor, discounted, resolvePrice, type CustomLine, type Mode } from "@/lib/pricing";
 
-type CustomItemInput = { productId?: string; mode?: Mode; durationHours?: number | null };
+type CustomItemInput = { productId?: string; mode?: Mode; durationHours?: number | null; customText?: string };
 
 type Body = {
   productId?: string;
@@ -21,6 +21,7 @@ type Body = {
   cautionLater?: boolean;
   durationHours?: number;
   mode?: Mode;
+  customText?: string;
 };
 
 // One thing the client pays for, shown as its own line (name + detail) in the Stripe checkout.
@@ -44,6 +45,7 @@ type Quote = {
     durationHours: number | null;
     purchase: boolean;
     items?: CustomLine[];
+    customText?: string;
   };
 };
 
@@ -55,6 +57,9 @@ class BookingError extends Error {
 
 const sum = (lines: PaymentLine[], pick: (l: PaymentLine) => number) =>
   lines.reduce((total, l) => total + pick(l) * l.quantity, 0);
+
+// Stripe shows at most a few hundred characters per line: keep the client's text short there.
+const quoted = (text: string) => (text ? ` · texte : « ${text.length > 120 ? `${text.slice(0, 117)}…` : text} »` : "");
 
 // "Location · 3 h · prix 300,00 € · acompte 35 % du prix"
 function describe(mode: Mode, durationHours: number | null, priceCents: number, deposit: string) {
@@ -185,12 +190,15 @@ async function quoteProduct(productId: string, body: Body, date: Date): Promise<
   if (price.mode === "RENT" && (await getRemainingStock(productId, date)) < qty) {
     throw new BookingError("Stock insuffisant pour cette date", 409);
   }
+  const customText = product.askCustomText ? cleanCustomText(body.customText) : "";
 
   return {
     lines: [
       {
         name: product.name,
-        detail: describe(price.mode, price.durationHours, price.priceCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : ""),
+        detail:
+          describe(price.mode, price.durationHours, price.priceCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : "") +
+          quoted(customText),
         quantity: qty,
         unitFullCents: price.priceCents,
         unitDepositCents: depositFor(product, price.priceCents),
@@ -204,6 +212,7 @@ async function quoteProduct(productId: string, body: Body, date: Date): Promise<
       quantity: qty,
       durationHours: price.durationHours,
       purchase: price.mode === "BUY",
+      customText,
     },
   };
 }
@@ -269,6 +278,7 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
     }
 
     const discountedCents = discounted(price.priceCents, discountPercent);
+    const customText = product.askCustomText ? cleanCustomText(item.customText) : "";
     stored.push({
       productId: product.id,
       name: product.name,
@@ -276,10 +286,13 @@ async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise
       durationHours: price.durationHours,
       priceCents: price.priceCents,
       discountedCents,
+      ...(customText ? { customText } : {}),
     });
     lines.push({
       name: `${product.name} (formule personnalisée)`,
-      detail: describe(price.mode, price.durationHours, discountedCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : ""),
+      detail:
+        describe(price.mode, price.durationHours, discountedCents, hasDeposit(product.depositType, product.depositValue) ? depositLabel(product.depositType, product.depositValue) : "") +
+        quoted(customText),
       quantity: 1,
       unitFullCents: discountedCents,
       unitDepositCents: depositFor(product, discountedCents),

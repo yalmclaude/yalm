@@ -31,6 +31,7 @@ export default async function CustomFormulaPage() {
     depositType: p.depositType,
     depositValue: p.depositValue,
     cautionCents: p.cautionCents,
+    askCustomText: p.askCustomText,
   }));
 
   return (

@@ -93,6 +93,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             durationOptions={durations}
             saleMode={product.saleMode}
             purchasePriceCents={product.purchasePriceCents}
+            askCustomText={product.askCustomText}
           />
           )}
         </div>

@@ -82,7 +82,15 @@ export type CustomLine = {
   durationHours: number | null;
   priceCents: number;
   discountedCents: number;
+  customText?: string;
 };
+
+export const CUSTOM_TEXT_MAX = 500;
+
+// Text the client wants displayed on a personalised product, cleaned and length-capped.
+export function cleanCustomText(value: unknown) {
+  return typeof value === "string" ? value.trim().slice(0, CUSTOM_TEXT_MAX) : "";
+}
 
 export function parseCustomLines(value: unknown): CustomLine[] {
   return Array.isArray(value) ? (value as CustomLine[]) : [];

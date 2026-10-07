@@ -36,6 +36,7 @@ type Product = {
   quoteOnly: boolean;
   saleMode: string;
   purchasePriceCents: number;
+  askCustomText: boolean;
   images: ProductImg[];
 };
 
@@ -50,6 +51,7 @@ type Booking = {
   depositAmountCents: number;
   cautionCents: number;
   cautionLater: boolean;
+  customText: string;
   durationHours: number | null;
   product: { name: string } | null;
   pack: { name: string } | null;
@@ -300,6 +302,7 @@ export function AdminDashboard() {
                   quoteOnly: false,
                   saleMode: "RENT",
                   purchasePriceCents: 0,
+                  askCustomText: false,
                   images: [],
                 });
               }}
@@ -583,6 +586,16 @@ export function AdminDashboard() {
                 <option value="false">Non (Bientôt de retour)</option>
               </select>
             </Field>
+            <Field label="Texte personnalisé par le client">
+              <select
+                value={editing.askCustomText ? "true" : "false"}
+                onChange={(e) => setEditing({ ...editing, askCustomText: e.target.value === "true" })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="false">Non</option>
+                <option value="true">Oui — le client écrit le texte à afficher (miroir, plexiglas…)</option>
+              </select>
+            </Field>
             <Field label="Mode de réservation">
               <select
                 value={editing.quoteOnly ? "true" : "false"}
@@ -704,10 +717,16 @@ ${data.error ?? "erreur inconnue"}`
                     {b.product?.name ?? b.pack?.name ?? (b.items ? "Formule personnalisée" : "—")}
                     {b.purchase && <div className="text-xs font-medium text-bordeaux">Achat (à garder)</div>}
                     {b.durationHours ? <div className="text-xs text-gray-500">{formatHours(b.durationHours)}</div> : null}
+                    {b.customText && (
+                      <div className="mt-1 whitespace-pre-line rounded bg-amber-50 px-2 py-1 text-xs text-amber-900">Texte : « {b.customText} »</div>
+                    )}
                     {parseCustomLines(b.items).map((l) => (
                       <div key={l.productId} className="text-xs text-gray-500">
                         {l.name} · {l.mode === "BUY" ? "à garder" : "location"}
                         {l.durationHours ? ` ${formatHours(l.durationHours)}` : ""} · {formatPrice(l.discountedCents)}
+                        {l.customText && (
+                          <div className="mt-0.5 whitespace-pre-line rounded bg-amber-50 px-2 py-1 text-amber-900">Texte : « {l.customText} »</div>
+                        )}
                       </div>
                     ))}
                   </td>

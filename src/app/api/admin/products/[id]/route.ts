@@ -28,6 +28,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       quoteOnly: Boolean(data.quoteOnly),
       saleMode: ["RENT", "BUY", "BOTH"].includes(data.saleMode) ? data.saleMode : "RENT",
       purchasePriceCents: Math.max(0, Math.round(Number(data.purchasePriceCents) || 0)),
+      askCustomText: Boolean(data.askCustomText),
     },
     include: { category: true, images: { orderBy: { order: "asc" } } },
   });
