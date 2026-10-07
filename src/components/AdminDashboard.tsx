@@ -49,6 +49,7 @@ type Booking = {
   status: string;
   depositAmountCents: number;
   cautionCents: number;
+  cautionLater: boolean;
   durationHours: number | null;
   product: { name: string } | null;
   pack: { name: string } | null;
@@ -698,7 +699,7 @@ export function AdminDashboard() {
                       <>
                         {formatPrice(b.cautionCents)}
                         <div className="text-xs text-gray-500">
-                          Payée en ligne
+                          {b.cautionLater ? "À régler plus tard" : "Payée en ligne"}
                         </div>
                       </>
                     ) : (

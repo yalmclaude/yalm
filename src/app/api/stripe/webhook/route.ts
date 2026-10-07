@@ -57,7 +57,8 @@ async function sendConfirmationEmail(bookingId: string) {
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Email</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.email}</td></tr>
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Téléphone</td><td style="padding:8px 0;border-bottom:1px solid #eee">${booking.phone}</td></tr>
             <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Date de l'événement</td><td style="padding:8px 0;border-bottom:1px solid #eee">${eventDate}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:bold">Acompte reçu</td><td style="padding:8px 0">${depositEuros} €</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold">Montant reçu</td><td style="padding:8px 0;border-bottom:1px solid #eee">${depositEuros} €</td></tr>
+            ${booking.cautionCents > 0 ? `<tr><td style="padding:8px 0;font-weight:bold">Caution</td><td style="padding:8px 0">${(booking.cautionCents / 100).toFixed(2).replace(".", ",")} € — ${booking.cautionLater ? "<strong>à régler plus tard</strong> (au plus tard le jour de l'événement)" : "payée en ligne"}</td></tr>` : ""}
           </table>
           <p style="margin-top:24px;color:#666;font-size:13px">Réservation #${booking.id}</p>
         </div>

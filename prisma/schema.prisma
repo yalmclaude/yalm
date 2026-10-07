@@ -121,6 +121,7 @@ model Booking {
   cautionCents          Int           @default(0)
   durationHours         Float?
   purchase              Boolean       @default(false)
+  cautionLater          Boolean       @default(false)
   items                 Json?
   stripeSessionId       String?
   stripePaymentIntentId String?

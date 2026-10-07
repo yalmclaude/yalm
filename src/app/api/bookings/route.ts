@@ -18,6 +18,7 @@ type Body = {
   eventDate?: string;
   quantity?: number;
   paymentType?: "DEPOSIT" | "FULL";
+  cautionLater?: boolean;
   durationHours?: number;
   mode?: Mode;
 };
@@ -69,7 +70,7 @@ function describe(mode: Mode, durationHours: number | null, priceCents: number, 
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as Body;
-  const { productId, packId, customItems, customerName, email, phone, eventDate, paymentType } = body;
+  const { productId, packId, customItems, customerName, email, phone, eventDate, paymentType, cautionLater } = body;
 
   if ((!productId && !packId && !customItems) || !customerName || !email || !phone || !eventDate) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
@@ -96,6 +97,8 @@ export async function POST(request: NextRequest) {
   const unitCharge = (l: PaymentLine) => (wantsFullPayment ? l.unitFullCents : l.unitDepositCents);
   const amountToCharge = sum(quote.lines, unitCharge);
   const cautionCents = sum(quote.lines, (l) => l.unitCautionCents);
+  // The client may pay the caution later (by the event day) and secure the date with the deposit alone.
+  const deferCaution = cautionCents > 0 && cautionLater === true;
 
   const booking = await prisma.booking.create({
     data: {
@@ -107,6 +110,7 @@ export async function POST(request: NextRequest) {
       eventDate: parsedDate,
       depositAmountCents: amountToCharge,
       cautionCents,
+      cautionLater: deferCaution,
       status: "PENDING_DEPOSIT",
     },
   });
@@ -131,7 +135,7 @@ export async function POST(request: NextRequest) {
         )
       ),
     ...quote.lines
-      .filter((l) => l.unitCautionCents > 0)
+      .filter((l) => !deferCaution && l.unitCautionCents > 0)
       .map((l) =>
         lineItem(
           `Caution remboursable — ${l.name}`,

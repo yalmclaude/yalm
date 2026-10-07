@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatPrice, formatHours, depositAmountCents, type DurationOption } from "@/lib/format";
+import { CautionChoice } from "@/components/CautionChoice";
 
 type Props = {
   productId?: string;
@@ -42,6 +43,7 @@ export function BookingForm({
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [durationHours, setDurationHours] = useState<number | null>(durationOptions[0]?.hours ?? null);
   const [mode, setMode] = useState<"RENT" | "BUY">(saleMode === "BUY" ? "BUY" : "RENT");
+  const [cautionLater, setCautionLater] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +71,8 @@ export function BookingForm({
   const total = unitPrice * quantity;
   // Bought items stay with the client: no caution, and the rental stock doesn't apply.
   const caution = buying ? 0 : cautionCents * quantity;
-  const amountToPay = (paymentType === "FULL" ? total : deposit) + caution;
+  const cautionNow = cautionLater ? 0 : caution;
+  const amountToPay = (paymentType === "FULL" ? total : deposit) + cautionNow;
   const needsDuration = rentalDurations.length > 0 && !chosenDuration;
   const isSoldOut = !buying && remaining !== null && remaining <= 0;
   const exceedsStock = !buying && remaining !== null && quantity > remaining;
@@ -82,7 +85,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours: buying ? null : durationHours, mode }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType, durationHours: buying ? null : durationHours, mode, cautionLater }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -278,15 +281,7 @@ export function BookingForm({
         </div>
       )}
 
-      {caution > 0 && (
-        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
-          Caution remboursable, réglée avec la réservation :{" "}
-          <span className="font-semibold text-bordeaux">{formatPrice(caution)}</span>
-          <p className="mt-1 text-xs text-bordeaux/55">
-            Restituée après l&apos;événement si le matériel est rendu en bon état.
-          </p>
-        </div>
-      )}
+      <CautionChoice cautionCents={caution} later={cautionLater} onChange={setCautionLater} />
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -297,7 +292,7 @@ export function BookingForm({
       >
         {submitting
           ? "Redirection vers le paiement…"
-          : paymentType === "FULL" || caution > 0
+          : paymentType === "FULL" || cautionNow > 0
           ? `Réserver et payer ${formatPrice(amountToPay)}`
           : "Réserver et payer l'acompte"}
       </button>

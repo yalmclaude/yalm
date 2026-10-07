@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
+import { CautionChoice } from "@/components/CautionChoice";
 import {
   canBuy,
   canRent,
@@ -45,6 +46,7 @@ export function CustomFormulaBuilder({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+  const [cautionLater, setCautionLater] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,7 +110,7 @@ export function CustomFormulaBuilder({
   const total = lines.reduce((s, l) => s + l.discountedCents, 0);
   const deposit = lines.reduce((s, l) => s + l.depositCents, 0);
   const caution = lines.reduce((s, l) => s + l.cautionCents, 0);
-  const amountToPay = (paymentType === "FULL" ? total : deposit) + caution;
+  const amountToPay = (paymentType === "FULL" ? total : deposit) + (cautionLater ? 0 : caution);
   const blockedLines = lines.filter((l) => l.choice.mode === "RENT" && unavailable.includes(l.product.id));
 
   async function handleSubmit(e: React.FormEvent) {
@@ -130,6 +132,7 @@ export function CustomFormulaBuilder({
           phone,
           eventDate,
           paymentType,
+          cautionLater,
         }),
       });
       const data = await res.json();
@@ -318,22 +321,14 @@ export function CustomFormulaBuilder({
                   Montant total — <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
                 </span>
               </label>
-              {caution > 0 && (
-                <div className="text-xs text-bordeaux/60">
-                  <p>+ caution remboursable de {formatPrice(caution)}, réglée avec la réservation :</p>
-                  <ul className="mt-1 space-y-0.5">
-                    {lines
-                      .filter((l) => l.cautionCents > 0)
-                      .map((l) => (
-                        <li key={l.product.id} className="flex justify-between gap-3">
-                          <span>{l.product.name}</span>
-                          <span>{formatPrice(l.cautionCents)}</span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
             </div>
+
+            <CautionChoice
+              cautionCents={caution}
+              later={cautionLater}
+              onChange={setCautionLater}
+              breakdown={lines.filter((l) => l.cautionCents > 0).map((l) => ({ name: l.product.name, cents: l.cautionCents }))}
+            />
           </>
         )}
 
