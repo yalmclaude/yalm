@@ -66,7 +66,16 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
 
 export async function getRemainingStockForPack(packId: string, eventDate: Date) {
   const pack = await prisma.pack.findMany({ where: { id: packId }, include: { items: true }, take: 1 }).then((r) => r[0] ?? null);
-  if (!pack || pack.items.length === 0) return 0;
+  if (!pack) return 0;
+
+  // A formule with no products attached has no fleet to check: it can be booked once per date.
+  if (pack.items.length === 0) {
+    const { dayStart, dayEnd } = dayRange(eventDate);
+    const taken = await prisma.booking.count({
+      where: { packId, eventDate: { gte: dayStart, lt: dayEnd }, ...ACTIVE_STATUS_FILTER },
+    });
+    return Math.max(0, 1 - taken);
+  }
 
   let remaining = Infinity;
   for (const item of pack.items) {
