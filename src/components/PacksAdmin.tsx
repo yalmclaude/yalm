@@ -198,11 +198,13 @@ export function PacksAdmin({ products }: { products: ProductOption[] }) {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-gray-700">Prix (centimes)</span>
+              <span className="font-medium text-gray-700">Prix (€)</span>
               <input
                 type="number"
-                value={editing.priceCents}
-                onChange={(e) => setEditing({ ...editing, priceCents: Number(e.target.value) })}
+                min={0}
+                step="0.01"
+                value={editing.priceCents / 100}
+                onChange={(e) => setEditing({ ...editing, priceCents: Math.round(Number(e.target.value) * 100) })}
                 className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
             </label>

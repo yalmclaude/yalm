@@ -390,7 +390,7 @@ export function AdminDashboard() {
                         {p.quoteOnly && <p className="mt-1 text-xs font-medium text-bordeaux">Sur devis</p>}
                         {p.saleMode !== "RENT" && (
                           <p className="mt-1 text-xs text-gray-500">
-                            {p.saleMode === "BUY" ? "Achat" : "Location ou achat"} · achat {formatPrice(p.purchasePriceCents)}
+                            {p.saleMode === "BUY" ? "À garder uniquement" : "Louer ou garder"} · à garder {formatPrice(p.purchasePriceCents)}
                           </p>
                         )}
                         {p.durationOptions?.length > 0 && (
@@ -511,14 +511,39 @@ export function AdminDashboard() {
                 ))}
               </select>
             </Field>
-            <Field label="Prix de location (centimes)">
+            <Field label={editing.saleMode === "BUY" ? "Prix de location (non utilisé)" : "Prix de location (€)"}>
               <input
                 type="number"
-                value={editing.priceCents}
-                onChange={(e) => setEditing({ ...editing, priceCents: Number(e.target.value) })}
+                min={0}
+                step="0.01"
+                value={editing.priceCents / 100}
+                onChange={(e) => setEditing({ ...editing, priceCents: Math.round(Number(e.target.value) * 100) })}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
             </Field>
+            <Field label="Option « à garder »">
+              <select
+                value={editing.saleMode}
+                onChange={(e) => setEditing({ ...editing, saleMode: e.target.value })}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="RENT">Non — location uniquement</option>
+                <option value="BOTH">Oui — le client choisit : louer ou garder</option>
+                <option value="BUY">À garder uniquement (pas de location)</option>
+              </select>
+            </Field>
+            {editing.saleMode !== "RENT" && (
+              <Field label="Prix s'il garde le produit (€)">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={editing.purchasePriceCents / 100}
+                  onChange={(e) => setEditing({ ...editing, purchasePriceCents: Math.round(Number(e.target.value) * 100) })}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </Field>
+            )}
             <Field label="Type d'acompte">
               <select
                 value={editing.depositType}
@@ -558,29 +583,6 @@ export function AdminDashboard() {
                 <option value="false">Non (Bientôt de retour)</option>
               </select>
             </Field>
-            <Field label="Location ou achat">
-              <select
-                value={editing.saleMode}
-                onChange={(e) => setEditing({ ...editing, saleMode: e.target.value })}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="RENT">Location uniquement</option>
-                <option value="BOTH">Location ou achat (le client choisit)</option>
-                <option value="BUY">Achat uniquement (le client le garde)</option>
-              </select>
-            </Field>
-            {editing.saleMode !== "RENT" && (
-              <Field label="Prix d'achat — pour le garder (€)">
-                <input
-                  type="number"
-                  min={0}
-                  step="1"
-                  value={editing.purchasePriceCents / 100}
-                  onChange={(e) => setEditing({ ...editing, purchasePriceCents: Math.round(Number(e.target.value) * 100) })}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-              </Field>
-            )}
             <Field label="Mode de réservation">
               <select
                 value={editing.quoteOnly ? "true" : "false"}
