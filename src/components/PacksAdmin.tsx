@@ -39,7 +39,7 @@ const emptyPack: EditingPack = {
   description: "",
   priceCents: 0,
   depositType: "PERCENT",
-  depositValue: 30,
+  depositValue: 40,
   isAvailable: true,
   allowFullPayment: false,
   cautionCents: 0,

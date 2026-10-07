@@ -291,7 +291,7 @@ export function AdminDashboard() {
                   description: "",
                   priceCents: 0,
                   depositType: "PERCENT",
-                  depositValue: 30,
+                  depositValue: 40,
                   totalQuantity: 1,
                   isAvailable: true,
                   allowFullPayment: false,
