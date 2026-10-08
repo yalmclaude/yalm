@@ -51,9 +51,9 @@ export default function MentionsLegalesPage() {
               .
             </p>
             <p>
-              Contact de l&apos;hébergeur :{" "}
-              <a href={LEGAL.host.contact} className="underline" target="_blank" rel="noreferrer">
-                {LEGAL.host.contact.replace("https://", "")}
+              Téléphone de l&apos;hébergeur : {LEGAL.host.phone}{" "}— email :{" "}
+              <a href={`mailto:${LEGAL.host.email}`} className="underline">
+                {LEGAL.host.email}
               </a>
               .
             </p>

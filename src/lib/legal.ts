@@ -21,7 +21,8 @@ export const LEGAL = {
     name: "Vercel Inc.",
     address: "440 N Barranca Ave #4133, Covina, CA 91723, États-Unis",
     url: "https://vercel.com",
-    contact: "https://vercel.com/contact",
+    phone: "+1 951-383-6898",
+    email: "support@vercel.com",
   },
 };
 
