@@ -29,7 +29,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["card"],
     customer_email: booking.email,
     line_items: [
       ...(due.restCents > 0 ? [line(`Solde — ${title}`, `Événement du ${date} · prix TTC`, due.restCents)] : []),

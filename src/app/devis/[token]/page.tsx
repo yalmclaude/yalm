@@ -98,7 +98,7 @@ export default async function QuotePage({
               <>
                 <QuotePayForm token={token} depositCents={t.depositCents} totalCents={t.totalCents} cautionCents={quote.cautionCents} />
                 <p className="mt-3 text-center text-xs text-bordeaux/55">
-                  En payant, vous acceptez ce devis. Paiement sécurisé par carte avec Stripe.
+                  En payant, vous acceptez ce devis. Paiement sécurisé avec Stripe : carte, PayPal, Klarna…
                 </p>
               </>
             )}

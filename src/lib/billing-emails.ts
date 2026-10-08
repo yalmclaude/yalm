@@ -71,7 +71,7 @@ export async function sendBalanceRequestEmail(b: BookingForEmail, url: string, r
        ${row("Total à régler", formatPrice(restCents + cautionCents), true)}
      </table>
      ${button(url, `Payer ${formatPrice(restCents + cautionCents)}`)}
-     <p style="font-size:13px;color:#7a5a52">Paiement sécurisé par carte. Une question ? Appelez-nous au <strong>${CONTACT_PHONE}</strong>.</p>`
+     <p style="font-size:13px;color:#7a5a52">Paiement sécurisé : carte, PayPal, Klarna… Une question ? Appelez-nous au <strong>${CONTACT_PHONE}</strong>.</p>`
   );
   await sendEmail([{ email: b.email, name: b.customerName }], `Solde de votre réservation — ${orderTitle(b)}`, html, CONTACT_EMAIL);
 }

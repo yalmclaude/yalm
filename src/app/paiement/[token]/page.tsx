@@ -61,7 +61,7 @@ export default async function BalancePage({
                 >
                   Payer {formatPrice(due.totalDueCents)}
                 </button>
-                <p className="mt-3 text-center text-xs text-bordeaux/55">Paiement sécurisé par carte avec Stripe.</p>
+                <p className="mt-3 text-center text-xs text-bordeaux/55">Paiement sécurisé avec Stripe : carte, PayPal, Klarna…</p>
               </form>
             ) : (
               <p className="mt-6 rounded-lg bg-beige-dark/40 p-4 text-center">

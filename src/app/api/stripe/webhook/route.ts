@@ -25,7 +25,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Signature invalide: ${err}` }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
+  // Card, Apple Pay, Google Pay, PayPal, Klarna… are paid when the checkout completes. Delayed methods
+  // (SEPA debit, bank transfer…) complete as "unpaid" and are confirmed later by async_payment_succeeded:
+  // nothing is confirmed or emailed until the money is actually received.
+  const isPaidCheckout =
+    (event.type === "checkout.session.completed" &&
+      (event.data.object as Stripe.Checkout.Session).payment_status !== "unpaid") ||
+    event.type === "checkout.session.async_payment_succeeded";
+
+  if (isPaidCheckout) {
     const session = event.data.object as Stripe.Checkout.Session;
     const paymentIntent = typeof session.payment_intent === "string" ? session.payment_intent : undefined;
     const kind = session.metadata?.kind;

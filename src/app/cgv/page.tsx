@@ -115,7 +115,7 @@ export default function CgvPage() {
               l&apos;échéance, {co}{" "}peut suspendre ou refuser l&apos;exécution de la prestation.
             </p>
             <p>
-              Les paiements en ligne s&apos;effectuent par carte bancaire via la plateforme sécurisée Stripe ;{" "}
+              Les paiements en ligne s&apos;effectuent via la plateforme sécurisée Stripe, par carte bancaire, Apple Pay, Google Pay, PayPal, Klarna ou tout autre moyen proposé au moment du paiement ;{" "}
               {co}{" "}n&apos;a jamais accès aux données bancaires. Le virement, les espèces (dans les limites légales) ou tout
               autre moyen accepté par {co}{" "}sont également possibles ; les chèques ne sont acceptés qu&apos;avec son accord
               exprès.
