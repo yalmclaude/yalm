@@ -30,7 +30,7 @@ export default function MentionsLegalesPage() {
           <Section title="Éditeur du site">
             <p>
               Le site {LEGAL.siteUrl.replace("https://", "")} est édité par <strong>{LEGAL.companyName}</strong>,{" "}
-              {LEGAL.legalForm} au capital de {fill(LEGAL.capital)}, représentée par {fill(LEGAL.owner)}.
+              {LEGAL.legalForm}{" "}au capital de {fill(LEGAL.capital)}, représentée par {fill(LEGAL.owner)}.
             </p>
             <p>Siège social : {LEGAL.address}</p>
             <p>SIREN : {LEGAL.siren} — SIRET : {LEGAL.siret}</p>
@@ -47,6 +47,13 @@ export default function MentionsLegalesPage() {
               Le site est hébergé par {LEGAL.host.name}, {LEGAL.host.address} —{" "}
               <a href={LEGAL.host.url} className="underline" target="_blank" rel="noreferrer">
                 {LEGAL.host.url.replace("https://", "")}
+              </a>
+              .
+            </p>
+            <p>
+              Contact de l&apos;hébergeur :{" "}
+              <a href={LEGAL.host.contact} className="underline" target="_blank" rel="noreferrer">
+                {LEGAL.host.contact.replace("https://", "")}
               </a>
               .
             </p>
@@ -78,6 +85,12 @@ export default function MentionsLegalesPage() {
             <p>
               Le paiement est réalisé par Stripe : vos données bancaires ne transitent pas par nos serveurs et ne nous sont
               jamais communiquées. Les emails de confirmation sont envoyés via Brevo.
+            </p>
+            <p>
+              Certains de ces prestataires (Vercel, Neon, Stripe) hébergent ou traitent des données aux États-Unis. Ces
+              transferts hors de l&apos;Union européenne sont encadrés par les garanties prévues par le RGPD : cadre de
+              protection des données UE–États-Unis (Data Privacy Framework) ou clauses contractuelles types de la Commission
+              européenne.
             </p>
             <p>
               Les données de commande sont conservées le temps nécessaire à la relation commerciale, puis archivées pendant

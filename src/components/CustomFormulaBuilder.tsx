@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
 import { PaymentChoice } from "@/components/PaymentChoice";
+import { TermsCheckbox } from "@/components/TermsCheckbox";
 import {
   canBuy,
   canRent,
@@ -48,6 +49,7 @@ export function CustomFormulaBuilder({
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [cautionLater, setCautionLater] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -138,6 +140,7 @@ export function CustomFormulaBuilder({
           eventDate,
           paymentType: payNow,
           cautionLater,
+          acceptTerms,
         }),
       });
       const data = await res.json();
@@ -350,11 +353,13 @@ export function CustomFormulaBuilder({
           </>
         )}
 
+        {missing === 0 && <TermsCheckbox checked={acceptTerms} onChange={setAcceptTerms} />}
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
-          disabled={submitting || missing > 0 || !eventDate || blockedLines.length > 0}
+          disabled={submitting || missing > 0 || !eventDate || blockedLines.length > 0 || !acceptTerms}
           className="label-caps w-full rounded-md bg-bordeaux px-4 py-3 text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {submitting ? "Redirection vers le paiement…" : missing > 0 ? `Choisissez ${missing} de plus` : `Réserver et payer ${formatPrice(amountToPay)}`}

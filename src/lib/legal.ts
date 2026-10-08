@@ -21,5 +21,14 @@ export const LEGAL = {
     name: "Vercel Inc.",
     address: "440 N Barranca Ave #4133, Covina, CA 91723, États-Unis",
     url: "https://vercel.com",
+    contact: "https://vercel.com/contact",
   },
+};
+
+/* Business rules quoted in the CGV (/cgv). Defaults to be confirmed by YALM Events. */
+export const CGV_RULES = {
+  balanceDaysBefore: 7, // solde dû au plus tard N jours avant l'événement
+  freeCancellationDays: 30, // au-delà : seul l'acompte est conservé ; en deçà : le prix total est dû
+  cautionRefundDays: 15, // délai de restitution de la caution après retour du matériel
+  updatedAt: "8 octobre 2026",
 };

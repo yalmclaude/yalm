@@ -139,6 +139,10 @@ export function SiteFooter() {
         © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
         <a href="/mentions-legales" className="underline hover:text-cream">
           Mentions légales
+        </a>{" "}
+        ·{" "}
+        <a href="/cgv" className="underline hover:text-cream">
+          CGV
         </a>
       </p>
     </footer>

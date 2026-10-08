@@ -19,6 +19,7 @@ type Body = {
   quantity?: number;
   paymentType?: "DEPOSIT" | "FULL";
   cautionLater?: boolean;
+  acceptTerms?: boolean;
   durationHours?: number;
   mode?: Mode;
   customText?: string;
@@ -77,6 +78,9 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as Body;
   const { productId, packId, customItems, customerName, email, phone, eventDate, paymentType, cautionLater } = body;
 
+  if (body.acceptTerms !== true) {
+    return NextResponse.json({ error: "Veuillez accepter les conditions générales de vente" }, { status: 400 });
+  }
   if ((!productId && !packId && !customItems) || !customerName || !email || !phone || !eventDate) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
   }

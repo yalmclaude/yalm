@@ -17,6 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const t = quoteTotals(lines, quote.depositPercent);
   // The client chooses on the devis page: the deposit only, or everything at once.
   const form = await request.formData().catch(() => null);
+  // The CGV must be accepted (checkbox on the devis page).
+  if (!form?.get("acceptTerms")) return NextResponse.redirect(`${origin}/devis/${token}`, 303);
   const payFull = t.depositCents >= t.totalCents || form?.get("pay") === "full";
   const amount = payFull ? t.totalCents : t.depositCents;
   const payCaution = quote.cautionCents > 0 && form?.get("caution") === "1";
