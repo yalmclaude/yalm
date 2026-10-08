@@ -6,14 +6,14 @@ export const LEGAL = {
   siteUrl: "https://www.yalm-events.com",
   companyName: "YALM Events",
   legalForm: "société par actions simplifiée (SAS)",
-  capital: null as string | null, // ex. "1 000 €"
-  owner: null as string | null, // président (personne ou société) et, le cas échéant, son représentant
+  capital: "1 000 €",
+  owner: "Jonathan Loquemanique, directeur général",
   address: "10 passage d'Adrienne, 95000 Cergy",
   siren: "105 185 342",
   siret: "105 185 342 00018",
   rcsOrRm: "RCS Pontoise 105 185 342",
   vatNumber: "FR03 105 185 342",
-  publicationDirector: null as string | null,
+  publicationDirector: "Jonathan Loquemanique",
   mediator: null as { name: string; url: string } | null, // médiateur de la consommation
   email: CONTACT_EMAIL,
   phone: CONTACT_PHONE,

@@ -114,7 +114,7 @@ export default function MentionsLegalesPage() {
                   {LEGAL.mediator.name}
                 </a>
               ) : (
-                fill(null)
+                "en cours de désignation, ses coordonnées seront indiquées ici dès que possible"
               )}
               .
             </p>
