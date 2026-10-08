@@ -135,7 +135,12 @@ export function SiteFooter() {
           {CONTACT_EMAIL}
         </a>
       </div>
-      <p className="mt-4 text-xs text-cream/60">© {new Date().getFullYear()} YALM Events — Tous droits réservés</p>
+      <p className="mt-4 text-xs text-cream/60">
+        © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
+        <a href="/mentions-legales" className="underline hover:text-cream">
+          Mentions légales
+        </a>
+      </p>
     </footer>
   );
 }
