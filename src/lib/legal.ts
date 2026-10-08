@@ -5,12 +5,14 @@ import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contact";
 export const LEGAL = {
   siteUrl: "https://www.yalm-events.com",
   companyName: "YALM Events",
-  legalForm: null as string | null, // ex. "Micro-entreprise" ou "SAS au capital de 1 000 €"
-  owner: null as string | null, // nom et prénom de l'entrepreneur, ou du dirigeant
-  address: null as string | null, // adresse du siège (ou de domiciliation)
-  siret: null as string | null,
-  rcsOrRm: null as string | null, // ex. "RCS Paris 123 456 789", ou null si micro-entrepreneur non inscrit
-  vatNumber: null as string | null, // ou "TVA non applicable, art. 293 B du CGI"
+  legalForm: "société par actions simplifiée (SAS)",
+  capital: null as string | null, // ex. "1 000 €"
+  owner: null as string | null, // président (personne ou société) et, le cas échéant, son représentant
+  address: "10 passage d'Adrienne, 95000 Cergy",
+  siren: "105 185 342",
+  siret: "105 185 342 00018",
+  rcsOrRm: "RCS Pontoise 105 185 342",
+  vatNumber: "FR03 105 185 342",
   publicationDirector: null as string | null,
   mediator: null as { name: string; url: string } | null, // médiateur de la consommation
   email: CONTACT_EMAIL,

@@ -30,12 +30,12 @@ export default function MentionsLegalesPage() {
           <Section title="Éditeur du site">
             <p>
               Le site {LEGAL.siteUrl.replace("https://", "")} est édité par <strong>{LEGAL.companyName}</strong>,{" "}
-              {fill(LEGAL.legalForm)}, représentée par {fill(LEGAL.owner)}.
+              {LEGAL.legalForm} au capital de {fill(LEGAL.capital)}, représentée par {fill(LEGAL.owner)}.
             </p>
-            <p>Adresse : {fill(LEGAL.address)}</p>
-            <p>SIRET : {fill(LEGAL.siret)}</p>
+            <p>Siège social : {LEGAL.address}</p>
+            <p>SIREN : {LEGAL.siren} — SIRET : {LEGAL.siret}</p>
             {LEGAL.rcsOrRm && <p>Immatriculation : {LEGAL.rcsOrRm}</p>}
-            <p>TVA : {fill(LEGAL.vatNumber)}</p>
+            <p>N° de TVA intracommunautaire : {LEGAL.vatNumber}</p>
             <p>
               Contact : <a href={`mailto:${LEGAL.email}`} className="underline">{LEGAL.email}</a> · {LEGAL.phone}
             </p>
