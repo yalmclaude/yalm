@@ -126,6 +126,12 @@ model Booking {
   cautionLater          Boolean       @default(false)
   customText            String        @default("")
   items                 Json?
+  label                 String        @default("") // title shown instead of the product (ex. "Devis DEV-2026-001")
+  quoteId               String?
+  payToken              String?       @unique // link /paiement/<token> to pay the balance
+  balanceRequestedAt    DateTime?
+  balancePaidAt         DateTime?
+  cautionPaidAt         DateTime?
   stripeSessionId       String?
   stripePaymentIntentId String?
   createdAt             DateTime      @default(now())
@@ -214,4 +220,31 @@ model Setting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+enum QuoteStatus {
+  SENT
+  ACCEPTED
+  CANCELLED
+}
+
+// Devis sent from the admin: the client accepts it online by paying the deposit, which creates a booking.
+model Quote {
+  id             String      @id @default(cuid())
+  number         String      @unique // DEV-2026-001
+  token          String      @unique // public link /devis/<token>
+  customerName   String
+  email          String
+  phone          String      @default("")
+  eventDate      DateTime
+  lines          Json        // [{ label, description, priceCents }] — prices TTC
+  depositPercent Int         @default(40)
+  cautionCents   Int         @default(0)
+  note           String      @default("")
+  validUntil     DateTime
+  status         QuoteStatus @default(SENT)
+  bookingId      String?
+  stripeSessionId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }

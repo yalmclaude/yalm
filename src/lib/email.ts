@@ -5,7 +5,7 @@ import { parseCustomLines } from "@/lib/pricing";
 /* Order emails sent once a booking is paid: a confirmation to the client and the order to YALM.
    Sent through Brevo's transactional API (BREVO_API_KEY); without the key nothing is sent. */
 
-type BookingForEmail = {
+export type BookingForEmail = {
   id: string;
   customerName: string;
   email: string;
@@ -20,12 +20,14 @@ type BookingForEmail = {
   cautionCents: number;
   cautionLater: boolean;
   customText: string;
+  label: string;
+  quoteId: string | null;
   product: { name: string } | null;
   pack: { name: string } | null;
 };
 
-const BORDEAUX = "#4e0d15";
-const CREAM = "#f7ead5";
+export const BORDEAUX = "#4e0d15";
+export const CREAM = "#f7ead5";
 
 export async function sendEmail(to: { email: string; name?: string }[], subject: string, html: string, replyTo?: string) {
   const apiKey = process.env.BREVO_API_KEY?.trim();
@@ -46,11 +48,15 @@ export async function sendEmail(to: { email: string; name?: string }[], subject:
   if (!res.ok) throw new Error(`Brevo a refusé l'envoi (${res.status}) : ${await res.text()}`);
 }
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function orderLines(b: BookingForEmail) {
   const custom = parseCustomLines(b.items);
   if (custom.length) {
+    // Lines of an accepted devis carry their description in customText.
+    if (b.quoteId) {
+      return custom.map((l) => ({ name: l.name, detail: l.customText ?? "", price: formatPrice(l.discountedCents), text: "" }));
+    }
     return custom.map((l) => ({
       name: l.name,
       detail: [l.mode === "BUY" ? "À garder" : "Location", l.durationHours ? formatHours(l.durationHours) : null]
@@ -71,7 +77,8 @@ function orderLines(b: BookingForEmail) {
   return [{ name, detail, price: b.totalCents ? formatPrice(b.totalCents) : "", text: b.customText }];
 }
 
-export function orderTitle(b: BookingForEmail) {
+export function orderTitle(b: Pick<BookingForEmail, "label" | "product" | "pack" | "items">) {
+  if (b.label) return b.label;
   return b.product?.name ?? b.pack?.name ?? (parseCustomLines(b.items).length ? "Formule personnalisée" : "Prestation");
 }
 
@@ -105,7 +112,7 @@ function summaryTable(b: BookingForEmail) {
     </table>`;
 }
 
-function layout(title: string, body: string) {
+export function layout(title: string, body: string) {
   return `
   <div style="background:${CREAM};padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#2b2b2b">
     <div style="max-width:600px;margin:0 auto;background:#fffaf3;border-radius:8px;overflow:hidden">

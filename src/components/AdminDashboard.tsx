@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatPrice, formatHours, parseDurationOptions, type DurationOption } from "@/lib/format";
 import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
 import { parseCustomLines, type CustomLine } from "@/lib/pricing";
+import { balanceDue } from "@/lib/billing-calc";
 import { PacksAdmin } from "@/components/PacksAdmin";
 import { HowItWorksAdmin } from "@/components/HowItWorksAdmin";
 import { ProductImageGalleryAdmin } from "@/components/ProductImageGalleryAdmin";
@@ -49,8 +50,14 @@ type Booking = {
   quantity: number;
   status: string;
   depositAmountCents: number;
+  totalCents: number;
   cautionCents: number;
   cautionLater: boolean;
+  cautionPaidAt: string | null;
+  balancePaidAt: string | null;
+  balanceRequestedAt: string | null;
+  label: string;
+  quoteId: string | null;
   customText: string;
   durationHours: number | null;
   product: { name: string } | null;
@@ -257,6 +264,9 @@ export function AdminDashboard() {
         <span className="border-b-2 border-bordeaux px-4 py-2.5 text-sm font-semibold text-bordeaux">
           Catalogue &amp; réservations
         </span>
+        <a href="/admin/devis" className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-bordeaux">
+          Devis
+        </a>
         <a
           href="/admin/coffrets"
           className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-bordeaux"
@@ -698,7 +708,7 @@ ${data.error ?? "erreur inconnue"}`
                 <th className="px-3 py-2">Produit</th>
                 <th className="px-3 py-2">Date événement</th>
                 <th className="px-3 py-2">Qté</th>
-                <th className="px-3 py-2">Acompte</th>
+                <th className="px-3 py-2">Payé / solde</th>
                 <th className="px-3 py-2">Caution</th>
                 <th className="px-3 py-2">Statut</th>
                 <th className="px-3 py-2">Actions</th>
@@ -714,17 +724,19 @@ ${data.error ?? "erreur inconnue"}`
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    {b.product?.name ?? b.pack?.name ?? (b.items ? "Formule personnalisée" : "—")}
+                    {b.label || b.product?.name || b.pack?.name || (b.items ? "Formule personnalisée" : "—")}
                     {b.purchase && <div className="text-xs font-medium text-bordeaux">Achat (à garder)</div>}
                     {b.durationHours ? <div className="text-xs text-gray-500">{formatHours(b.durationHours)}</div> : null}
                     {b.customText && (
                       <div className="mt-1 whitespace-pre-line rounded bg-amber-50 px-2 py-1 text-xs text-amber-900">Texte : « {b.customText} »</div>
                     )}
-                    {parseCustomLines(b.items).map((l) => (
-                      <div key={l.productId} className="text-xs text-gray-500">
-                        {l.name} · {l.mode === "BUY" ? "à garder" : "location"}
+                    {parseCustomLines(b.items).map((l, i) => (
+                      <div key={`${l.productId}-${i}`} className="text-xs text-gray-500">
+                        {l.name}
+                        {!b.quoteId && <> · {l.mode === "BUY" ? "à garder" : "location"}</>}
                         {l.durationHours ? ` ${formatHours(l.durationHours)}` : ""} · {formatPrice(l.discountedCents)}
-                        {l.customText && (
+                        {l.customText && b.quoteId && <div className="whitespace-pre-line text-gray-400">{l.customText}</div>}
+                        {l.customText && !b.quoteId && (
                           <div className="mt-0.5 whitespace-pre-line rounded bg-amber-50 px-2 py-1 text-amber-900">Texte : « {l.customText} »</div>
                         )}
                       </div>
@@ -732,13 +744,25 @@ ${data.error ?? "erreur inconnue"}`
                   </td>
                   <td className="px-3 py-2">{new Date(b.eventDate).toLocaleDateString("fr-FR")}</td>
                   <td className="px-3 py-2">{b.quantity}</td>
-                  <td className="px-3 py-2">{formatPrice(b.depositAmountCents)}</td>
+                  <td className="px-3 py-2">
+                    {formatPrice(b.depositAmountCents)}
+                    {b.totalCents > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {b.balancePaidAt || b.depositAmountCents >= b.totalCents
+                          ? "Soldé"
+                          : `Reste ${formatPrice(b.totalCents - b.depositAmountCents)}`}
+                        {b.balanceRequestedAt && !b.balancePaidAt && b.depositAmountCents < b.totalCents && (
+                          <span className="block">demandé le {new Date(b.balanceRequestedAt).toLocaleDateString("fr-FR")}</span>
+                        )}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     {b.cautionCents > 0 ? (
                       <>
                         {formatPrice(b.cautionCents)}
                         <div className="text-xs text-gray-500">
-                          {b.cautionLater ? "À régler plus tard" : "Payée en ligne"}
+                          {!b.cautionLater || b.cautionPaidAt ? "Payée en ligne" : "À régler plus tard"}
                         </div>
                       </>
                     ) : (
@@ -749,7 +773,35 @@ ${data.error ?? "erreur inconnue"}`
                     <StatusBadge status={b.status} />
                   </td>
                   <td className="px-3 py-2">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {b.status === "CONFIRMED" &&
+                        (() => {
+                          const due = balanceDue({
+                            ...b,
+                            balancePaidAt: b.balancePaidAt ? new Date(b.balancePaidAt) : null,
+                            cautionPaidAt: b.cautionPaidAt ? new Date(b.cautionPaidAt) : null,
+                          });
+                          if (due.totalDueCents <= 0) return null;
+                          return (
+                            <button
+                              onClick={async () => {
+                                const parts = [
+                                  due.restCents > 0 ? `solde ${formatPrice(due.restCents)}` : "",
+                                  due.cautionCents > 0 ? `caution ${formatPrice(due.cautionCents)}` : "",
+                                ].filter(Boolean);
+                                if (!confirm(`Envoyer à ${b.email} un lien pour payer ${parts.join(" + ")} ?`)) return;
+                                const res = await fetch(`/api/admin/bookings/${b.id}/balance`, { method: "POST" });
+                                const data = await res.json().catch(() => ({}));
+                                if (data.ok) alert(`Email envoyé. Lien de paiement :\n${data.url}`);
+                                else alert(`${data.error ?? "Erreur"}${data.url ? `\n\nLien à envoyer vous-même :\n${data.url}` : ""}`);
+                                loadData();
+                              }}
+                              className="rounded bg-bordeaux px-2 py-1 text-xs font-medium text-white hover:bg-bordeaux-dark"
+                            >
+                              Demander le solde
+                            </button>
+                          );
+                        })()}
                       {b.status === "CONFIRMED" && (
                         <button
                           onClick={async () => {
