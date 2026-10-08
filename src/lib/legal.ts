@@ -11,7 +11,7 @@ export const LEGAL = {
   address: "10 passage d'Adrienne, 95000 Cergy",
   siren: "105 185 342",
   siret: "105 185 342 00018",
-  rcsOrRm: "RCS Pontoise 105 185 342",
+  rcsOrRm: null as string | null, // ex. "RCS Pontoise 105 185 342" : à confirmer sur le Kbis avant affichage
   vatNumber: "FR03 105 185 342",
   publicationDirector: "Jonathan Loquemanique",
   mediator: null as { name: string; url: string } | null, // médiateur de la consommation
