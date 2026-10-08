@@ -20,7 +20,19 @@ type Quote = {
   createdAt: string;
 };
 
-type CatalogItem = { id: string; name: string; description: string; priceCents: number; purchasePriceCents: number; saleMode: string };
+type CatalogItem = {
+  id: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  purchasePriceCents: number;
+  saleMode: string;
+  cautionCents: number;
+};
+
+// A devis line in the form also carries its caution; the devis caution is their sum.
+type FormLine = QuoteLine & { cautionCents: number };
+const blankLine = (): FormLine => ({ label: "", description: "", priceCents: 0, cautionCents: 0 });
 
 const emptyForm = {
   customerName: "",
@@ -28,10 +40,9 @@ const emptyForm = {
   phone: "",
   eventDate: "",
   depositPercent: 40,
-  cautionEuros: 0,
   validDays: 30,
   note: "",
-  lines: [{ label: "", description: "", priceCents: 0 }] as QuoteLine[],
+  lines: [blankLine()] as FormLine[],
 };
 
 const input = "w-full rounded border border-gray-300 px-3 py-2 text-sm";
@@ -60,7 +71,7 @@ export function QuotesAdmin() {
       .catch(() => {});
   }, []);
 
-  const setLine = (i: number, patch: Partial<QuoteLine>) =>
+  const setLine = (i: number, patch: Partial<FormLine>) =>
     setForm({ ...form, lines: form.lines.map((l, j) => (j === i ? { ...l, ...patch } : l)) });
 
   function addFromCatalog(id: string) {
@@ -68,10 +79,12 @@ export function QuotesAdmin() {
     if (!p) return;
     const price = p.saleMode === "BUY" ? p.purchasePriceCents : p.priceCents;
     const blank = form.lines.length === 1 && !form.lines[0].label && !form.lines[0].priceCents;
-    const line = { label: p.name.trim(), description: p.description, priceCents: price };
+    // Bought items stay with the client: no caution for them.
+    const line = { label: p.name.trim(), description: p.description, priceCents: price, cautionCents: p.saleMode === "BUY" ? 0 : p.cautionCents };
     setForm({ ...form, lines: blank ? [line] : [...form.lines, line] });
   }
 
+  const cautionCents = form.lines.reduce((s, l) => s + (l.label.trim() ? l.cautionCents : 0), 0);
   const totals = quoteTotals(
     form.lines.filter((l) => l.label.trim()),
     form.depositPercent
@@ -82,7 +95,7 @@ export function QuotesAdmin() {
     const res = await fetch("/api/admin/quotes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, cautionCents: Math.round(form.cautionEuros * 100) }),
+      body: JSON.stringify({ ...form, cautionCents }),
     });
     const data = await res.json().catch(() => ({}));
     setSending(false);
@@ -187,9 +200,15 @@ export function QuotesAdmin() {
                 </select>
               )}
             </div>
-            <div className="mt-2 space-y-3">
+            <div className="mt-2 hidden gap-2 px-3 text-xs text-gray-500 sm:grid sm:grid-cols-[1fr_7rem_7rem_auto]">
+              <span>Prestation</span>
+              <span>Prix TTC (€)</span>
+              <span>Caution (€)</span>
+              <span className="w-12" />
+            </div>
+            <div className="mt-1 space-y-3">
               {form.lines.map((l, i) => (
-                <div key={i} className="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-[1fr_8rem_auto]">
+                <div key={i} className="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-[1fr_7rem_7rem_auto]">
                   <input placeholder="Prestation (ex. Photobooth 360°)" className={input} value={l.label} onChange={(e) => setLine(i, { label: e.target.value })} />
                   <input
                     type="number"
@@ -199,6 +218,16 @@ export function QuotesAdmin() {
                     className={input}
                     value={l.priceCents / 100 || ""}
                     onChange={(e) => setLine(i, { priceCents: Math.round(Number(e.target.value) * 100) })}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    step="1"
+                    placeholder="Caution €"
+                    title="Caution remboursable pour cette ligne"
+                    className={input}
+                    value={l.cautionCents / 100 || ""}
+                    onChange={(e) => setLine(i, { cautionCents: Math.round(Number(e.target.value) * 100) })}
                   />
                   <button
                     type="button"
@@ -211,7 +240,7 @@ export function QuotesAdmin() {
                   <textarea
                     placeholder="Détail (optionnel) : durée, options, livraison…"
                     rows={2}
-                    className={`${input} sm:col-span-3`}
+                    className={`${input} sm:col-span-4`}
                     value={l.description}
                     onChange={(e) => setLine(i, { description: e.target.value })}
                   />
@@ -220,7 +249,7 @@ export function QuotesAdmin() {
             </div>
             <button
               type="button"
-              onClick={() => setForm({ ...form, lines: [...form.lines, { label: "", description: "", priceCents: 0 }] })}
+              onClick={() => setForm({ ...form, lines: [...form.lines, blankLine()] })}
               className="mt-2 rounded border border-bordeaux/40 px-3 py-1.5 text-xs font-medium text-bordeaux hover:bg-bordeaux/5"
             >
               + Ajouter une ligne
@@ -232,10 +261,11 @@ export function QuotesAdmin() {
               <span className="font-medium text-gray-700">Acompte (%) — 0 = paiement total</span>
               <input type="number" min={0} max={100} className={`mt-1 ${input}`} value={form.depositPercent} onChange={(e) => setForm({ ...form, depositPercent: Number(e.target.value) })} />
             </label>
-            <label className="block text-sm">
-              <span className="font-medium text-gray-700">Caution remboursable (€)</span>
-              <input type="number" min={0} className={`mt-1 ${input}`} value={form.cautionEuros} onChange={(e) => setForm({ ...form, cautionEuros: Number(e.target.value) })} />
-            </label>
+            <div className="block text-sm">
+              <span className="font-medium text-gray-700">Caution remboursable</span>
+              <p className="mt-1 rounded border border-gray-200 bg-gray-50 px-3 py-2">{formatPrice(cautionCents)}</p>
+              <span className="mt-1 block text-xs text-gray-500">Somme des cautions des lignes</span>
+            </div>
             <label className="block text-sm">
               <span className="font-medium text-gray-700">Valable (jours)</span>
               <input type="number" min={1} max={180} className={`mt-1 ${input}`} value={form.validDays} onChange={(e) => setForm({ ...form, validDays: Number(e.target.value) })} />
@@ -250,7 +280,8 @@ export function QuotesAdmin() {
             <p className="flex justify-between"><span>Total HT</span><span>{formatPrice(totals.htCents)}</span></p>
             <p className="flex justify-between"><span>TVA ({VAT_RATE} %)</span><span>{formatPrice(totals.vatCents)}</span></p>
             <p className="flex justify-between font-semibold text-anthracite"><span>Total TTC</span><span>{formatPrice(totals.totalCents)}</span></p>
-            <p className="mt-1 flex justify-between"><span>À payer pour accepter</span><span>{formatPrice(totals.depositCents)}</span></p>
+            <p className="mt-1 flex justify-between"><span>Acompte</span><span>{formatPrice(totals.depositCents)}</span></p>
+            {cautionCents > 0 && <p className="flex justify-between"><span>Caution remboursable</span><span>{formatPrice(cautionCents)}</span></p>}
           </div>
 
           <button
