@@ -25,10 +25,21 @@ export const LEGAL = {
   },
 };
 
-/* Business rules quoted in the CGV (/cgv). Defaults to be confirmed by YALM Events. */
+/* Business rules quoted in the CGV (/cgv), taken from YALM Events' "Contrat de prestations de services
+   événementiels". */
 export const CGV_RULES = {
-  balanceDaysBefore: 7, // solde dû au plus tard N jours avant l'événement
-  freeCancellationDays: 30, // au-delà : seul l'acompte est conservé ; en deçà : le prix total est dû
-  cautionRefundDays: 15, // délai de restitution de la caution après retour du matériel
+  depositPercent: 40, // acompte (au sens du Code civil, pas des arrhes)
+  balanceDaysBefore: 7, // solde dû au plus tard N jours calendaires avant l'événement
+  cautionRefundDays: 15, // délai maximal de restitution du dépôt de garantie
+  includedTravelKm: 15, // déplacement inclus autour du siège
+  waitingMinutes: 30, // attente imputable au client au-delà de laquelle un supplément peut être facturé
+  filesKeptMonths: 6, // conservation des photos et vidéos après livraison
+  // Sommes restant dues en cas d'annulation par le client, selon le délai avant l'événement.
+  cancellation: [
+    { when: "Plus de 90 jours avant l'événement", due: "l'acompte reste acquis" },
+    { when: "Entre 90 et 31 jours", due: "70 % du montant TTC de la commande" },
+    { when: "Entre 30 et 15 jours", due: "85 % du montant TTC de la commande" },
+    { when: "Moins de 15 jours", due: "100 % du montant TTC de la commande" },
+  ],
   updatedAt: "8 octobre 2026",
 };
