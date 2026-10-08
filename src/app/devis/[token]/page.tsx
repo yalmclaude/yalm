@@ -94,12 +94,28 @@ export default async function QuotePage({
                 Ce devis a expiré. Appelez-nous au {CONTACT_PHONE} pour le renouveler.
               </p>
             ) : (
-              <form action={`/api/devis/${token}`} method="post" className="mt-6">
+              <form action={`/api/devis/${token}`} method="post" className="mt-6 space-y-3">
+                {partial && (
+                  <button
+                    type="submit"
+                    name="pay"
+                    value="deposit"
+                    className="label-caps w-full rounded-md bg-bordeaux px-4 py-3.5 text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light"
+                  >
+                    Accepter et payer l&apos;acompte — {formatPrice(t.depositCents)}
+                  </button>
+                )}
                 <button
                   type="submit"
-                  className="label-caps w-full rounded-md bg-bordeaux px-4 py-3.5 text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light"
+                  name="pay"
+                  value="full"
+                  className={`label-caps w-full rounded-md px-4 py-3.5 transition-all hover:-translate-y-0.5 ${
+                    partial
+                      ? "border border-bordeaux text-bordeaux hover:bg-bordeaux/5"
+                      : "bg-bordeaux text-cream hover:bg-bordeaux-light"
+                  }`}
                 >
-                  {partial ? `Accepter et payer l'acompte — ${formatPrice(t.depositCents)}` : `Accepter et payer — ${formatPrice(t.totalCents)}`}
+                  {partial ? "Accepter et payer la totalité" : "Accepter et payer"} — {formatPrice(t.totalCents)}
                 </button>
                 <p className="mt-3 text-center text-xs text-bordeaux/55">
                   En payant, vous acceptez ce devis. Paiement sécurisé par carte avec Stripe.

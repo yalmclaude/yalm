@@ -90,8 +90,8 @@ async function onQuoteAccepted(session: Stripe.Checkout.Session, paymentIntent?:
         quoteId: quote.id,
         stripeSessionId: session.id,
         stripePaymentIntentId: paymentIntent,
-        // Paid in full when accepting: nothing left but a possible caution.
-        balancePaidAt: totals.depositCents >= totals.totalCents ? new Date() : null,
+        // Paid in full when accepting (client's choice, or no deposit): nothing left but a possible caution.
+        balancePaidAt: session.metadata?.payFull === "1" || totals.depositCents >= totals.totalCents ? new Date() : null,
       },
       include: withNames,
     });

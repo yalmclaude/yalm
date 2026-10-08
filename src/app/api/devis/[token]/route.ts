@@ -15,7 +15,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const lines = parseQuoteLines(quote.lines);
   const t = quoteTotals(lines, quote.depositPercent);
-  const partial = t.depositCents < t.totalCents;
+  // The client chooses on the devis page: the deposit only, or everything at once.
+  const form = await request.formData().catch(() => null);
+  const payFull = t.depositCents >= t.totalCents || form?.get("pay") === "full";
+  const amount = payFull ? t.totalCents : t.depositCents;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -25,9 +28,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       {
         price_data: {
           currency: "eur",
-          unit_amount: t.depositCents,
+          unit_amount: amount,
           product_data: {
-            name: `${partial ? `Acompte (${quote.depositPercent} %)` : "Paiement"} — devis ${quote.number}`,
+            name: `${payFull ? "Paiement intégral" : `Acompte (${quote.depositPercent} %)`} — devis ${quote.number}`,
             description: `${lines.map((l) => l.label).join(", ").slice(0, 400)} · événement du ${quote.eventDate.toLocaleDateString("fr-FR")} · total TTC ${(t.totalCents / 100).toFixed(2).replace(".", ",")} €`,
           },
         },
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ],
     success_url: `${origin}/devis/${token}?paye=1`,
     cancel_url: `${origin}/devis/${token}`,
-    metadata: { kind: "quote", quoteId: quote.id },
+    metadata: { kind: "quote", quoteId: quote.id, payFull: payFull ? "1" : "0" },
   });
 
   await prisma.quote.update({ where: { id: quote.id }, data: { stripeSessionId: session.id } });

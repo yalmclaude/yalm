@@ -47,11 +47,11 @@ export async function sendQuoteEmail(q: QuoteForEmail, url: string) {
      <table style="width:100%;border-collapse:collapse;margin-top:14px">
        ${row("Total TTC", formatPrice(t.totalCents), true)}
        ${row(`dont TVA (${VAT_RATE} %)`, formatPrice(t.vatCents))}
-       ${row(partial ? "Acompte pour réserver la date" : "À régler pour réserver la date", formatPrice(t.depositCents), true)}
+       ${row(partial ? "Acompte pour réserver la date (ou la totalité, au choix)" : "À régler pour réserver la date", formatPrice(t.depositCents), true)}
        ${q.cautionCents > 0 ? row("Caution remboursable, réglée avec le solde", formatPrice(q.cautionCents)) : ""}
      </table>
      ${q.note ? `<p style="margin-top:18px;white-space:pre-line">${esc(q.note)}</p>` : ""}
-     ${button(url, partial ? "Accepter et payer l'acompte" : "Accepter et payer")}
+     ${button(url, "Voir et accepter le devis")}
      <p style="font-size:13px;color:#7a5a52">Devis valable jusqu'au ${q.validUntil.toLocaleDateString("fr-FR")}. Une question ? Appelez-nous au <strong>${CONTACT_PHONE}</strong> ou répondez à cet email.</p>`
   );
   await sendEmail([{ email: q.email, name: q.customerName }], `Votre devis YALM Events — ${q.number}`, html, CONTACT_EMAIL);
