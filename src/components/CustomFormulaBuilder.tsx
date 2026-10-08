@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
-import { CautionChoice } from "@/components/CautionChoice";
+import { PaymentChoice } from "@/components/PaymentChoice";
 import {
   canBuy,
   canRent,
@@ -325,34 +325,28 @@ export function CustomFormulaBuilder({
               <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
             </div>
 
-            {fullOnly ? (
-              <div className="rounded-lg border border-bordeaux/10 bg-beige-dark/40 p-3.5 text-sm text-bordeaux/80">
-                Paiement de la totalité à la réservation : <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
-              </div>
-            ) : (
-            <div className="space-y-2 rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4">
-              <p className="text-sm font-medium text-bordeaux/80">Mode de paiement</p>
-              <label className="flex cursor-pointer items-center gap-3">
-                <input type="radio" name="paymentType" checked={paymentType === "DEPOSIT"} onChange={() => setPaymentType("DEPOSIT")} className="accent-bordeaux" />
-                <span className="text-sm text-bordeaux/80">
-                  Acompte — <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
-                </span>
-              </label>
-              <label className="flex cursor-pointer items-center gap-3">
-                <input type="radio" name="paymentType" checked={paymentType === "FULL"} onChange={() => setPaymentType("FULL")} className="accent-bordeaux" />
-                <span className="text-sm text-bordeaux/80">
-                  Montant total — <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
-                </span>
-              </label>
-            </div>
-            )}
-
-            <CautionChoice
+            <PaymentChoice
+              depositCents={deposit}
+              totalCents={total}
               cautionCents={caution}
-              later={cautionLater}
-              onChange={setCautionLater}
-              breakdown={lines.filter((l) => l.cautionCents > 0).map((l) => ({ name: l.product.name, cents: l.cautionCents }))}
+              value={{ full: payNow === "FULL", caution: !cautionLater }}
+              onChange={(v) => {
+                setPaymentType(v.full ? "FULL" : "DEPOSIT");
+                setCautionLater(!v.caution);
+              }}
             />
+            {caution > 0 && lines.filter((l) => l.cautionCents > 0).length > 1 && (
+              <ul className="-mt-2 space-y-0.5 text-xs text-bordeaux/55">
+                {lines
+                  .filter((l) => l.cautionCents > 0)
+                  .map((l) => (
+                    <li key={l.product.id} className="flex justify-between gap-3">
+                      <span>Caution {l.product.name}</span>
+                      <span>{formatPrice(l.cautionCents)}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
           </>
         )}
 

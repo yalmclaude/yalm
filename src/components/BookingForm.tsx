@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatPrice, formatHours, type DurationOption } from "@/lib/format";
-import { CautionChoice } from "@/components/CautionChoice";
+import { PaymentChoice } from "@/components/PaymentChoice";
 import { depositFor } from "@/lib/pricing";
 
 type Props = {
@@ -268,51 +268,17 @@ export function BookingForm({
         />
       </div>
 
-      {allowFullPayment && !fullOnly && (
-        <div className="rounded-lg border border-bordeaux/15 bg-beige-dark/40 p-4 space-y-2">
-          <p className="text-sm font-medium text-bordeaux/80">Mode de paiement</p>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="paymentType"
-              value="DEPOSIT"
-              checked={paymentType === "DEPOSIT"}
-              onChange={() => setPaymentType("DEPOSIT")}
-              className="accent-bordeaux"
-            />
-            <span className="text-sm text-bordeaux/80">
-              Payer l&apos;acompte uniquement — <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
-            </span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="paymentType"
-              value="FULL"
-              checked={paymentType === "FULL"}
-              onChange={() => setPaymentType("FULL")}
-              className="accent-bordeaux"
-            />
-            <span className="text-sm text-bordeaux/80">
-              Payer le montant total — <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
-            </span>
-          </label>
-        </div>
-      )}
-
-      {!allowFullPayment && !fullOnly && (
-        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
-          Acompte à régler pour bloquer la date : <span className="font-semibold text-bordeaux">{formatPrice(deposit)}</span>
-        </div>
-      )}
-
-      {fullOnly && (
-        <div className="rounded-lg bg-beige-dark/40 border border-bordeaux/10 p-3.5 text-sm text-bordeaux/80">
-          Paiement de la totalité à la réservation : <span className="font-semibold text-bordeaux">{formatPrice(total)}</span>
-        </div>
-      )}
-
-      <CautionChoice cautionCents={caution} later={cautionLater} onChange={setCautionLater} />
+      <PaymentChoice
+        depositCents={deposit}
+        totalCents={total}
+        cautionCents={caution}
+        allowFull={allowFullPayment}
+        value={{ full: payNow === "FULL", caution: !cautionLater }}
+        onChange={(v) => {
+          setPaymentType(v.full ? "FULL" : "DEPOSIT");
+          setCautionLater(!v.caution);
+        }}
+      />
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -323,9 +289,7 @@ export function BookingForm({
       >
         {submitting
           ? "Redirection vers le paiement…"
-          : payNow === "FULL" || cautionNow > 0
-          ? `Réserver et payer ${formatPrice(amountToPay)}`
-          : "Réserver et payer l'acompte"}
+          : `Réserver et payer ${formatPrice(amountToPay)}`}
       </button>
     </form>
   );

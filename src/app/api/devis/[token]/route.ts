@@ -19,6 +19,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const form = await request.formData().catch(() => null);
   const payFull = t.depositCents >= t.totalCents || form?.get("pay") === "full";
   const amount = payFull ? t.totalCents : t.depositCents;
+  const payCaution = quote.cautionCents > 0 && form?.get("caution") === "1";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -36,10 +37,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         },
         quantity: 1,
       },
+      ...(payCaution
+        ? [
+            {
+              price_data: {
+                currency: "eur",
+                unit_amount: quote.cautionCents,
+                product_data: {
+                  name: `Caution remboursable — devis ${quote.number}`,
+                  description: "Restituée après l'événement si le matériel est rendu en bon état",
+                },
+              },
+              quantity: 1,
+            },
+          ]
+        : []),
     ],
     success_url: `${origin}/devis/${token}?paye=1`,
     cancel_url: `${origin}/devis/${token}`,
-    metadata: { kind: "quote", quoteId: quote.id, payFull: payFull ? "1" : "0" },
+    metadata: { kind: "quote", quoteId: quote.id, payFull: payFull ? "1" : "0", cautionPaid: payCaution ? "1" : "0" },
   });
 
   await prisma.quote.update({ where: { id: quote.id }, data: { stripeSessionId: session.id } });
