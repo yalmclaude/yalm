@@ -20,16 +20,16 @@ export function HeroSection() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a
-              href="#catalogue"
+              href="#formules"
               className="label-caps w-44 rounded-md bg-bordeaux px-4 py-3 text-center text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light"
             >
-              Nos prestations
+              Nos formules
             </a>
             <a
-              href="#formules"
+              href="#catalogue"
               className="label-caps w-44 rounded-md border border-bordeaux px-4 py-3 text-center text-bordeaux transition-all hover:-translate-y-0.5 hover:bg-bordeaux/5"
             >
-              Nos formules
+              Nos prestations
             </a>
           </div>
         </div>
