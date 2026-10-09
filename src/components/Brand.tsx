@@ -171,7 +171,6 @@ export function SiteFooter() {
           </a>
         ))}
       </div>
-      <p className="mt-2 text-xs text-cream/60">@yalm.events</p>
       <p className="mt-4 text-xs text-cream/60">
         © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
         <a href="/mentions-legales" className="underline hover:text-cream">
