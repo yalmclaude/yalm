@@ -76,7 +76,9 @@ export default function CgvPage() {
               La réservation devient ferme et définitive lorsque la commande ou le devis est accepté et que l&apos;acompte
               prévu (ou la totalité du prix) est effectivement encaissé par {co}. Lorsqu&apos;un contrat de prestations est
               proposé, sa signature est également requise. Tant que ces conditions ne sont pas réunies,{" "}
-              {co}{" "}reste libre d&apos;accepter une autre réservation pour la même date.
+              {co}{" "}reste libre d&apos;accepter une autre réservation pour la même date. En cas de paiement par virement
+              bancaire, la date est réservée pendant le délai indiqué lors de la commande ; si le virement n&apos;est pas
+              reçu dans ce délai, la réservation peut être annulée sans frais.
             </p>
             <p>
               Le client s&apos;engage à fournir des informations exactes (date, horaires, lieu, nombre approximatif

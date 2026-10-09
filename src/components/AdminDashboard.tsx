@@ -6,6 +6,7 @@ import { formatPrice, formatHours, parseDurationOptions, type DurationOption } f
 import { DurationOptionsEditor } from "@/components/DurationOptionsEditor";
 import { parseCustomLines, type CustomLine } from "@/lib/pricing";
 import { balanceDue } from "@/lib/billing-calc";
+import { BankTransferAdmin } from "@/components/BankTransferAdmin";
 import { PacksAdmin } from "@/components/PacksAdmin";
 import { HowItWorksAdmin } from "@/components/HowItWorksAdmin";
 import { ProductImageGalleryAdmin } from "@/components/ProductImageGalleryAdmin";
@@ -56,6 +57,9 @@ type Booking = {
   cautionPaidAt: string | null;
   balancePaidAt: string | null;
   balanceRequestedAt: string | null;
+  paymentMethod: string;
+  transferRef: string | null;
+  transferDueAt: string | null;
   label: string;
   quoteId: string | null;
   customText: string;
@@ -681,6 +685,11 @@ export function AdminDashboard() {
       </section>
 
       <section className="mt-10">
+        <h2 className="text-lg font-semibold text-anthracite">Paiement par virement</h2>
+        <BankTransferAdmin />
+      </section>
+
+      <section className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-anthracite">Réservations</h2>
           <button
@@ -770,10 +779,43 @@ ${data.error ?? "erreur inconnue"}`
                     )}
                   </td>
                   <td className="px-3 py-2">
-                    <StatusBadge status={b.status} />
+                    {b.status === "PENDING_DEPOSIT" && b.paymentMethod === "TRANSFER" ? (
+                      <div className="text-xs">
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-800">Attente virement</span>
+                        <div className="mt-1 font-mono text-gray-600">{b.transferRef}</div>
+                        {b.transferDueAt && (
+                          <div className={new Date(b.transferDueAt) < new Date() ? "text-red-600" : "text-gray-500"}>
+                            {new Date(b.transferDueAt) < new Date() ? "Délai dépassé le " : "Date bloquée jusqu'au "}
+                            {new Date(b.transferDueAt).toLocaleDateString("fr-FR")}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <StatusBadge status={b.status} />
+                    )}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-2">
+                      {b.status === "PENDING_DEPOSIT" && b.paymentMethod === "TRANSFER" && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Confirmer que le virement ${b.transferRef} de ${b.customerName} est bien arrivé sur votre compte ?`)) return;
+                            const res = await fetch(`/api/admin/bookings/${b.id}/transfer-received`, { method: "POST" });
+                            const data = await res.json().catch(() => ({}));
+                            alert(
+                              res.ok
+                                ? data.emailErrors?.length
+                                  ? `Réservation confirmée, mais l'email n'est pas parti : ${data.emailErrors.join(" / ")}`
+                                  : "Réservation confirmée. Le client a reçu sa confirmation."
+                                : data.error ?? "Erreur"
+                            );
+                            loadData();
+                          }}
+                          className="rounded bg-green-700 px-2 py-1 text-xs font-medium text-white hover:bg-green-800"
+                        >
+                          Virement reçu
+                        </button>
+                      )}
                       {b.status === "CONFIRMED" &&
                         (() => {
                           const due = balanceDue({
@@ -799,6 +841,29 @@ ${data.error ?? "erreur inconnue"}`
                               className="rounded bg-bordeaux px-2 py-1 text-xs font-medium text-white hover:bg-bordeaux-dark"
                             >
                               Demander le solde
+                            </button>
+                          );
+                        })()}
+                      {b.status === "CONFIRMED" &&
+                        (() => {
+                          const due = balanceDue({
+                            ...b,
+                            balancePaidAt: b.balancePaidAt ? new Date(b.balancePaidAt) : null,
+                            cautionPaidAt: b.cautionPaidAt ? new Date(b.cautionPaidAt) : null,
+                          });
+                          if (due.totalDueCents <= 0) return null;
+                          return (
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Marquer ${formatPrice(due.totalDueCents)} comme reçus (virement ou espèces) pour ${b.customerName} ?`)) return;
+                                const res = await fetch(`/api/admin/bookings/${b.id}/mark-paid`, { method: "POST" });
+                                const data = await res.json().catch(() => ({}));
+                                alert(res.ok ? "Solde enregistré comme payé. Le client a reçu un email de confirmation." : data.error ?? "Erreur");
+                                loadData();
+                              }}
+                              className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                            >
+                              Solde reçu (virement / espèces)
                             </button>
                           );
                         })()}

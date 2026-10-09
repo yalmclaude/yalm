@@ -4,6 +4,8 @@ import { stripe } from "@/lib/stripe";
 import { getRemainingStock, getRemainingStockForPack } from "@/lib/availability";
 import { depositLabel, formatHours, formatPrice, hasDeposit } from "@/lib/format";
 import { getCustomFormulaSettings } from "@/lib/settings";
+import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
+import { startTransfer } from "@/lib/transfer";
 import { cleanCustomText, depositFor, discounted, resolvePrice, type CustomLine, type Mode } from "@/lib/pricing";
 
 type CustomItemInput = { productId?: string; mode?: Mode; durationHours?: number | null; customText?: string };
@@ -20,6 +22,7 @@ type Body = {
   paymentType?: "DEPOSIT" | "FULL";
   cautionLater?: boolean;
   acceptTerms?: boolean;
+  method?: "CARD" | "TRANSFER";
   durationHours?: number;
   mode?: Mode;
   customText?: string;
@@ -111,6 +114,11 @@ export async function POST(request: NextRequest) {
   // The client may pay the caution later (by the event day) and secure the date with the deposit alone.
   const deferCaution = cautionCents > 0 && cautionLater === true;
 
+  const byTransfer = body.method === "TRANSFER";
+  if (byTransfer && !transferAvailable(await getBankTransferSettings())) {
+    return NextResponse.json({ error: "Le paiement par virement n'est pas disponible" }, { status: 400 });
+  }
+
   const booking = await prisma.booking.create({
     data: {
       ...quote.data,
@@ -128,6 +136,13 @@ export async function POST(request: NextRequest) {
   });
 
   const origin = request.nextUrl.origin;
+
+  // Bank transfer: no Stripe; the date is held and the client gets the IBAN and a reference.
+  if (byTransfer) {
+    const url = await startTransfer(booking.id, origin);
+    return NextResponse.json({ url });
+  }
+
   const dateLabel = parsedDate.toLocaleDateString("fr-FR");
   const lineItem = (name: string, description: string, unitAmount: number, quantity: number) => ({
     price_data: { currency: "eur", unit_amount: unitAmount, product_data: { name, description } },

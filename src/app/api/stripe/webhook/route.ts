@@ -4,8 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 import { sendOrderEmails } from "@/lib/email";
 import { sendBalancePaidEmails } from "@/lib/billing-emails";
-import { parseQuoteLines, quoteTotals } from "@/lib/billing";
-import type { CustomLine } from "@/lib/pricing";
+import { bookingDataFromQuote } from "@/lib/quote-booking";
 
 const withNames = { product: { select: { name: true } }, pack: { select: { name: true } } };
 
@@ -67,40 +66,22 @@ async function onQuoteAccepted(session: Stripe.Checkout.Session, paymentIntent?:
   const quote = await prisma.quote.findFirst({ where: { id: quoteId } });
   if (!quote || quote.status === "ACCEPTED") return;
 
-  const lines = parseQuoteLines(quote.lines);
-  const totals = quoteTotals(lines, quote.depositPercent);
-  const items: CustomLine[] = lines.map((l) => ({
-    productId: "",
-    name: l.label,
-    mode: "RENT",
-    durationHours: null,
-    priceCents: l.priceCents,
-    discountedCents: l.priceCents,
-    customText: l.description,
-  }));
+  const payFull = session.metadata?.payFull === "1";
+  const cautionNow = session.metadata?.cautionPaid === "1";
+  const data = bookingDataFromQuote(quote, { payFull, cautionNow });
 
   const booking = await prisma.$transaction(async (tx) => {
     const { count } = await tx.quote.updateMany({ where: { id: quoteId, status: { not: "ACCEPTED" } }, data: { status: "ACCEPTED" } });
     if (count === 0) return null;
     const created = await tx.booking.create({
       data: {
-        customerName: quote.customerName,
-        email: quote.email,
-        phone: quote.phone,
-        eventDate: quote.eventDate,
+        ...data,
         status: "CONFIRMED",
-        depositAmountCents: session.metadata?.payFull === "1" ? totals.totalCents : totals.depositCents,
-        totalCents: totals.totalCents,
-        cautionCents: quote.cautionCents,
-        cautionLater: quote.cautionCents > 0 && session.metadata?.cautionPaid !== "1",
-        cautionPaidAt: quote.cautionCents > 0 && session.metadata?.cautionPaid === "1" ? new Date() : null,
-        items,
-        label: `Devis ${quote.number}`,
-        quoteId: quote.id,
+        cautionPaidAt: quote.cautionCents > 0 && cautionNow ? new Date() : null,
         stripeSessionId: session.id,
         stripePaymentIntentId: paymentIntent,
         // Paid in full when accepting (client's choice, or no deposit): nothing left but a possible caution.
-        balancePaidAt: session.metadata?.payFull === "1" || totals.depositCents >= totals.totalCents ? new Date() : null,
+        balancePaidAt: data.depositAmountCents >= data.totalCents ? new Date() : null,
       },
       include: withNames,
     });

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { parseQuoteLines, quoteTotals, siteOrigin } from "@/lib/billing";
+import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
+import { bookingDataFromQuote } from "@/lib/quote-booking";
+import { startTransfer } from "@/lib/transfer";
 
 // The client accepts a devis: opens a Stripe checkout for its deposit. The booking is created by the
 // Stripe webhook once the payment succeeds.
@@ -22,6 +25,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const payFull = t.depositCents >= t.totalCents || form?.get("pay") === "full";
   const amount = payFull ? t.totalCents : t.depositCents;
   const payCaution = quote.cautionCents > 0 && form?.get("caution") === "1";
+
+  // Bank transfer: the devis becomes a booking held until the transfer arrives (no Stripe, no fees).
+  if (form?.get("method") === "TRANSFER" && transferAvailable(await getBankTransferSettings())) {
+    const pending = quote.bookingId
+      ? await prisma.booking.findFirst({ where: { id: quote.bookingId, status: "PENDING_DEPOSIT", paymentMethod: "TRANSFER" } })
+      : null;
+    if (pending?.transferRef) return NextResponse.redirect(`${origin}/virement/${pending.transferRef}`, 303);
+    const booking = await prisma.booking.create({
+      data: { ...bookingDataFromQuote(quote, { payFull, cautionNow: payCaution }), status: "PENDING_DEPOSIT" },
+    });
+    await prisma.quote.update({ where: { id: quote.id }, data: { bookingId: booking.id } });
+    return NextResponse.redirect(await startTransfer(booking.id, origin), 303);
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

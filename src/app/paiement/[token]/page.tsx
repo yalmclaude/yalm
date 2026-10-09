@@ -7,6 +7,8 @@ import { formatPrice } from "@/lib/format";
 import { balanceDue } from "@/lib/billing";
 import { orderTitle } from "@/lib/email";
 import { CONTACT_PHONE } from "@/lib/contact";
+import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
+import { CopyField } from "@/components/CopyField";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Régler le solde — YALM Events", robots: { index: false } };
@@ -28,6 +30,9 @@ export default async function BalancePage({
   if (!booking) notFound();
 
   const due = balanceDue(booking);
+  const bank = await getBankTransferSettings();
+  // Reference for a balance paid by transfer: YALM matches it by hand and marks the balance as paid.
+  const balanceRef = `SOLDE ${(booking.transferRef ?? token.slice(0, 6)).replace("YALM-", "").toUpperCase()}`;
   const row = (label: string, value: string, strong = false) => (
     <p className="flex justify-between gap-4 border-b border-bordeaux/10 py-2.5">
       <span className="text-bordeaux/65">{label}</span>
@@ -62,6 +67,21 @@ export default async function BalancePage({
                   Payer {formatPrice(due.totalDueCents)}
                 </button>
                 <p className="mt-3 text-center text-xs text-bordeaux/55">Paiement sécurisé avec Stripe : carte, PayPal, Klarna…</p>
+                {transferAvailable(bank) && (
+                  <div className="mt-6 border-t border-dashed border-bordeaux/15 pt-5">
+                    <p className="font-medium text-bordeaux">Ou par virement bancaire, sans frais</p>
+                    <div className="mt-2 rounded-lg bg-beige-dark/30 px-4 py-1">
+                      <CopyField label="Montant" value={formatPrice(due.totalDueCents)} />
+                      <CopyField label="Bénéficiaire" value={bank.holder} />
+                      <CopyField label="IBAN" value={bank.iban} />
+                      {bank.bic && <CopyField label="BIC" value={bank.bic} />}
+                      <CopyField label="Référence" value={balanceRef} />
+                    </div>
+                    <p className="mt-2 text-xs text-bordeaux/55">
+                      Indiquez la référence dans le libellé. Nous vous confirmons la réception par email.
+                    </p>
+                  </div>
+                )}
               </form>
             ) : (
               <p className="mt-6 rounded-lg bg-beige-dark/40 p-4 text-center">

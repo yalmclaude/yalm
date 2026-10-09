@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/format";
 import { parseQuoteLines, quoteTotals, VAT_RATE } from "@/lib/billing";
 import { CONTACT_PHONE } from "@/lib/contact";
 import { LEGAL } from "@/lib/legal";
+import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
 import { QuotePayForm } from "@/components/QuotePayForm";
 
 export const dynamic = "force-dynamic";
@@ -37,8 +38,10 @@ export default async function QuotePage({
     </p>
   );
 
-  return (
-    <>
+  const bank = await getBankTransferSettings();
+  const transferHoldDays = transferAvailable(bank) ? bank.holdDays : null;
+
+  return (    <>
       <SiteHeader />
       <main className="flex-1 bg-background">
         <div className="mx-auto max-w-2xl px-6 py-14">
@@ -96,7 +99,7 @@ export default async function QuotePage({
               </p>
             ) : (
               <>
-                <QuotePayForm token={token} depositCents={t.depositCents} totalCents={t.totalCents} cautionCents={quote.cautionCents} />
+                <QuotePayForm transferHoldDays={transferHoldDays} token={token} depositCents={t.depositCents} totalCents={t.totalCents} cautionCents={quote.cautionCents} />
                 <p className="mt-3 text-center text-xs text-bordeaux/55">
                   En payant, vous acceptez ce devis. Paiement sécurisé avec Stripe : carte, PayPal, Klarna…
                 </p>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { formatPrice, formatHours, type DurationOption } from "@/lib/format";
 import { PaymentChoice } from "@/components/PaymentChoice";
 import { TermsCheckbox } from "@/components/TermsCheckbox";
+import { PaymentMethodChoice, type PaymentMethod } from "@/components/PaymentMethodChoice";
 import { depositFor } from "@/lib/pricing";
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
   saleMode?: string;
   purchasePriceCents?: number;
   askCustomText?: boolean;
+  transferHoldDays?: number | null; // set when payment by bank transfer is offered
   title?: string;
 };
 
@@ -35,6 +37,7 @@ export function BookingForm({
   saleMode = "RENT",
   purchasePriceCents = 0,
   askCustomText = false,
+  transferHoldDays = null,
   title = "Réserver cette prestation",
 }: Props) {
   const [eventDate, setEventDate] = useState("");
@@ -49,6 +52,7 @@ export function BookingForm({
   const [mode, setMode] = useState<"RENT" | "BUY">(saleMode === "BUY" ? "BUY" : "RENT");
   const [cautionLater, setCautionLater] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [method, setMethod] = useState<PaymentMethod>("CARD");
   const [customText, setCustomText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +98,7 @@ export function BookingForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType: payNow, durationHours: buying ? null : durationHours, mode, cautionLater, customText: askCustomText ? customText : undefined, acceptTerms }),
+        body: JSON.stringify({ productId, packId, customerName, email, phone, eventDate, quantity, paymentType: payNow, durationHours: buying ? null : durationHours, mode, cautionLater, customText: askCustomText ? customText : undefined, acceptTerms, method }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -282,6 +286,8 @@ export function BookingForm({
         }}
       />
 
+      {transferHoldDays && <PaymentMethodChoice value={method} onChange={setMethod} holdDays={transferHoldDays} />}
+
       <TermsCheckbox checked={acceptTerms} onChange={setAcceptTerms} />
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -292,8 +298,10 @@ export function BookingForm({
         className="w-full rounded-md bg-bordeaux px-4 py-3 label-caps text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light hover:shadow-[0_10px_20px_rgba(78,13,21,0.3)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
         {submitting
-          ? "Redirection vers le paiement…"
-          : `Réserver et payer ${formatPrice(amountToPay)}`}
+          ? "Redirection…"
+          : method === "TRANSFER"
+            ? `Réserver — virement de ${formatPrice(amountToPay)}`
+            : `Réserver et payer ${formatPrice(amountToPay)}`}
       </button>
     </form>
   );

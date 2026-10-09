@@ -4,6 +4,7 @@ import { SectionTitle, SiteFooter } from "@/components/Brand";
 import { CustomFormulaBuilder, type BuilderProduct } from "@/components/CustomFormulaBuilder";
 import { parseDurationOptions } from "@/lib/format";
 import { getCustomFormulaSettings } from "@/lib/settings";
+import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -34,8 +35,10 @@ export default async function CustomFormulaPage() {
     askCustomText: p.askCustomText,
   }));
 
-  return (
-    <>
+  const bank = await getBankTransferSettings();
+  const transferHoldDays = transferAvailable(bank) ? bank.holdDays : null;
+
+  return (    <>
       <SiteHeader />
       <main className="flex-1 bg-background">
         <div className="mx-auto max-w-6xl px-6 py-14">
@@ -45,7 +48,7 @@ export default async function CustomFormulaPage() {
             options, puis réservez votre date.
           </p>
           <div className="mt-12">
-            <CustomFormulaBuilder products={items} minItems={settings.minItems} discountPercent={settings.discountPercent} />
+            <CustomFormulaBuilder products={items} minItems={settings.minItems} discountPercent={settings.discountPercent} transferHoldDays={transferHoldDays} />
           </div>
         </div>
       </main>
