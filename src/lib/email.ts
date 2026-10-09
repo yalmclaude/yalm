@@ -82,8 +82,7 @@ export function orderTitle(b: Pick<BookingForEmail, "label" | "product" | "pack"
   return b.product?.name ?? b.pack?.name ?? (parseCustomLines(b.items).length ? "Formule personnalisée" : "Prestation");
 }
 
-// awaitingTransfer: the booking is held while its bank transfer is on the way (nothing paid yet).
-export function summaryTable(b: BookingForEmail, opts: { awaitingTransfer?: boolean } = {}) {
+function summaryTable(b: BookingForEmail) {
   const row = (label: string, value: string, strong = false) =>
     `<tr><td style="padding:9px 0;border-bottom:1px solid #eadfcf;color:#7a5a52;width:45%">${label}</td><td style="padding:9px 0;border-bottom:1px solid #eadfcf;${strong ? "font-weight:bold;" : ""}">${value}</td></tr>`;
   const items = orderLines(b)
@@ -100,19 +99,13 @@ export function summaryTable(b: BookingForEmail, opts: { awaitingTransfer?: bool
     <table style="width:100%;border-collapse:collapse;margin-top:18px">
       ${row("Date de l'événement", date, true)}
       ${b.totalCents ? row("Total de la commande", formatPrice(b.totalCents), true) : ""}
-      ${row(opts.awaitingTransfer ? "À régler par virement" : "Montant payé", formatPrice(b.depositAmountCents), opts.awaitingTransfer)}
+      ${row("Montant payé", formatPrice(b.depositAmountCents))}
       ${b.totalCents ? row("Reste à régler", remaining > 0 ? formatPrice(remaining) : "Rien, tout est réglé") : ""}
       ${
         b.cautionCents > 0
           ? row(
               "Caution remboursable",
-              `${formatPrice(b.cautionCents)} — ${
-                b.cautionLater
-                  ? "à régler au plus tard le jour de l'événement"
-                  : opts.awaitingTransfer
-                    ? "à inclure dans le virement"
-                    : "réglée"
-              }`
+              `${formatPrice(b.cautionCents)} — ${b.cautionLater ? "à régler au plus tard le jour de l'événement" : "payée en ligne"}`
             )
           : ""
       }

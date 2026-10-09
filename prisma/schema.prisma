@@ -130,9 +130,6 @@ model Booking {
   quoteId               String?
   payToken              String?       @unique // link /paiement/<token> to pay the balance
   balanceRequestedAt    DateTime?
-  paymentMethod         String        @default("CARD") // CARD | TRANSFER
-  transferRef           String?       @unique // référence à indiquer dans le virement (YALM-4F2K9Q)
-  transferDueAt         DateTime?     // la date reste réservée jusque-là en attendant le virement
   balancePaidAt         DateTime?
   cautionPaidAt         DateTime?
   stripeSessionId       String?

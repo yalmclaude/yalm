@@ -9,15 +9,8 @@ function dayRange(eventDate: Date) {
   return { dayStart, dayEnd };
 }
 
-// Paid bookings hold their date; so does a booking awaiting a bank transfer, until its deadline.
-function activeFilter() {
-  return {
-    OR: [
-      { status: "CONFIRMED" as const },
-      { status: "PENDING_DEPOSIT" as const, paymentMethod: "TRANSFER", transferDueAt: { gt: new Date() } },
-    ],
-  };
-}
+// Only paid bookings take a product out of stock for their date; unpaid checkouts don't block anyone.
+const ACTIVE_STATUS_FILTER = { status: "CONFIRMED" as const };
 
 export async function getRemainingStock(productId: string, eventDate: Date) {
   const product = await prisma.product.findMany({ where: { id: productId }, take: 1 }).then((r) => r[0] ?? null);
@@ -31,7 +24,7 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
       productId,
       purchase: false,
       eventDate: { gte: dayStart, lt: dayEnd },
-      ...activeFilter(),
+      ...ACTIVE_STATUS_FILTER,
     },
   });
   const directReserved = directBookings.reduce((sum, b) => sum + b.quantity, 0);
@@ -43,7 +36,7 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
       where: {
         packId: { in: packItemsUsingProduct.map((pi) => pi.packId) },
         eventDate: { gte: dayStart, lt: dayEnd },
-        ...activeFilter(),
+        ...ACTIVE_STATUS_FILTER,
       },
     });
     for (const booking of packBookings) {
@@ -58,7 +51,7 @@ export async function getRemainingStock(productId: string, eventDate: Date) {
       productId: null,
       packId: null,
       eventDate: { gte: dayStart, lt: dayEnd },
-      ...activeFilter(),
+      ...ACTIVE_STATUS_FILTER,
     },
     select: { items: true, quantity: true },
   });
@@ -79,7 +72,7 @@ export async function getRemainingStockForPack(packId: string, eventDate: Date) 
   if (pack.items.length === 0) {
     const { dayStart, dayEnd } = dayRange(eventDate);
     const taken = await prisma.booking.count({
-      where: { packId, eventDate: { gte: dayStart, lt: dayEnd }, ...activeFilter() },
+      where: { packId, eventDate: { gte: dayStart, lt: dayEnd }, ...ACTIVE_STATUS_FILTER },
     });
     return Math.max(0, 1 - taken);
   }

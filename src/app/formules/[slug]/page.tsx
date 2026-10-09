@@ -4,7 +4,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
-import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
 import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +21,8 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
   }
   const durations = parseDurationOptions(pack.durationOptions);
 
-  const bank = await getBankTransferSettings();
-  const transferHoldDays = transferAvailable(bank) ? bank.holdDays : null;
-
-  return (    <>
+  return (
+    <>
       <SiteHeader />
       <main className="flex-1 bg-background">
         <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
@@ -90,7 +87,6 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
             <QuoteContact title="Cette formule est sur devis" />
           ) : (
           <BookingForm
-            transferHoldDays={transferHoldDays}
             packId={pack.id}
             priceCents={pack.priceCents}
             depositType={pack.depositType}

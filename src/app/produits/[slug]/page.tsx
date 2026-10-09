@@ -6,7 +6,6 @@ import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
 import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
-import { getBankTransferSettings, transferAvailable } from "@/lib/bank";
 import { canBuy, canRent } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
@@ -24,10 +23,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }
   const durations = parseDurationOptions(product.durationOptions);
 
-  const bank = await getBankTransferSettings();
-  const transferHoldDays = transferAvailable(bank) ? bank.holdDays : null;
-
-  return (    <>
+  return (
+    <>
       <SiteHeader />
       <main className="flex-1 bg-background">
         <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
@@ -86,7 +83,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <QuoteContact />
           ) : (
           <BookingForm
-            transferHoldDays={transferHoldDays}
             productId={product.id}
             priceCents={product.priceCents}
             depositType={product.depositType}

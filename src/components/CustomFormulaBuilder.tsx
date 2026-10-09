@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { formatHours, formatPrice, type DurationOption } from "@/lib/format";
 import { PaymentChoice } from "@/components/PaymentChoice";
 import { TermsCheckbox } from "@/components/TermsCheckbox";
-import { PaymentMethodChoice, type PaymentMethod } from "@/components/PaymentMethodChoice";
 import {
   canBuy,
   canRent,
@@ -37,12 +36,10 @@ export function CustomFormulaBuilder({
   products,
   minItems,
   discountPercent,
-  transferHoldDays = null,
 }: {
   products: BuilderProduct[];
   minItems: number;
   discountPercent: number;
-  transferHoldDays?: number | null; // set when payment by bank transfer is offered
 }) {
   const [selected, setSelected] = useState<Record<string, Choice>>({});
   const [eventDate, setEventDate] = useState("");
@@ -53,7 +50,6 @@ export function CustomFormulaBuilder({
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [cautionLater, setCautionLater] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [method, setMethod] = useState<PaymentMethod>("CARD");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -145,7 +141,6 @@ export function CustomFormulaBuilder({
           paymentType: payNow,
           cautionLater,
           acceptTerms,
-          method,
         }),
       });
       const data = await res.json();
@@ -358,7 +353,6 @@ export function CustomFormulaBuilder({
           </>
         )}
 
-        {missing === 0 && transferHoldDays && <PaymentMethodChoice value={method} onChange={setMethod} holdDays={transferHoldDays} />}
         {missing === 0 && <TermsCheckbox checked={acceptTerms} onChange={setAcceptTerms} />}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -368,7 +362,7 @@ export function CustomFormulaBuilder({
           disabled={submitting || missing > 0 || !eventDate || blockedLines.length > 0 || !acceptTerms}
           className="label-caps w-full rounded-md bg-bordeaux px-4 py-3 text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
-          {submitting ? "Redirection vers le paiement…" : missing > 0 ? `Choisissez ${missing} de plus` : method === "TRANSFER" ? `Réserver — virement de ${formatPrice(amountToPay)}` : `Réserver et payer ${formatPrice(amountToPay)}`}
+          {submitting ? "Redirection vers le paiement…" : missing > 0 ? `Choisissez ${missing} de plus` : `Réserver et payer ${formatPrice(amountToPay)}`}
         </button>
       </form>
     </div>
