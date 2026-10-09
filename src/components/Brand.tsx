@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CONTACT_EMAIL, CONTACT_PHONE, phoneHref } from "@/lib/contact";
+import { CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS, phoneHref } from "@/lib/contact";
 
 /* Shared pieces of the brand banner look: the "line ✷ line" divider, the white line icons,
    section titles with a brush-script headline, and the footer. */
@@ -122,6 +122,27 @@ export function ServiceIcons() {
   );
 }
 
+// Simple line/brand marks for the social links, drawn in currentColor.
+const SOCIAL_ICONS: Record<string, ReactNode> = {
+  Instagram: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  TikTok: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M16.6 3c.4 2.2 1.8 3.7 4 3.9v3.2c-1.5 0-2.8-.4-4-1.2v6.3c0 3.4-2.7 5.8-5.9 5.8S5 18.6 5 15.3c0-3.4 2.9-6 6.4-5.6v3.3c-1.6-.4-3.1.8-3.1 2.3 0 1.3 1.1 2.4 2.4 2.4 1.4 0 2.6-1 2.6-2.8V3h3.3z" />
+    </svg>
+  ),
+  Snapchat: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden>
+      <path d="M12 3c3 0 5 2.2 5 5.1v2.4l1.6-.5c.6-.2 1 .5.5.9l-1.8 1.2c.4 1.6 1.7 2.9 3.2 3.4-.3.6-1.2.9-2.3 1-.2.4-.2 1-.5 1.2-.8 0-1.6-.3-2.6.1-.9.4-1.6 1.2-3.1 1.2s-2.2-.8-3.1-1.2c-1-.4-1.8-.1-2.6-.1-.3-.2-.3-.8-.5-1.2-1.1-.1-2-.4-2.3-1 1.5-.5 2.8-1.8 3.2-3.4l-1.8-1.2c-.5-.4-.1-1.1.5-.9l1.6.5V8.1C7 5.2 9 3 12 3z" />
+    </svg>
+  ),
+};
+
 export function SiteFooter() {
   return (
     <footer className="bg-bordeaux py-12 text-center text-cream">
@@ -135,6 +156,22 @@ export function SiteFooter() {
           {CONTACT_EMAIL}
         </a>
       </div>
+      <div className="mt-5 flex items-center justify-center gap-5">
+        {SOCIAL_LINKS.map((s) => (
+          <a
+            key={s.name}
+            href={s.url}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`${s.name} — yalm.events`}
+            title={`${s.name} — yalm.events`}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-cream/40 transition-colors hover:bg-cream hover:text-bordeaux"
+          >
+            {SOCIAL_ICONS[s.name]}
+          </a>
+        ))}
+      </div>
+      <p className="mt-2 text-xs text-cream/60">@yalm.events</p>
       <p className="mt-4 text-xs text-cream/60">
         © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
         <a href="/mentions-legales" className="underline hover:text-cream">
