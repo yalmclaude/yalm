@@ -181,6 +181,7 @@ export function SiteFooter() {
           CGV
         </a>
       </p>
+      <p className="mt-2 text-xs text-cream/60">Site réalisé par Dololka Agency</p>
     </footer>
   );
 }
