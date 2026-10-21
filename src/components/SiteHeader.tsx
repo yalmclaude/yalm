@@ -27,9 +27,6 @@ export function SiteHeader() {
             <a href="/coffret" className="hover:text-bordeaux transition-colors">
               Mon coffret
             </a>
-            <a href="/admin" className="text-bordeaux/45 hover:text-bordeaux transition-colors">
-              Admin
-            </a>
           </nav>
           {/* Mobile: the full nav doesn't fit on a phone, so it folds into a menu (no JS needed). */}
           <details className="md:hidden relative">
@@ -46,9 +43,6 @@ export function SiteHeader() {
               ))}
               <a href="/coffret" className="px-5 py-3 hover:bg-bordeaux/5">
                 Mon coffret
-              </a>
-              <a href="/admin" className="px-5 py-3 text-bordeaux/50 hover:bg-bordeaux/5">
-                Admin
               </a>
             </nav>
           </details>
