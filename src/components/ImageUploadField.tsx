@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { compressImage } from "@/lib/compressImage";
+import { MAX_UPLOAD_BYTES, compressImage, uploadErrorMessage } from "@/lib/compressImage";
 
 export function ImageUploadField({
   label,
@@ -16,26 +16,33 @@ export function ImageUploadField({
   const [error, setError] = useState<string | null>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
 
     setUploading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append("file", await compressImage(file));
-
     try {
+      const prepared = await compressImage(file);
+      if (prepared.size > MAX_UPLOAD_BYTES) {
+        setError("Image trop lourde (max 4 Mo)");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", prepared);
       const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Erreur lors de l'upload");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        setError(uploadErrorMessage(res.status, data.error));
         return;
       }
       onChange(data.url);
+    } catch {
+      setError("Erreur lors de l'envoi, réessayez");
     } finally {
       setUploading(false);
-      e.target.value = "";
+      input.value = "";
     }
   }
 

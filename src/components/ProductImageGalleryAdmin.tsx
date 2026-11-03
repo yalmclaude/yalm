@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { compressImage } from "@/lib/compressImage";
+import { MAX_UPLOAD_BYTES, compressImage, uploadErrorMessage } from "@/lib/compressImage";
 
 type ProductImg = { id: string; url: string; order: number };
 
@@ -33,12 +33,17 @@ export function ProductImageGalleryAdmin({
     try {
       for (const file of Array.from(files)) {
         try {
+          const prepared = await compressImage(file);
+          if (prepared.size > MAX_UPLOAD_BYTES) {
+            failed.push(`${file.name} (image trop lourde, max 4 Mo)`);
+            continue;
+          }
           const formData = new FormData();
-          formData.append("file", await compressImage(file));
+          formData.append("file", prepared);
           const uploadRes = await fetch("/api/admin/upload", { method: "POST", body: formData });
           const uploadData = await uploadRes.json().catch(() => ({}));
           if (!uploadRes.ok || !uploadData.url) {
-            failed.push(`${file.name} (${uploadData.error ?? "erreur d'envoi"})`);
+            failed.push(`${file.name} (${uploadErrorMessage(uploadRes.status, uploadData.error)})`);
             continue;
           }
 
@@ -51,7 +56,7 @@ export function ProductImageGalleryAdmin({
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.image) {
-              failed.push(`${file.name} (${data.error ?? "erreur d'enregistrement"})`);
+              failed.push(`${file.name} (${uploadErrorMessage(res.status, data.error)})`);
               continue;
             }
             image = data.image;
