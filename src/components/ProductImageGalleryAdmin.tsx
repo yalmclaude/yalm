@@ -63,14 +63,74 @@ export function ProductImageGalleryAdmin({
     onChange(images.filter((img) => img.id !== image.id));
   }
 
+  // Moves a photo to a new position; position 0 is the cover shown on the site.
+  async function handleMove(from: number, to: number) {
+    if (to < 0 || to >= images.length || from === to) return;
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    const reordered = next.map((img, order) => ({ ...img, order }));
+    onChange(reordered);
+
+    const savedIds = reordered.filter((img) => !img.id.startsWith("temp-")).map((img) => img.id);
+    if (productId && savedIds.length > 0) {
+      const res = await fetch(`/api/admin/products/${productId}/images`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: savedIds }),
+      });
+      if (!res.ok) setError("Impossible d'enregistrer le nouvel ordre des photos");
+    }
+  }
+
   return (
     <div>
       <span className="block text-sm font-medium text-gray-700">Photos (illimité)</span>
+      <p className="text-xs text-gray-500">La première photo est la photo principale affichée sur le site.</p>
       <div className="mt-2 flex flex-wrap gap-3">
-        {images.map((image) => (
-          <div key={image.id} className="relative h-20 w-20">
+        {images.map((image, index) => (
+          <div key={image.id} className="relative w-20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt="" className="h-20 w-20 rounded-lg object-cover border border-gray-200" />
+            <img
+              src={image.url}
+              alt=""
+              className={`h-20 w-20 rounded-lg object-cover border-2 ${index === 0 ? "border-bordeaux" : "border-gray-200"}`}
+            />
+            {index === 0 ? (
+              <span className="absolute inset-x-0 top-16 mx-auto w-fit rounded bg-bordeaux px-1.5 text-[0.6rem] font-medium text-white">
+                Principale
+              </span>
+            ) : null}
+            <div className="mt-1 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleMove(index, index - 1)}
+                disabled={index === 0}
+                className="rounded px-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                title="Décaler vers la gauche"
+              >
+                ←
+              </button>
+              {index !== 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleMove(index, 0)}
+                  className="rounded px-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-bordeaux"
+                  title="Mettre en photo principale"
+                >
+                  ★
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleMove(index, index + 1)}
+                disabled={index === images.length - 1}
+                className="rounded px-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                title="Décaler vers la droite"
+              >
+                →
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => handleRemove(image)}
