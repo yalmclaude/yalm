@@ -1,20 +1,21 @@
-import { Ornament, ServiceIcons } from "@/components/Brand";
-
-// Mirrors the brand banner: a bordeaux panel on cream with a brush-script headline,
-// the service icons and a cream card holding the calls to action, all full width.
+// A full-width photo of a decorated reception hall, with the cream card holding the
+// calls to action overlapping its bottom edge.
 export function HeroSection() {
   return (
     <section className="bg-cream px-4 py-10 sm:px-8 sm:py-14">
-      <div className="mx-auto max-w-6xl rounded-xl bg-bordeaux px-5 py-12 sm:px-10 lg:px-16 lg:py-16">
-        <h1 className="font-script text-center text-5xl leading-tight text-cream sm:text-6xl lg:text-7xl">
-          Créons ensemble vos moments inoubliables
-        </h1>
-        <Ornament tone="light" className="mt-4" />
-        <div className="mt-10">
-          <ServiceIcons />
-        </div>
+      <div className="mx-auto max-w-6xl">
+        <h1 className="sr-only">YALM Events — Créons ensemble vos moments inoubliables</h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-salle.webp"
+          alt="Salle de réception décorée en bordeaux et blanc, arche fleurie et lustre"
+          width={1672}
+          height={941}
+          fetchPriority="high"
+          className="aspect-[16/9] w-full rounded-xl object-cover shadow-[0_16px_34px_rgba(0,0,0,0.25)]"
+        />
 
-        <div className="mt-12 flex flex-col items-center gap-5 rounded-lg bg-cream px-6 py-6 shadow-[0_16px_34px_rgba(0,0,0,0.35)] sm:flex-row sm:justify-between sm:px-10">
+        <div className="relative mx-auto -mt-8 flex w-[calc(100%-2rem)] flex-col items-center gap-5 rounded-lg bg-cream px-6 py-6 shadow-[0_16px_34px_rgba(0,0,0,0.35)] sm:-mt-14 sm:w-[calc(100%-5rem)] sm:flex-row sm:justify-between sm:px-10">
           <p className="font-script text-center text-4xl leading-none text-bordeaux sm:text-left sm:text-5xl">
             Rejoignez-nous dès maintenant
           </p>
