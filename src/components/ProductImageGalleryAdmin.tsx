@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { compressImage } from "@/lib/compressImage";
 
 type ProductImg = { id: string; url: string; order: number };
 
@@ -17,42 +18,57 @@ export function ProductImageGalleryAdmin({
   const [error, setError] = useState<string | null>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
+    const input = e.target;
+    const files = input.files;
     if (!files || files.length === 0) return;
 
     setUploading(true);
     setError(null);
 
+    // Accumulate locally: `images` is the snapshot from when the upload started, so
+    // appending to it on each iteration would keep only the last photo.
+    let current = images;
+    const failed: string[] = [];
+
     try {
       for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const uploadRes = await fetch("/api/admin/upload", { method: "POST", body: formData });
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) {
-          setError(uploadData.error ?? "Erreur lors de l'upload");
-          continue;
-        }
+        try {
+          const formData = new FormData();
+          formData.append("file", await compressImage(file));
+          const uploadRes = await fetch("/api/admin/upload", { method: "POST", body: formData });
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          if (!uploadRes.ok || !uploadData.url) {
+            failed.push(`${file.name} (${uploadData.error ?? "erreur d'envoi"})`);
+            continue;
+          }
 
-        if (productId) {
-          const res = await fetch(`/api/admin/products/${productId}/images`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: uploadData.url }),
-          });
-          const data = await res.json();
-          onChange([...images, data.image]);
-        } else {
-          // Produit pas encore créé : on garde l'image en local, avec un id temporaire
-          onChange([
-            ...images,
-            { id: `temp-${Date.now()}-${Math.random()}`, url: uploadData.url, order: images.length },
-          ]);
+          let image: ProductImg;
+          if (productId) {
+            const res = await fetch(`/api/admin/products/${productId}/images`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: uploadData.url }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.image) {
+              failed.push(`${file.name} (${data.error ?? "erreur d'enregistrement"})`);
+              continue;
+            }
+            image = data.image;
+          } else {
+            // Produit pas encore créé : on garde l'image en local, avec un id temporaire
+            image = { id: `temp-${Date.now()}-${Math.random()}`, url: uploadData.url, order: current.length };
+          }
+          current = [...current, image];
+          onChange(current);
+        } catch {
+          failed.push(`${file.name} (erreur d'envoi)`);
         }
       }
+      if (failed.length > 0) setError(`Non ajoutée(s) : ${failed.join(", ")}`);
     } finally {
       setUploading(false);
-      e.target.value = "";
+      input.value = "";
     }
   }
 

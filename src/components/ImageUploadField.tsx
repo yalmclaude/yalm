@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { compressImage } from "@/lib/compressImage";
 
 export function ImageUploadField({
   label,
@@ -22,7 +23,7 @@ export function ImageUploadField({
     setError(null);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", await compressImage(file));
 
     try {
       const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
