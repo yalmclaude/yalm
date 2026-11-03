@@ -5,7 +5,6 @@ import { CustomFormulaCard, PackCard } from "@/components/PackCard";
 import { getCustomFormulaSettings } from "@/lib/settings";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
-import { GallerySection } from "@/components/GallerySection";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
 
@@ -91,8 +90,6 @@ export default async function HomePage() {
             </div>
           )}
         </section>
-
-        <GallerySection />
 
         <HowItWorksSection steps={howItWorksSteps} />
       </main>

@@ -18,15 +18,14 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
             <img
               src={coverUrl}
               alt={product.name}
-              className="mb-4 h-36 w-full rounded-lg object-cover grayscale"
+              className="mb-4 aspect-[4/5] w-full rounded-lg object-cover grayscale"
             />
           ) : (
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-beige-dark text-bordeaux/50">
+            <div className="mb-4 flex aspect-[4/5] w-full items-center justify-center rounded-lg bg-beige-dark text-3xl text-bordeaux/40">
               ✦
             </div>
           )}
           <h4 className="font-serif text-lg text-bordeaux/60">{product.name}</h4>
-          <p className="mt-2 text-sm text-bordeaux/50 min-h-11">{product.description}</p>
           <span className="mt-3 inline-block rounded-full bg-beige-dark px-3 py-1.5 text-[0.7rem] uppercase tracking-wide text-bordeaux/60">
             Bientôt de retour
           </span>
@@ -43,17 +42,21 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
       >
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={coverUrl} alt={product.name} className="mb-4 h-36 w-full rounded-lg object-cover" />
+          <div className="mb-4 overflow-hidden rounded-lg">
+            <img
+              src={coverUrl}
+              alt={product.name}
+              className="aspect-[4/5] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+          </div>
         ) : (
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-bordeaux to-bordeaux-light text-beige">
+          <div className="mb-4 flex aspect-[4/5] w-full items-center justify-center rounded-lg bg-gradient-to-br from-bordeaux to-bordeaux-light text-3xl text-beige">
             ✦
           </div>
         )}
         <h4 className="font-serif text-lg text-bordeaux transition-colors group-hover:text-bordeaux-light">
           {product.name}
-        </h4>
-        <p className="mt-2 text-sm text-bordeaux/60 min-h-11">{product.description}</p>
-        <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
+        </h4>        <div className="mt-4 flex items-center justify-between border-t border-dashed border-bordeaux/15 pt-3.5">
           {product.quoteOnly ? (
             <>
               <span className="font-semibold text-bordeaux">Sur devis</span>
