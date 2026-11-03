@@ -39,20 +39,6 @@ export default async function HomePage() {
       <main className="flex-1">
         <HeroSection />
 
-        {(packs.length > 0 || customFormula.enabled) && (
-        <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
-          <Reveal>
-            <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
-          </Reveal>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {packs.map((pack) => (
-              <PackCard key={pack.id} pack={pack} />
-            ))}
-            {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
-          </div>
-        </section>
-        )}
-
         <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
           <Reveal>
             <SectionTitle eyebrow="Notre catalogue" title="Nos prestations" />
@@ -90,6 +76,20 @@ export default async function HomePage() {
             </div>
           )}
         </section>
+
+        {(packs.length > 0 || customFormula.enabled) && (
+        <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
+          <Reveal>
+            <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
+          </Reveal>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {packs.map((pack) => (
+              <PackCard key={pack.id} pack={pack} />
+            ))}
+            {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
+          </div>
+        </section>
+        )}
 
         <HowItWorksSection steps={howItWorksSteps} />
       </main>
