@@ -6,15 +6,12 @@ import { Reveal } from "@/components/Reveal";
 
 type ProductWithImages = Product & { images: { url: string }[] };
 
-// Shows the whole photo whatever its ratio (portrait, square, landscape) in a uniform
-// 3:4 frame; the leftover space is filled with a blurred copy of the same photo.
+// Every photo fills the same 4:5 frame (cropped to fit), so all cards line up.
 function FittedPhoto({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
   return (
-    <div className="relative aspect-[3/4] w-full overflow-hidden bg-bordeaux">
+    <div className="aspect-[4/5] w-full overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className={`relative h-full w-full object-contain ${className}`} />
+      <img src={src} alt={alt} className={`h-full w-full object-cover ${className}`} />
     </div>
   );
 }
@@ -29,7 +26,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
           {coverUrl ? (
             <FittedPhoto src={coverUrl} alt={product.name} className="grayscale" />
           ) : (
-            <div className="flex aspect-[3/4] w-full items-center justify-center bg-beige-dark text-3xl text-bordeaux/40">
+            <div className="flex aspect-[4/5] w-full items-center justify-center bg-beige-dark text-3xl text-bordeaux/40">
               ✦
             </div>
           )}
@@ -57,7 +54,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
             className="transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
-          <div className="flex aspect-[3/4] w-full items-center justify-center bg-gradient-to-br from-bordeaux to-bordeaux-light text-3xl text-beige">
+          <div className="flex aspect-[4/5] w-full items-center justify-center bg-gradient-to-br from-bordeaux to-bordeaux-light text-3xl text-beige">
             ✦
           </div>
         )}

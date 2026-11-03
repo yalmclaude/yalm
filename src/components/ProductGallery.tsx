@@ -9,18 +9,12 @@ export function ProductGallery({ images, alt }: { images: { url: string }[]; alt
 
   return (
     <div className="mb-5">
-      {/* Whole photo in a fixed frame, the leftover space filled with a blurred copy. */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-bordeaux shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={images[activeIndex].url}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[activeIndex].url} alt={alt} className="relative h-full w-full object-contain" />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={images[activeIndex].url}
+        alt={alt}
+        className="aspect-[4/5] w-full rounded-2xl object-cover shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
+      />
       {images.length > 1 && (
         <div className="mt-3 flex gap-2 overflow-x-auto">
           {images.map((image, index) => (
