@@ -6,6 +6,19 @@ import { Reveal } from "@/components/Reveal";
 
 type ProductWithImages = Product & { images: { url: string }[] };
 
+// Shows the whole photo whatever its ratio (portrait, square, landscape) in a uniform
+// 3:4 frame; the leftover space is filled with a blurred copy of the same photo.
+function FittedPhoto({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
+  return (
+    <div className="relative aspect-[3/4] w-full overflow-hidden bg-bordeaux">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className={`relative h-full w-full object-contain ${className}`} />
+    </div>
+  );
+}
+
 export function ProductCard({ product }: { product: ProductWithImages }) {
   const coverUrl = product.images[0]?.url;
 
@@ -14,12 +27,7 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
       <Reveal>
         <div className="overflow-hidden rounded-lg border border-bordeaux/10 bg-cream-light opacity-75">
           {coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverUrl}
-              alt={product.name}
-              className="aspect-[3/4] w-full object-cover grayscale"
-            />
+            <FittedPhoto src={coverUrl} alt={product.name} className="grayscale" />
           ) : (
             <div className="flex aspect-[3/4] w-full items-center justify-center bg-beige-dark text-3xl text-bordeaux/40">
               ✦
@@ -43,14 +51,11 @@ export function ProductCard({ product }: { product: ProductWithImages }) {
         className="group block overflow-hidden rounded-lg border border-bordeaux/15 bg-cream-light shadow-[0_8px_24px_rgba(74,16,21,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.16)]"
       >
         {coverUrl ? (
-          <div className="overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={coverUrl}
-              alt={product.name}
-              className="aspect-[3/4] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-            />
-          </div>
+          <FittedPhoto
+            src={coverUrl}
+            alt={product.name}
+            className="transition-transform duration-500 ease-out group-hover:scale-105"
+          />
         ) : (
           <div className="flex aspect-[3/4] w-full items-center justify-center bg-gradient-to-br from-bordeaux to-bordeaux-light text-3xl text-beige">
             ✦
