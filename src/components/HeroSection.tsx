@@ -1,5 +1,5 @@
 // A full-width photo of a decorated reception hall, with the cream card holding the
-// calls to action overlapping its bottom edge.
+// calls to action below it.
 export function HeroSection() {
   return (
     <section className="bg-cream px-4 py-10 sm:px-8 sm:py-14">
@@ -15,7 +15,7 @@ export function HeroSection() {
           className="aspect-[16/9] w-full rounded-xl object-cover shadow-[0_16px_34px_rgba(0,0,0,0.25)]"
         />
 
-        <div className="relative mx-auto -mt-8 flex w-[calc(100%-2rem)] flex-col items-center gap-5 rounded-lg bg-cream px-6 py-6 shadow-[0_16px_34px_rgba(0,0,0,0.35)] sm:-mt-14 sm:w-[calc(100%-5rem)] sm:flex-row sm:justify-between sm:px-10">
+        <div className="mt-6 flex flex-col items-center gap-5 rounded-lg bg-cream px-6 py-6 shadow-[0_16px_34px_rgba(0,0,0,0.35)] sm:mt-8 sm:flex-row sm:justify-between sm:px-10">
           <p className="font-script text-center text-4xl leading-none text-bordeaux sm:text-left sm:text-5xl">
             Rejoignez-nous dès maintenant
           </p>
