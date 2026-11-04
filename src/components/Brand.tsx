@@ -177,7 +177,7 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
 // Arched top edge echoes the floral arch.
 export function SiteFooter() {
   return (
-    <footer className="relative mt-10 overflow-hidden rounded-t-[2.5rem] bg-bordeaux text-cream sm:rounded-t-[5rem]">
+    <footer className="relative mt-10 overflow-hidden rounded-t-[2.5rem] bg-bordeaux-rich-alt text-cream sm:rounded-t-[5rem]">
       <div className="mx-auto max-w-7xl px-5 pt-16 sm:px-8 sm:pt-24">
         <p data-fade-up className="label-caps text-cream/55">
           Votre événement commence ici

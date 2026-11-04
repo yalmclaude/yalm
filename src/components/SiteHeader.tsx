@@ -11,7 +11,7 @@ const NAV_LINKS = [
 export function SiteHeader() {
   return (
     <>
-      <div className="overflow-hidden bg-bordeaux py-2 text-cream">
+      <div className="overflow-hidden bg-bordeaux-band py-2 text-cream">
         <p className="px-4 text-center text-[0.65rem] font-medium uppercase tracking-[0.2em]">
           Acompte requis pour bloquer votre date — disponibilités limitées
         </p>
@@ -42,7 +42,7 @@ export function SiteHeader() {
                 <path d="M4 8h16M8 15h12" />
               </svg>
             </summary>
-            <nav className="absolute right-0 mt-3 flex w-64 flex-col overflow-hidden rounded-2xl bg-bordeaux py-3 text-cream shadow-[0_24px_50px_-20px_rgba(78,13,21,0.6)]">
+            <nav className="absolute right-0 mt-3 flex w-64 flex-col overflow-hidden rounded-2xl bg-bordeaux-rich py-3 text-cream shadow-[0_24px_50px_-20px_rgba(78,13,21,0.6)]">
               {NAV_LINKS.map((l) => (
                 <Link key={l.href} href={l.href} className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
                   {l.label}

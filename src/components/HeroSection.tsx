@@ -82,7 +82,7 @@ export function HeroSection() {
               data-fade-up
               data-magnetic="0.35"
               aria-label="Découvrir nos prestations"
-              className="group absolute -bottom-8 -right-4 grid h-28 w-28 place-items-center rounded-full bg-bordeaux text-cream shadow-[0_20px_40px_-15px_rgba(78,13,21,0.7)] sm:h-32 sm:w-32 lg:-right-8"
+              className="group absolute -bottom-8 -right-4 grid h-28 w-28 place-items-center rounded-full bg-bordeaux-orb text-cream shadow-[0_20px_40px_-15px_rgba(78,13,21,0.7)] sm:h-32 sm:w-32 lg:-right-8"
             >
               <svg data-spin viewBox="0 0 100 100" className="spin-slow absolute inset-0 h-full w-full" aria-hidden>
                 <defs>

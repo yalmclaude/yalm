@@ -342,3 +342,43 @@ html.lenis body {
     display: flex;
   }
 }
+
+/* ───────── Nuanced bordeaux grounds ─────────
+   Instead of a flat bordeaux: soft wine-coloured glows and deep, almost black-red corners,
+   all within the brand hue. `-rich` for large surfaces (formules, footer, loader),
+   `-rich-alt` mirrors it so neighbouring panels don't look identical, `-band` for
+   strips (marquee, top bar), `-orb` for round elements (badge). */
+.bg-bordeaux-rich,
+.bg-bordeaux-rich-alt {
+  background-color: #4e0d15;
+  background-image:
+    radial-gradient(70% 60% at 8% 0%, rgba(150, 42, 56, 0.55) 0%, rgba(150, 42, 56, 0) 70%),
+    radial-gradient(55% 50% at 100% 35%, rgba(118, 28, 40, 0.5) 0%, rgba(118, 28, 40, 0) 70%),
+    radial-gradient(80% 70% at 70% 110%, rgba(22, 2, 6, 0.7) 0%, rgba(22, 2, 6, 0) 70%),
+    radial-gradient(45% 40% at 30% 75%, rgba(96, 20, 31, 0.45) 0%, rgba(96, 20, 31, 0) 70%),
+    linear-gradient(160deg, #5c111b 0%, #4e0d15 42%, #3d0a11 100%);
+}
+.bg-bordeaux-rich-alt {
+  background-image:
+    radial-gradient(70% 60% at 92% 0%, rgba(150, 42, 56, 0.5) 0%, rgba(150, 42, 56, 0) 70%),
+    radial-gradient(55% 55% at 0% 45%, rgba(118, 28, 40, 0.45) 0%, rgba(118, 28, 40, 0) 70%),
+    radial-gradient(90% 70% at 25% 115%, rgba(22, 2, 6, 0.75) 0%, rgba(22, 2, 6, 0) 70%),
+    radial-gradient(40% 40% at 72% 70%, rgba(96, 20, 31, 0.4) 0%, rgba(96, 20, 31, 0) 70%),
+    linear-gradient(200deg, #5c111b 0%, #4e0d15 45%, #380910 100%);
+}
+.bg-bordeaux-band {
+  background-color: #4e0d15;
+  background-image: linear-gradient(
+    90deg,
+    #3a0910 0%,
+    #5e121c 22%,
+    #4e0d15 45%,
+    #6e1a26 70%,
+    #470c13 88%,
+    #3a0910 100%
+  );
+}
+.bg-bordeaux-orb {
+  background-color: #4e0d15;
+  background-image: radial-gradient(circle at 30% 25%, #7a2030 0%, #4e0d15 55%, #2e060b 100%);
+}

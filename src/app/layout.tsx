@@ -53,7 +53,7 @@ export default function RootLayout({
         <div
           id="yalm-loader"
           aria-hidden
-          className="fixed inset-0 z-[10000] flex-col items-center justify-center bg-bordeaux text-cream"
+          className="fixed inset-0 z-[10000] flex-col items-center justify-center bg-bordeaux-rich text-cream"
         >
           <div className="overflow-hidden px-6 pb-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}

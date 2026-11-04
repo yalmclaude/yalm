@@ -15,7 +15,7 @@ const SERVICES = [
 export function ServicesMarquee() {
   return (
     <div className="relative -my-4 overflow-hidden py-16 sm:py-20" aria-hidden>
-      <div className="relative z-10 -rotate-[3deg] scale-[1.06] bg-bordeaux py-4 text-cream shadow-[0_20px_40px_-20px_rgba(78,13,21,0.6)] sm:py-5">
+      <div className="relative z-10 -rotate-[3deg] scale-[1.06] bg-bordeaux-band py-4 text-cream shadow-[0_20px_40px_-20px_rgba(78,13,21,0.6)] sm:py-5">
         <Marquee>
           {SERVICES.map((s) => (
             <span key={s} className="flex items-center">

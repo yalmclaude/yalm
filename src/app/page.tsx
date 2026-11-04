@@ -85,8 +85,8 @@ export default async function HomePage() {
         </div>
 
         {(packs.length > 0 || customFormula.enabled) && (
-          <div data-slide data-slide-tone="dark" className="flex min-h-svh flex-col justify-center bg-bordeaux">
-          <section id="formules" className="relative scroll-mt-24 overflow-hidden bg-bordeaux py-24 text-cream sm:py-32">
+          <div data-slide data-slide-tone="dark" className="flex min-h-svh flex-col justify-center bg-bordeaux-rich">
+          <section id="formules" className="relative scroll-mt-24 overflow-hidden py-24 text-cream sm:py-32">
             {/* Giant outlined word drifting behind the cards */}
             <p
               aria-hidden
