@@ -13,7 +13,7 @@ export function ProductGallery({ images, alt }: { images: { url: string }[]; alt
       <img
         src={images[activeIndex].url}
         alt={alt}
-        className="aspect-[4/5] w-full rounded-t-full rounded-b-2xl object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
+        className="aspect-[4/5] w-full rounded-[1.5rem] object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
       />
       {images.length > 1 && (
         <div className="mt-3 flex gap-2 overflow-x-auto">

@@ -284,3 +284,13 @@ html.lenis body {
   background-color: color-mix(in srgb, var(--cream) 85%, transparent);
   box-shadow: 0 10px 30px -20px rgba(78, 13, 21, 0.35);
 }
+
+/* "Comment ça marche" step number: outlined, filled in cream when its card is hovered.
+   (Plain CSS because the outline utility is unlayered and would win over hover variants.) */
+.step-num {
+  transition: color 0.5s ease, -webkit-text-stroke-color 0.5s ease;
+}
+.step-card:hover .step-num {
+  color: var(--cream);
+  -webkit-text-stroke-color: var(--cream);
+}

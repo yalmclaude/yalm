@@ -1,6 +1,6 @@
 import { SplitWords } from "@/components/motion/SplitWords";
 
-// Editorial hero: an oversized four-line headline (serif + script) overlapping an
+// Editorial hero: an oversized four-line serif headline next to an
 // arch-framed photo — the arch echoes the floral arches of our decorations. A smaller
 // floating photo and a spinning badge add depth; layers follow the mouse and drift on
 // scroll. The intro (word reveal, arch unveiling) is played by the motion system.
@@ -21,20 +21,17 @@ export function HeroSection() {
         </div>
 
         <div className="relative mt-8 grid items-end gap-10 lg:mt-10 lg:grid-cols-12 lg:gap-6">
-          <h1 className="relative z-10 font-serif uppercase leading-[0.84] tracking-[-0.035em] text-bordeaux text-[clamp(3.3rem,12.5vw,11.5rem)] lg:col-span-8 lg:text-[clamp(5rem,10.2vw,11rem)]">
+          <h1 className="relative z-10 font-serif uppercase leading-[0.84] tracking-[-0.035em] text-bordeaux text-[clamp(3.3rem,12.5vw,11.5rem)] lg:col-span-8 lg:text-[clamp(4rem,8vw,7.2rem)]">
             <span data-split className="block">
               <SplitWords text="Créons" />
             </span>
-            <span
-              data-split
-              className="block pl-[14%] font-script normal-case tracking-normal text-bordeaux-light text-[0.92em] leading-[0.78]"
-            >
+            <span data-split className="block pl-[12%]">
               <SplitWords text="ensemble" />
             </span>
             <span data-split className="block">
               <SplitWords text="vos moments" />
             </span>
-            <span data-split className="block text-stroke-bordeaux lg:-mr-[30%]">
+            <span data-split className="block">
               <SplitWords text="inoubliables" />
             </span>
           </h1>

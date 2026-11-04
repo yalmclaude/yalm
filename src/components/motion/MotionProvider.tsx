@@ -26,6 +26,9 @@ import Lenis from "lenis";
    inline script in the root layout then never adds the `motion` class). */
 
 const EASE = "expo.out";
+
+// The live Lenis instance, so route changes can reset its scroll position.
+let lenisInstance: Lenis | null = null;
 const HEADER_OFFSET = -90;
 
 function motionEnabled() {
@@ -42,6 +45,7 @@ export function MotionProvider() {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1 });
+    lenisInstance = lenis;
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -66,6 +70,7 @@ export function MotionProvider() {
       document.removeEventListener("click", onClick);
       gsap.ticker.remove(tick);
       lenis.destroy();
+      lenisInstance = null;
     };
   }, [isAdmin]);
 
@@ -74,6 +79,18 @@ export function MotionProvider() {
     if (isAdmin || !motionEnabled()) return;
     gsap.registerPlugin(ScrollTrigger);
     (window as Window & { __yalmMotion?: boolean }).__yalmMotion = true;
+
+    // A new page must open at its top: Next scrolls the window, but Lenis would otherwise
+    // glide back to the previous page's position. Anchored URLs (/#formules) keep their target.
+    if (lenisInstance) {
+      const hashTarget = location.hash ? document.querySelector(location.hash) : null;
+      if (hashTarget) {
+        lenisInstance.scrollTo(hashTarget as HTMLElement, { offset: HEADER_OFFSET, immediate: true, force: true });
+      } else {
+        lenisInstance.scrollTo(0, { immediate: true, force: true });
+      }
+      lenisInstance.resize();
+    }
 
     const root = document.documentElement;
     const finePointer = window.matchMedia("(pointer: fine)").matches;

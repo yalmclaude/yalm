@@ -6,15 +6,20 @@ import { Reveal } from "@/components/Reveal";
 
 type ProductWithImages = Product & { images: { url: string }[] };
 
-// Every photo fills the same arch-topped 4:5 frame (cropped to fit), so all cards line
-// up; the inner layer drifts with scroll (data-img-parallax) and zooms on hover.
-function ArchPhoto({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
+// Every photo fills the same softly rounded 4:5 frame (cropped to fit), so all cards line
+// up; the inner layer drifts with scroll (data-img-parallax) and zooms on hover, when a
+// thin cream inset frame (a passe-partout) also draws in.
+function FramedPhoto({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
   return (
-    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-t-full bg-beige-dark">
+    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.25rem] bg-beige-dark">
       <div data-img-parallax className="absolute inset-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} loading="lazy" className={`h-full w-full object-cover ${className}`} />
       </div>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-3 rounded-[0.9rem] border border-cream/80 opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] scale-[1.04] group-hover:scale-100 group-hover:opacity-100"
+      />
     </div>
   );
 }
@@ -43,9 +48,9 @@ export function ProductCard({ product, index = 0 }: { product: ProductWithImages
       <Reveal delay={delay}>
         <div className="opacity-60">
           {coverUrl ? (
-            <ArchPhoto src={coverUrl} alt={product.name} className="grayscale" />
+            <FramedPhoto src={coverUrl} alt={product.name} className="grayscale" />
           ) : (
-            <div className="flex aspect-[4/5] w-full items-center justify-center rounded-t-full bg-beige-dark text-3xl text-bordeaux/40">
+            <div className="flex aspect-[4/5] w-full items-center justify-center rounded-[1.25rem] bg-beige-dark text-3xl text-bordeaux/40">
               ✦
             </div>
           )}
@@ -69,11 +74,11 @@ export function ProductCard({ product, index = 0 }: { product: ProductWithImages
           {coverUrl ? (
             <div className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[0.97]">
               <div className="[&_img]:transition-transform [&_img]:duration-[1.2s] [&_img]:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:[&_img]:scale-110">
-                <ArchPhoto src={coverUrl} alt={product.name} />
+                <FramedPhoto src={coverUrl} alt={product.name} />
               </div>
             </div>
           ) : (
-            <div className="flex aspect-[4/5] w-full items-center justify-center rounded-t-full bg-gradient-to-br from-bordeaux to-bordeaux-light text-4xl text-beige transition-transform duration-700 group-hover:scale-[0.97]">
+            <div className="flex aspect-[4/5] w-full items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-bordeaux to-bordeaux-light text-4xl text-beige transition-transform duration-700 group-hover:scale-[0.97]">
               ✦
             </div>
           )}

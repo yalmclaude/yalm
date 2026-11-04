@@ -34,7 +34,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
                 src={pack.imageUrl}
                 alt={pack.name}
                 data-fade-up
-                className="mb-6 aspect-[4/3] w-full rounded-t-full rounded-b-2xl object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
+                className="mb-6 aspect-[4/3] w-full rounded-[1.5rem] object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
               />
             )}
             <p data-fade-up className="label-caps text-bordeaux/60">Formule</p>

@@ -25,7 +25,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
         className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
       >
         {pack.imageUrl ? (
-          <div className="mb-6 aspect-[4/3] overflow-hidden rounded-t-full">
+          <div className="mb-6 aspect-[4/3] overflow-hidden rounded-[1.25rem]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={pack.imageUrl}

@@ -173,8 +173,8 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
   ),
 };
 
-// Footer: an oversized call to action, a scrolling band, the contact details and a giant
-// "yalm" wordmark rising with a slight parallax. Arched top edge echoes the floral arch.
+// Footer: an oversized call to action, a scrolling band and the contact details.
+// Arched top edge echoes the floral arch.
 export function SiteFooter() {
   return (
     <footer className="relative mt-10 overflow-hidden rounded-t-[2.5rem] bg-bordeaux text-cream sm:rounded-t-[5rem]">
@@ -218,7 +218,7 @@ export function SiteFooter() {
         </Marquee>
       </div>
 
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 pb-12 sm:flex-row sm:items-end sm:justify-between sm:px-8">
         <div className="flex items-center gap-4">
           {SOCIAL_LINKS.map((s) => (
             <a
@@ -250,14 +250,6 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="pointer-events-none select-none overflow-hidden" aria-hidden>
-        <p
-          data-parallax="-0.12"
-          className="font-script -mb-[0.12em] text-center text-[clamp(10rem,42vw,34rem)] leading-[0.8] text-cream/[0.07]"
-        >
-          yalm
-        </p>
-      </div>
     </footer>
   );
 }

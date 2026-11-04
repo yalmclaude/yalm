@@ -55,10 +55,16 @@ export default function RootLayout({
           aria-hidden
           className="fixed inset-0 z-[10000] flex-col items-center justify-center bg-bordeaux text-cream"
         >
-          <div className="overflow-hidden px-6 pb-4">
-            <p data-loader-word className="font-script text-[clamp(6rem,22vw,16rem)] leading-none">
-              yalm
-            </p>
+          <div className="overflow-hidden px-6 pb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              data-loader-word
+              src="/logo-cream.png"
+              alt=""
+              width={1200}
+              height={668}
+              className="h-auto w-[min(62vw,22rem)]"
+            />
           </div>
           <p className="label-caps mt-2 text-cream/60">
             <span data-loader-count>0</span>%
