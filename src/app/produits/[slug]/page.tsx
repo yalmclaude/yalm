@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { ProductGallery } from "@/components/ProductGallery";
+import { SplitWords } from "@/components/motion/SplitWords";
 import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
 import { canBuy, canRent } from "@/lib/pricing";
 
@@ -27,14 +28,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <>
       <SiteHeader />
       <main className="flex-1 bg-background">
-        <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:px-8 md:grid-cols-2 lg:gap-16 lg:py-20">
           <div>
-            <ProductGallery images={product.images} alt={product.name} />
-            <p className="label-caps text-bordeaux/60">
+            <div data-fade-up>
+              <ProductGallery images={product.images} alt={product.name} />
+            </div>
+            <p data-fade-up className="label-caps text-bordeaux/60">
               {product.category.name}
             </p>
-            <h1 className="mt-2 font-serif text-3xl text-bordeaux">{product.name}</h1>
-            <p className="mt-4 text-bordeaux/70">{product.description}</p>
+            <h1 data-split className="mt-3 font-serif text-5xl leading-[0.95] tracking-[-0.02em] text-bordeaux sm:text-6xl">
+              <SplitWords text={product.name} />
+            </h1>
+            <p data-fade-up className="mt-5 leading-relaxed text-bordeaux/70">{product.description}</p>
             {product.quoteOnly ? (
               <p className="mt-6 text-sm text-bordeaux/75">
                 Tarif : <span className="font-semibold text-bordeaux">sur devis</span>
@@ -79,6 +84,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
           </div>
 
+          <div data-fade-up data-delay="0.15" className="md:sticky md:top-24 md:self-start">
           {product.quoteOnly ? (
             <QuoteContact />
           ) : (
@@ -96,6 +102,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             askCustomText={product.askCustomText}
           />
           )}
+          </div>
         </div>
       </main>
       <SiteFooter />

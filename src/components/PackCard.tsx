@@ -22,21 +22,27 @@ export function PackCard({ pack }: { pack: PackCardData }) {
     <Reveal>
       <Link
         href={`/formules/${pack.slug}`}
-        className="group flex h-full flex-col rounded-lg bg-bordeaux p-6 text-cream shadow-[0_8px_24px_rgba(74,16,21,0.18)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.3)]"
+        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
       >
         {pack.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={pack.imageUrl} alt={pack.name} className="mb-4 h-36 w-full rounded-lg object-cover" />
+          <div className="mb-6 aspect-[4/3] overflow-hidden rounded-t-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={pack.imageUrl}
+              alt={pack.name}
+              className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+            />
+          </div>
         ) : (
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-cream text-bordeaux">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-current text-xl transition-transform duration-700 group-hover:rotate-[180deg]">
             ★
           </div>
         )}
-        <h4 className="font-serif text-lg">
+        <h4 className="font-serif text-3xl leading-tight">
           {pack.name}
         </h4>
-        <p className="mt-2 text-sm text-cream/75">{pack.description}</p>
-        <ul className="mt-3 flex-1 space-y-0.5 text-xs text-cream/65">
+        <p className="mt-2 text-sm opacity-75">{pack.description}</p>
+        <ul className="mt-3 flex-1 space-y-0.5 text-xs opacity-65">
           {pack.items.map((item, i) => (
             <li key={i}>
               • {item.quantity > 1 ? `${item.quantity}× ` : ""}
@@ -44,11 +50,11 @@ export function PackCard({ pack }: { pack: PackCardData }) {
             </li>
           ))}
         </ul>
-        <div className="mt-4 flex items-center justify-between border-t border-dashed border-cream/25 pt-3.5">
+        <div className="mt-4 flex items-center justify-between border-t border-dashed border-current/25 pt-3.5">
           {pack.quoteOnly ? (
             <>
               <span className="font-semibold">Sur devis</span>
-              <span className="text-right text-xs text-cream/70">Appelez-nous</span>
+              <span className="text-right text-xs opacity-70">Appelez-nous</span>
             </>
           ) : (
             <>
@@ -56,7 +62,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
                 {parseDurationOptions(pack.durationOptions).length > 0 && "Dès "}
                 {formatPrice(startingPriceCents(pack.priceCents, parseDurationOptions(pack.durationOptions)))}
               </span>
-              <span className="text-right text-xs text-cream/70">
+              <span className="text-right text-xs opacity-70">
                 {paymentTermsLabel(pack.depositType, pack.depositValue)}
               </span>
             </>
@@ -73,16 +79,18 @@ export function CustomFormulaCard({ minItems }: { minItems: number }) {
     <Reveal>
       <Link
         href="/formules/personnalisee"
-        className="group flex h-full flex-col rounded-lg bg-bordeaux p-6 text-cream shadow-[0_8px_24px_rgba(74,16,21,0.18)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(74,16,21,0.3)]"
+        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
       >
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-cream text-bordeaux">✦</div>
-        <h4 className="font-serif text-lg">Formule personnalisée</h4>
-        <p className="mt-2 flex-1 text-sm text-cream/75">
+        <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-current text-xl transition-transform duration-700 group-hover:rotate-[180deg]">
+          ✦
+        </div>
+        <h4 className="font-serif text-3xl leading-tight">Formule personnalisée</h4>
+        <p className="mt-2 flex-1 text-sm opacity-75">
           Composez votre propre formule à partir de {minItems} prestations, à un tarif avantageux.
         </p>
-        <div className="mt-4 flex items-center justify-between border-t border-dashed border-cream/25 pt-3.5">
+        <div className="mt-4 flex items-center justify-between border-t border-dashed border-current/25 pt-3.5">
           <span className="font-semibold">Sur mesure</span>
-          <span className="label-caps text-cream/80 transition-transform group-hover:translate-x-1">Composer →</span>
+          <span className="label-caps opacity-80 transition-transform group-hover:translate-x-1">Composer →</span>
         </div>
       </Link>
     </Reveal>

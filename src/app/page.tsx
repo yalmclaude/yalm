@@ -5,7 +5,7 @@ import { CustomFormulaCard, PackCard } from "@/components/PackCard";
 import { getCustomFormulaSettings } from "@/lib/settings";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
-import { Reveal } from "@/components/Reveal";
+import { ServicesMarquee } from "@/components/ServicesMarquee";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
 
 // Rendered on every request so admin changes (prices, "sur devis", new offers) show up immediately.
@@ -36,27 +36,27 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-clip">
         <HeroSection />
+        <ServicesMarquee />
 
-        <section id="catalogue" className="mx-auto max-w-6xl px-6 py-16">
-          <Reveal>
-            <SectionTitle eyebrow="Notre catalogue" title="Nos prestations" />
-          </Reveal>
+        <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
+          <SectionTitle index="01" eyebrow="Notre catalogue" title="Nos prestations" align="left" />
 
           {categories.map((category) => {
             const available = category.products.filter((p) => p.isAvailable);
             if (available.length === 0) return null;
             return (
-              <div key={category.id} className="mt-12">
-                <Reveal>
-                  <h3 className="mb-6 border-b border-bordeaux/10 pb-3 label-caps text-bordeaux">
+              <div key={category.id} className="mt-16 sm:mt-20">
+                <div data-fade-up className="mb-10 flex items-end justify-between gap-6 border-b border-bordeaux/15 pb-4">
+                  <h3 className="font-serif text-3xl uppercase tracking-[-0.01em] text-bordeaux sm:text-5xl">
                     {category.name}
                   </h3>
-                </Reveal>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {available.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  <span className="label-caps text-bordeaux/50">({String(available.length).padStart(2, "0")})</span>
+                </div>
+                <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                  {available.map((product, index) => (
+                    <ProductCard key={product.id} product={product} index={index} />
                   ))}
                 </div>
               </div>
@@ -64,13 +64,13 @@ export default async function HomePage() {
           })}
 
           {unavailable.length > 0 && (
-            <div className="mt-14">
-              <h3 className="mb-6 border-b border-bordeaux/10 pb-3 label-caps text-bordeaux/40">
+            <div className="mt-20">
+              <h3 className="mb-10 border-b border-bordeaux/10 pb-4 font-serif text-3xl uppercase text-bordeaux/40 sm:text-4xl">
                 Bientôt de retour
               </h3>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {unavailable.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+              <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                {unavailable.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
                 ))}
               </div>
             </div>
@@ -78,17 +78,25 @@ export default async function HomePage() {
         </section>
 
         {(packs.length > 0 || customFormula.enabled) && (
-        <section id="formules" className="mx-auto max-w-6xl px-6 py-16">
-          <Reveal>
-            <SectionTitle eyebrow="Des offres combinées" title="Nos formules" />
-          </Reveal>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {packs.map((pack) => (
-              <PackCard key={pack.id} pack={pack} />
-            ))}
-            {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
-          </div>
-        </section>
+          <section id="formules" data-panel className="relative scroll-mt-24 overflow-hidden bg-bordeaux py-24 text-cream sm:py-32">
+            {/* Giant outlined word drifting behind the cards */}
+            <p
+              aria-hidden
+              data-parallax="0.4"
+              className="pointer-events-none absolute -right-[5%] top-6 select-none font-script text-[clamp(9rem,26vw,24rem)] leading-none text-cream/[0.05]"
+            >
+              formules
+            </p>
+            <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
+              <SectionTitle index="02" eyebrow="Des offres combinées" title="Nos formules" tone="light" align="left" />
+              <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {packs.map((pack) => (
+                  <PackCard key={pack.id} pack={pack} />
+                ))}
+                {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
+              </div>
+            </div>
+          </section>
         )}
 
         <HowItWorksSection steps={howItWorksSteps} />

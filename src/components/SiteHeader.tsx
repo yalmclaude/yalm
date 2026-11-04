@@ -6,42 +6,49 @@ const NAV_LINKS = [
   { href: "/#comment-ca-marche", label: "Comment ça marche ?" },
 ];
 
+// The bar hides while scrolling down and comes back on scroll up, turning frosted once
+// the page has moved (both driven by the motion system through `data-header`).
 export function SiteHeader() {
   return (
     <>
-      <div className="bg-bordeaux text-center text-[0.68rem] font-medium uppercase tracking-[0.16em] text-cream py-2 px-4">
-        Acompte requis pour bloquer votre date — disponibilités limitées
+      <div className="overflow-hidden bg-bordeaux py-2 text-cream">
+        <p className="px-4 text-center text-[0.65rem] font-medium uppercase tracking-[0.2em]">
+          Acompte requis pour bloquer votre date — disponibilités limitées
+        </p>
       </div>
-      <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-cream/90 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-2">
-          <Link href="/" className="flex items-center">
+      <header data-header className="sticky top-0 z-50 border-b border-transparent bg-cream/0 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-2.5 sm:px-8">
+          <Link href="/" className="flex items-center" data-magnetic="0.2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-tight.png" alt="YALM Events" className="h-10 w-auto sm:h-12" />
           </Link>
-          <nav className="hidden md:flex items-center gap-7 label-caps text-bordeaux">
+          <nav className="hidden items-center gap-8 label-caps text-bordeaux md:flex">
             {NAV_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} className="hover:text-bordeaux transition-colors">
+              <Link key={l.href} href={l.href} className="nav-link">
                 {l.label}
               </Link>
             ))}
-            <a href="/coffret" className="hover:text-bordeaux transition-colors">
+            <a href="/coffret" data-magnetic="0.25" className="btn btn-primary !px-5 !py-2.5">
               Mon coffret
             </a>
           </nav>
           {/* Mobile: the full nav doesn't fit on a phone, so it folds into a menu (no JS needed). */}
-          <details className="md:hidden relative">
-            <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer p-2 text-bordeaux" aria-label="Menu">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 7h16M4 12h16M4 17h16" />
+          <details className="relative md:hidden">
+            <summary
+              className="cursor-pointer list-none p-2 text-bordeaux [&::-webkit-details-marker]:hidden"
+              aria-label="Menu"
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M4 8h16M8 15h12" />
               </svg>
             </summary>
-            <nav className="absolute right-0 mt-2 w-56 flex flex-col rounded border border-bordeaux/10 bg-cream-light py-2 label-caps text-bordeaux shadow-lg">
+            <nav className="absolute right-0 mt-3 flex w-64 flex-col overflow-hidden rounded-2xl bg-bordeaux py-3 text-cream shadow-[0_24px_50px_-20px_rgba(78,13,21,0.6)]">
               {NAV_LINKS.map((l) => (
-                <Link key={l.href} href={l.href} className="px-5 py-3 hover:bg-bordeaux/5">
+                <Link key={l.href} href={l.href} className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
                   {l.label}
                 </Link>
               ))}
-              <a href="/coffret" className="px-5 py-3 hover:bg-bordeaux/5">
+              <a href="/coffret" className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
                 Mon coffret
               </a>
             </nav>

@@ -75,3 +75,212 @@ h3,
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ───────────────────────── Motion system ─────────────────────────
+   The `motion` class is set on <html> by an inline script before first paint, only when
+   the visitor doesn't prefer reduced motion. Initial (hidden) states below apply only
+   then, so without JS or with reduced motion everything is simply visible. */
+
+/* Lenis smooth scroll (replaces native smooth scrolling while active). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Words split for line-by-line reveals; padding keeps script swashes from being clipped. */
+.sw {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.14em 0.1em 0.2em;
+  margin: -0.14em -0.1em -0.2em;
+}
+.sw-inner {
+  display: inline-block;
+  will-change: transform;
+}
+.motion [data-split] .sw-inner {
+  transform: translate3d(0, 115%, 0);
+}
+.motion [data-fade-up] {
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+}
+.motion [data-hero-img] {
+  clip-path: inset(100% 0 0 0 round 999px 999px 0 0);
+}
+
+/* Intro curtain: rendered on every page, shown only for the first visit of the homepage. */
+#yalm-loader {
+  display: none;
+}
+.motion.intro #yalm-loader {
+  display: flex;
+}
+.motion.intro body {
+  overflow: hidden;
+}
+
+/* Outlined display type. */
+.text-stroke {
+  color: transparent;
+  -webkit-text-stroke: 1px currentColor;
+}
+.text-stroke-bordeaux {
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--bordeaux);
+}
+.text-stroke-cream {
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--cream);
+}
+
+/* Buttons with a fill that sweeps up from the bottom on hover. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 1rem 1.75rem;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transform: translateY(101%);
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: translateY(0);
+}
+.btn-primary {
+  background: var(--bordeaux);
+  color: var(--cream);
+}
+.btn-primary::before {
+  background: var(--bordeaux-light);
+}
+.btn-ghost {
+  border: 1px solid currentColor;
+  color: var(--bordeaux);
+}
+.btn-ghost::before {
+  background: var(--bordeaux);
+}
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--cream);
+}
+.btn-cream {
+  background: var(--cream);
+  color: var(--bordeaux);
+}
+.btn-cream::before {
+  background: var(--cream-light);
+}
+.btn .btn-arrow {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover .btn-arrow {
+  transform: translateX(4px) rotate(-45deg);
+}
+
+/* Navigation links: an underline that draws in from the left. */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Infinite marquee track (driven by GSAP; CSS fallback keeps it moving if JS is off). */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+.motion .marquee-track {
+  animation: none;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Slowly spinning circular badge (CSS fallback; GSAP takes over when motion is on). */
+.spin-slow {
+  animation: spin 18s linear infinite;
+}
+.motion .spin-slow {
+  animation: none;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .spin-slow {
+    animation: none;
+  }
+  .card-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.motion.intro [data-loader-word] {
+  transform: translateY(110%);
+}
+.motion [data-line] {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* Header: transparent over the hero, a frosted bar once the page scrolls. */
+[data-header] {
+  transition: background-color 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
+}
+[data-header].is-scrolled {
+  background-color: color-mix(in srgb, var(--cream) 85%, transparent);
+  box-shadow: 0 10px 30px -20px rgba(78, 13, 21, 0.35);
+}

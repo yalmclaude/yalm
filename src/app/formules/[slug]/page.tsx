@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
+import { SplitWords } from "@/components/motion/SplitWords";
 
 export const dynamic = "force-dynamic";
 
@@ -25,19 +26,22 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
     <>
       <SiteHeader />
       <main className="flex-1 bg-background">
-        <div className="mx-auto max-w-5xl px-6 py-14 grid gap-10 md:grid-cols-2">
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:px-8 md:grid-cols-2 lg:gap-16 lg:py-20">
           <div>
             {pack.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={pack.imageUrl}
                 alt={pack.name}
-                className="mb-5 h-64 w-full rounded-2xl object-cover shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
+                data-fade-up
+                className="mb-6 aspect-[4/3] w-full rounded-t-full rounded-b-2xl object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
               />
             )}
-            <p className="label-caps text-bordeaux/60">Formule</p>
-            <h1 className="mt-2 font-serif text-3xl text-bordeaux">{pack.name}</h1>
-            <p className="mt-4 text-bordeaux/70">{pack.description}</p>
+            <p data-fade-up className="label-caps text-bordeaux/60">Formule</p>
+            <h1 data-split className="mt-3 font-serif text-5xl leading-[0.95] tracking-[-0.02em] text-bordeaux sm:text-6xl">
+              <SplitWords text={pack.name} />
+            </h1>
+            <p data-fade-up className="mt-5 leading-relaxed text-bordeaux/70">{pack.description}</p>
 
             <div className="mt-6">
               <p className="text-sm font-medium text-bordeaux">Cette formule inclut :</p>

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS, phoneHref } from "@/lib/contact";
+import { Marquee } from "@/components/motion/Marquee";
+import { SplitWords } from "@/components/motion/SplitWords";
 
 /* Shared pieces of the brand banner look: the "line ✷ line" divider, the white line icons,
    section titles with a brush-script headline, and the footer. */
@@ -17,20 +19,48 @@ export function Ornament({ tone = "dark", className = "" }: { tone?: "dark" | "l
   );
 }
 
+// Section heading. Centered (with the ✷ ornament) by default; the homepage uses the
+// editorial variant: a numbered rule that draws in, then an oversized script title.
 export function SectionTitle({
   eyebrow,
   title,
   tone = "dark",
+  index,
+  align = "center",
 }: {
   eyebrow: string;
   title: string;
   tone?: "dark" | "light";
+  index?: string;
+  align?: "center" | "left";
 }) {
   const text = tone === "light" ? "text-cream" : "text-bordeaux";
+  const muted = tone === "light" ? "text-cream/60" : "text-bordeaux/55";
+
+  if (align === "left") {
+    return (
+      <div className={text}>
+        <div className={`flex items-center gap-4 label-caps ${muted}`}>
+          {index && <span>({index})</span>}
+          <span data-line className="h-px flex-1 bg-current opacity-40" />
+          <span>{eyebrow}</span>
+        </div>
+        <h2
+          data-split
+          className="font-script mt-4 text-[clamp(4.2rem,11vw,10rem)] leading-[0.95] -tracking-[0.01em]"
+        >
+          <SplitWords text={title} />
+        </h2>
+      </div>
+    );
+  }
+
   return (
     <div className="text-center">
-      <p className={`label-caps ${tone === "light" ? "text-cream/70" : "text-bordeaux/60"}`}>{eyebrow}</p>
-      <h2 className={`font-script mt-1 text-5xl leading-tight sm:text-6xl ${text}`}>{title}</h2>
+      <p className={`label-caps ${muted}`}>{eyebrow}</p>
+      <h2 data-split className={`font-script mt-1 text-6xl leading-tight sm:text-7xl ${text}`}>
+        <SplitWords text={title} />
+      </h2>
       <Ornament tone={tone} className="mt-3" />
     </div>
   );
@@ -143,45 +173,91 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
   ),
 };
 
+// Footer: an oversized call to action, a scrolling band, the contact details and a giant
+// "yalm" wordmark rising with a slight parallax. Arched top edge echoes the floral arch.
 export function SiteFooter() {
   return (
-    <footer className="bg-bordeaux py-12 text-center text-cream">
-      <p className="font-script text-5xl leading-none">Your amazing life moments</p>
-      <Ornament tone="light" className="mx-auto mt-4 max-w-md px-6" />
-      <div className="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-6">
-        <a href={phoneHref(CONTACT_PHONE)} className="label-caps hover:text-cream/70">
-          {CONTACT_PHONE}
-        </a>
-        <a href={`mailto:${CONTACT_EMAIL}`} className="label-caps hover:text-cream/70">
-          {CONTACT_EMAIL}
-        </a>
-      </div>
-      <div className="mt-5 flex items-center justify-center gap-5">
-        {SOCIAL_LINKS.map((s) => (
-          <a
-            key={s.name}
-            href={s.url}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`${s.name} — yalm.events`}
-            title={`${s.name} — yalm.events`}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-cream/40 transition-colors hover:bg-cream hover:text-bordeaux"
-          >
-            {SOCIAL_ICONS[s.name]}
+    <footer className="relative mt-10 overflow-hidden rounded-t-[2.5rem] bg-bordeaux text-cream sm:rounded-t-[5rem]">
+      <div className="mx-auto max-w-7xl px-5 pt-16 sm:px-8 sm:pt-24">
+        <p data-fade-up className="label-caps text-cream/55">
+          Votre événement commence ici
+        </p>
+        <h2 className="mt-4 font-serif uppercase leading-[0.86] tracking-[-0.03em] text-[clamp(2.9rem,9vw,8.5rem)]">
+          <span data-split className="block">
+            <SplitWords text="Parlons de" />
+          </span>
+          <span data-split className="block font-script normal-case tracking-normal text-[1.05em] leading-[0.8] sm:ml-[12%]">
+            <SplitWords text="votre événement" />
+          </span>
+        </h2>
+
+        <div data-fade-up className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <a href={phoneHref(CONTACT_PHONE)} data-magnetic className="btn btn-cream">
+            Appeler le {CONTACT_PHONE}
+            <span className="btn-arrow" aria-hidden>
+              →
+            </span>
           </a>
-        ))}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="nav-link w-fit label-caps text-cream/85 hover:text-cream sm:ml-4"
+          >
+            {CONTACT_EMAIL}
+          </a>
+        </div>
       </div>
-      <p className="mt-4 text-xs text-cream/60">
-        © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
-        <a href="/mentions-legales" className="underline hover:text-cream">
-          Mentions légales
-        </a>{" "}
-        ·{" "}
-        <a href="/cgv" className="underline hover:text-cream">
-          CGV
-        </a>
-      </p>
-      <p className="mt-2 text-xs text-cream/60">Site réalisé par Dololka Agency</p>
+
+      <div className="mt-16 border-y border-cream/15 py-5 sm:mt-24">
+        <Marquee>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <span key={i} className="flex items-center">
+              <span className="font-script px-8 text-5xl leading-none sm:text-6xl">Your amazing life moments</span>
+              <span className="text-xl text-cream/50">✦</span>
+            </span>
+          ))}
+        </Marquee>
+      </div>
+
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+        <div className="flex items-center gap-4">
+          {SOCIAL_LINKS.map((s) => (
+            <a
+              key={s.name}
+              href={s.url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${s.name} — yalm.events`}
+              title={`${s.name} — yalm.events`}
+              data-magnetic="0.4"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-cream/35 transition-colors duration-500 hover:border-cream hover:bg-cream hover:text-bordeaux"
+            >
+              {SOCIAL_ICONS[s.name]}
+            </a>
+          ))}
+        </div>
+        <div className="text-xs text-cream/55 sm:text-right">
+          <p>
+            © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
+            <a href="/mentions-legales" className="underline underline-offset-2 hover:text-cream">
+              Mentions légales
+            </a>{" "}
+            ·{" "}
+            <a href="/cgv" className="underline underline-offset-2 hover:text-cream">
+              CGV
+            </a>
+          </p>
+          <p className="mt-2">Site réalisé par Dololka Agency</p>
+        </div>
+      </div>
+
+      <div className="pointer-events-none select-none overflow-hidden" aria-hidden>
+        <p
+          data-parallax="-0.12"
+          className="font-script -mb-[0.12em] text-center text-[clamp(10rem,42vw,34rem)] leading-[0.8] text-cream/[0.07]"
+        >
+          yalm
+        </p>
+      </div>
     </footer>
   );
 }
