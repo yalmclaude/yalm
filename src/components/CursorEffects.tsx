@@ -3,13 +3,13 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-// Decorative pointer effects on the public site: a soft golden glow that follows the
+// Decorative pointer effects on the public site: a soft dark bordeaux glow that follows the
 // mouse (fading out when it stops) and a few drifting twinkles on click / tap. Drawn on a
 // single click-through canvas; the animation loop only runs while something is visible.
 // Off in the admin and when the visitor prefers reduced motion.
 
-// Champagne tones, kept soft and few for a refined look.
-const SPARKLE_COLORS = ["#f6e7c1", "#fffaf0", "#e9d29a"];
+// Antique gold and bordeaux, kept few for a refined look and visible on the cream background.
+const SPARKLE_COLORS = ["#b8924a", "#d4b06a", "#6b1a24"];
 const SPARKLES_PER_CLICK = 7;
 const GLOW_RADIUS = 130;
 
@@ -86,9 +86,9 @@ export function CursorEffects() {
       glow.alpha += (target - glow.alpha) * 0.08;
       if (glow.alpha > 0.01) {
         const g = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, GLOW_RADIUS);
-        g.addColorStop(0, `rgba(255, 240, 210, ${0.18 * glow.alpha})`);
-        g.addColorStop(0.4, `rgba(233, 210, 154, ${0.07 * glow.alpha})`);
-        g.addColorStop(1, "rgba(233, 210, 154, 0)");
+        g.addColorStop(0, `rgba(78, 13, 21, ${0.3 * glow.alpha})`);
+        g.addColorStop(0.4, `rgba(78, 13, 21, ${0.12 * glow.alpha})`);
+        g.addColorStop(1, "rgba(78, 13, 21, 0)");
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(glow.x, glow.y, GLOW_RADIUS, 0, Math.PI * 2);
