@@ -45,7 +45,7 @@ export default async function HomePage() {
           <ServicesMarquee />
         </div>
 
-        <div data-slide data-slide-from="right" className="bg-cream">
+        <div data-slide className="bg-cream">
         <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
           <SectionTitle index="01" eyebrow="Notre catalogue" title="Nos prestations" align="left" />
 
@@ -109,7 +109,7 @@ export default async function HomePage() {
         )}
 
         {howItWorksSteps.length > 0 && (
-          <div data-slide data-slide-from="right" className="flex min-h-svh flex-col justify-center bg-cream">
+          <div data-slide className="flex min-h-svh flex-col justify-center bg-cream">
             <HowItWorksSection steps={howItWorksSteps} />
           </div>
         )}
