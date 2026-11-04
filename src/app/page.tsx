@@ -7,6 +7,7 @@ import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { ServicesMarquee } from "@/components/ServicesMarquee";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
+import { SlideNav } from "@/components/motion/SlideNav";
 
 // Rendered on every request so admin changes (prices, "sur devis", new offers) show up immediately.
 export const dynamic = "force-dynamic";
@@ -36,10 +37,15 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 overflow-x-clip">
-        <HeroSection />
-        <ServicesMarquee />
+      {/* Each data-slide is a full-screen "page": with motion on, the next one slides over the
+          previous (see slides() in MotionProvider). The dark ground shows as pages recede. */}
+      <main data-slides className="flex-1 overflow-x-clip bg-[#1c0407]">
+        <div data-slide id="accueil" className="flex min-h-svh flex-col bg-cream">
+          <HeroSection />
+          <ServicesMarquee />
+        </div>
 
+        <div data-slide className="bg-cream">
         <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
           <SectionTitle index="01" eyebrow="Notre catalogue" title="Nos prestations" align="left" />
 
@@ -76,9 +82,11 @@ export default async function HomePage() {
             </div>
           )}
         </section>
+        </div>
 
         {(packs.length > 0 || customFormula.enabled) && (
-          <section id="formules" data-panel className="relative scroll-mt-24 overflow-hidden bg-bordeaux py-24 text-cream sm:py-32">
+          <div data-slide data-slide-tone="dark" className="flex min-h-svh flex-col justify-center bg-bordeaux">
+          <section id="formules" className="relative scroll-mt-24 overflow-hidden bg-bordeaux py-24 text-cream sm:py-32">
             {/* Giant outlined word drifting behind the cards */}
             <p
               aria-hidden
@@ -97,11 +105,28 @@ export default async function HomePage() {
               </div>
             </div>
           </section>
+          </div>
         )}
 
-        <HowItWorksSection steps={howItWorksSteps} />
+        {howItWorksSteps.length > 0 && (
+          <div data-slide className="flex min-h-svh flex-col justify-center bg-cream">
+            <HowItWorksSection steps={howItWorksSteps} />
+          </div>
+        )}
+
+        <div data-slide data-slide-plain data-slide-tone="dark" id="contact" className="[&>footer]:mt-0">
+          <SiteFooter />
+        </div>
       </main>
-      <SiteFooter />
+      <SlideNav
+        items={[
+          { href: "#accueil", label: "Accueil" },
+          { href: "#catalogue", label: "Prestations" },
+          ...(packs.length > 0 || customFormula.enabled ? [{ href: "#formules", label: "Formules" }] : []),
+          ...(howItWorksSteps.length > 0 ? [{ href: "#comment-ca-marche", label: "Le processus" }] : []),
+          { href: "#contact", label: "Contact" },
+        ]}
+      />
     </>
   );
 }

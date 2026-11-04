@@ -294,3 +294,49 @@ html.lenis body {
   color: var(--cream);
   -webkit-text-stroke-color: var(--cream);
 }
+
+/* ───────── Homepage slides ─────────
+   With motion on, each [data-slide] sticks (the motion system sets its `top`) and the
+   next one slides over it with rounded top corners, while the covered one recedes
+   (scale, set inline) and dims (--dim). Measuring passes unstick everything. */
+.motion [data-slides] > [data-slide] {
+  position: relative;
+  z-index: 0;
+  overflow: clip;
+  transform-origin: 50% calc(100% - 50svh);
+  border-top-left-radius: var(--round, 0px);
+  border-top-right-radius: var(--round, 0px);
+}
+.motion [data-slides] > [data-slide]:not(:last-child) {
+  position: sticky;
+}
+.motion [data-slides] > [data-slide]:not(:first-child):not([data-slide-plain]) {
+  box-shadow: 0 -30px 70px -20px rgba(20, 3, 6, 0.45);
+}
+.motion [data-slides] > [data-slide]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: #1c0407;
+  opacity: var(--dim, 0);
+}
+.slides-measuring [data-slides] > [data-slide] {
+  position: relative !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+.slides-measuring [data-slides] > [data-slide] > * {
+  translate: none !important;
+}
+
+/* Side navigation between slides (desktop, motion only). */
+.slide-nav {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .motion.has-slides .slide-nav {
+    display: flex;
+  }
+}

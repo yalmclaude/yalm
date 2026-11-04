@@ -21,6 +21,9 @@ import Lenis from "lenis";
    data-panel            clip-path opening as the section scrolls in
    data-line             a rule that draws from the left ("scrub" ties it to scroll)
    data-header           hides on scroll down, shows on scroll up
+   data-slides           (homepage) its [data-slide] children stack like full-screen pages:
+                         each one sticks, the next slides over it while it recedes and
+                         dims, and a scroll gesture inside a transition completes it
 
    Everything is skipped in /admin and when the visitor prefers reduced motion (the
    inline script in the root layout then never adds the `motion` class). */
@@ -30,6 +33,21 @@ const EASE = "expo.out";
 // The live Lenis instance, so route changes can reset its scroll position.
 let lenisInstance: Lenis | null = null;
 const HEADER_OFFSET = -90;
+// True while a scroll is driven by code (slide snap, anchor glide), so the slide snap
+// doesn't react to it.
+let slideAuto = false;
+
+const easeInOutQuart = (t: number) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);
+
+// Where to scroll for an anchor: the natural top of its slide when it opens one (slides
+// cover the header area themselves), otherwise just below the sticky header.
+function anchorY(target: HTMLElement) {
+  const slide = target.closest<HTMLElement>("[data-slide]");
+  if (slide?.dataset.slideTop && (slide === target || slide.firstElementChild === target)) {
+    return Number(slide.dataset.slideTop);
+  }
+  return target.getBoundingClientRect().top + window.scrollY + HEADER_OFFSET;
+}
 
 function motionEnabled() {
   return document.documentElement.classList.contains("motion");
@@ -61,7 +79,14 @@ export function MotionProvider() {
       if (!target) return;
       e.preventDefault();
       link.closest("details")?.removeAttribute("open");
-      lenis.scrollTo(target as HTMLElement, { offset: HEADER_OFFSET, duration: 1.4 });
+      slideAuto = true;
+      lenis.scrollTo(anchorY(target as HTMLElement), {
+        duration: 1.4,
+        force: true,
+        onComplete: () => {
+          slideAuto = false;
+        },
+      });
       history.replaceState(null, "", url.hash);
     };
     document.addEventListener("click", onClick);
@@ -79,18 +104,6 @@ export function MotionProvider() {
     if (isAdmin || !motionEnabled()) return;
     gsap.registerPlugin(ScrollTrigger);
     (window as Window & { __yalmMotion?: boolean }).__yalmMotion = true;
-
-    // A new page must open at its top: Next scrolls the window, but Lenis would otherwise
-    // glide back to the previous page's position. Anchored URLs (/#formules) keep their target.
-    if (lenisInstance) {
-      const hashTarget = location.hash ? document.querySelector(location.hash) : null;
-      if (hashTarget) {
-        lenisInstance.scrollTo(hashTarget as HTMLElement, { offset: HEADER_OFFSET, immediate: true, force: true });
-      } else {
-        lenisInstance.scrollTo(0, { immediate: true, force: true });
-      }
-      lenisInstance.resize();
-    }
 
     const root = document.documentElement;
     const finePointer = window.matchMedia("(pointer: fine)").matches;
@@ -114,10 +127,26 @@ export function MotionProvider() {
       panels();
       lines();
       header();
+      cleanups.push(slides());
       if (finePointer) {
         cleanups.push(magnetic(), depth());
       }
     });
+
+    // A new page must open at its top: Next scrolls the window, but Lenis would otherwise
+    // glide back to the previous page's position. Anchored URLs (/#formules) keep their target.
+    if (lenisInstance) {
+      const lenis = lenisInstance;
+      const hashTarget = location.hash ? document.querySelector<HTMLElement>(location.hash) : null;
+      slideAuto = true;
+      lenis.resize();
+      lenis.scrollTo(hashTarget ? anchorY(hashTarget) : 0, { immediate: true, force: true });
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          slideAuto = false;
+        })
+      );
+    }
 
     // Positions shift once web fonts and images settle.
     const refresh = () => ScrollTrigger.refresh();
@@ -374,6 +403,131 @@ function header() {
       gsap.to(el, { yPercent: hide ? -100 : 0, duration: 0.6, ease: "power3.out", overwrite: true });
     },
   });
+}
+
+/* ───────── Slides (homepage) ───────── */
+
+function slides() {
+  const wrap = document.querySelector<HTMLElement>("[data-slides]");
+  const lenis = lenisInstance;
+  const els = wrap ? Array.from(wrap.querySelectorAll<HTMLElement>(":scope > [data-slide]")) : [];
+  if (!wrap || !lenis || els.length < 2) return () => {};
+
+  const root = document.documentElement;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  type Zone = { start: number; end: number; out: HTMLElement; inc: HTMLElement; covers: boolean };
+  let zones: Zone[] = [];
+
+  const render = (scroll: number) => {
+    for (const z of zones) {
+      const p = gsap.utils.clamp(0, 1, (scroll - z.start) / (z.end - z.start));
+      z.out.style.setProperty("--dim", (p * 0.62).toFixed(3));
+      z.out.style.transform = p > 0 ? `scale(${(1 - 0.08 * p).toFixed(4)})` : "";
+      // Once fully covered, hide it so it can't peek out behind the next receding slide.
+      z.out.style.visibility = p >= 1 && z.covers ? "hidden" : "";
+      z.inc.style.setProperty("--round", `${((1 - p) * 56).toFixed(1)}px`);
+      const first = z.inc.firstElementChild as HTMLElement | null;
+      if (first) first.style.translate = p < 1 ? `0 ${((1 - p) * 90).toFixed(1)}px` : "";
+    }
+  };
+
+  // Slides keep their natural flow positions (sticky doesn't move them in the layout), so
+  // each transition zone runs from "next slide's top enters the viewport bottom" to "it
+  // reaches the top". Tall slides stick by their bottom edge (negative top).
+  const measure = () => {
+    const vh = window.innerHeight;
+    const max = document.documentElement.scrollHeight - vh;
+    let top = wrap.getBoundingClientRect().top + window.scrollY;
+    zones = [];
+    els.forEach((el, i) => {
+      const h = el.offsetHeight;
+      el.dataset.slideTop = String(Math.round(top));
+      if (i < els.length - 1) el.style.top = `${Math.min(0, vh - h)}px`;
+      if (i > 0) {
+        const start = Math.max(0, top - vh);
+        const end = Math.min(top, max);
+        if (end - start > 40) zones.push({ start, end, out: els[i - 1], inc: el, covers: h >= vh });
+      }
+      top += h;
+    });
+    render(lenis.scroll);
+  };
+
+  // A gesture inside a transition finishes it in that direction: down slides the next
+  // page in, up slides back to the previous one.
+  let last = lenis.scroll;
+  let dir = 1;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const settle = (scroll: number) => {
+    if (slideAuto) return;
+    const z = zones.find((zone) => scroll > zone.start + 2 && scroll < zone.end - 2);
+    if (!z) return;
+    slideAuto = true;
+    lenis.scrollTo(dir > 0 ? z.end : z.start, {
+      duration: 1.25,
+      easing: easeInOutQuart,
+      lock: true,
+      force: true,
+      onComplete: () => {
+        slideAuto = false;
+      },
+    });
+  };
+  // On touch screens the finger gives the direction (native momentum and bounce make the
+  // scroll deltas unreliable); elsewhere the scroll itself does.
+  let touchY: number | null = null;
+  const onTouchStart = (e: TouchEvent) => {
+    touchY = e.touches[0]?.clientY ?? null;
+  };
+  const onTouchMove = (e: TouchEvent) => {
+    const y = e.touches[0]?.clientY;
+    if (touchY === null || y === undefined || Math.abs(y - touchY) < 6) return;
+    dir = y < touchY ? 1 : -1;
+  };
+  window.addEventListener("touchstart", onTouchStart, { passive: true });
+  window.addEventListener("touchmove", onTouchMove, { passive: true });
+
+  const offScroll = lenis.on("scroll", () => {
+    const s = lenis.scroll;
+    if (s !== last && !coarse) dir = s > last ? 1 : -1;
+    last = s;
+    render(s);
+    if (coarse) {
+      clearTimeout(timer);
+      timer = setTimeout(() => settle(lenis.scroll), 140);
+    } else {
+      settle(s);
+    }
+  });
+
+  // ScrollTrigger measures the page with slides unstuck and untransformed.
+  const unstick = () => root.classList.add("slides-measuring");
+  const restick = () => {
+    root.classList.remove("slides-measuring");
+    measure();
+  };
+  root.classList.add("has-slides");
+  ScrollTrigger.addEventListener("refreshInit", unstick);
+  ScrollTrigger.addEventListener("refresh", restick);
+  measure();
+
+  return () => {
+    offScroll();
+    clearTimeout(timer);
+    window.removeEventListener("touchstart", onTouchStart);
+    window.removeEventListener("touchmove", onTouchMove);
+    ScrollTrigger.removeEventListener("refreshInit", unstick);
+    ScrollTrigger.removeEventListener("refresh", restick);
+    root.classList.remove("has-slides", "slides-measuring");
+    els.forEach((el) => {
+      el.style.removeProperty("top");
+      el.style.removeProperty("transform");
+      el.style.removeProperty("visibility");
+      el.style.removeProperty("--dim");
+      el.style.removeProperty("--round");
+      (el.firstElementChild as HTMLElement | null)?.style.removeProperty("translate");
+    });
+  };
 }
 
 /* ───────── Pointer ───────── */
