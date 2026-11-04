@@ -4,13 +4,14 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 // Decorative pointer effects on the public site: a soft golden glow that follows the
-// mouse (fading out when it stops) and a burst of sparkles on click / tap. Drawn on a
+// mouse (fading out when it stops) and a few drifting twinkles on click / tap. Drawn on a
 // single click-through canvas; the animation loop only runs while something is visible.
 // Off in the admin and when the visitor prefers reduced motion.
 
-const SPARKLE_COLORS = ["#d4af37", "#f3d98b", "#fff6dc", "#e8c66a", "#b8860b"];
-const SPARKLES_PER_CLICK = 26;
-const GLOW_RADIUS = 110;
+// Champagne tones, kept soft and few for a refined look.
+const SPARKLE_COLORS = ["#f6e7c1", "#fffaf0", "#e9d29a"];
+const SPARKLES_PER_CLICK = 7;
+const GLOW_RADIUS = 130;
 
 type Sparkle = {
   x: number;
@@ -29,12 +30,14 @@ function drawStar(ctx: CanvasRenderingContext2D, s: Sparkle) {
   ctx.save();
   ctx.translate(s.x, s.y);
   ctx.rotate(s.rotation);
-  ctx.globalAlpha = Math.max(0, s.life);
+  // Fade in then out (sine over the lifetime) instead of popping in at full opacity.
+  ctx.globalAlpha = Math.max(0, Math.sin(Math.PI * s.life)) * 0.9;
   ctx.fillStyle = s.color;
   ctx.shadowColor = s.color;
-  ctx.shadowBlur = 8;
+  ctx.shadowBlur = 4;
+  // Slim four-point twinkle.
   const r = s.size;
-  const inner = r * 0.28;
+  const inner = r * 0.14;
   ctx.beginPath();
   for (let i = 0; i < 8; i++) {
     const radius = i % 2 === 0 ? r : inner;
@@ -83,9 +86,9 @@ export function CursorEffects() {
       glow.alpha += (target - glow.alpha) * 0.08;
       if (glow.alpha > 0.01) {
         const g = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, GLOW_RADIUS);
-        g.addColorStop(0, `rgba(255, 222, 140, ${0.55 * glow.alpha})`);
-        g.addColorStop(0.4, `rgba(212, 175, 55, ${0.25 * glow.alpha})`);
-        g.addColorStop(1, "rgba(212, 175, 55, 0)");
+        g.addColorStop(0, `rgba(255, 240, 210, ${0.18 * glow.alpha})`);
+        g.addColorStop(0.4, `rgba(233, 210, 154, ${0.07 * glow.alpha})`);
+        g.addColorStop(1, "rgba(233, 210, 154, 0)");
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(glow.x, glow.y, GLOW_RADIUS, 0, Math.PI * 2);
@@ -94,8 +97,8 @@ export function CursorEffects() {
 
       sparkles = sparkles.filter((s) => s.life > 0);
       for (const s of sparkles) {
-        s.vx *= 0.96;
-        s.vy = s.vy * 0.96 + 0.12; // light gravity
+        s.vx *= 0.95;
+        s.vy = s.vy * 0.95 - 0.01; // drift gently upward
         s.x += s.vx;
         s.y += s.vy;
         s.rotation += s.spin;
@@ -128,17 +131,17 @@ export function CursorEffects() {
     const onDown = (e: PointerEvent) => {
       for (let i = 0; i < SPARKLES_PER_CLICK; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 1.5 + Math.random() * 4;
+        const speed = 0.6 + Math.random() * 1.6;
         sparkles.push({
           x: e.clientX,
           y: e.clientY,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 1.5,
-          size: 4 + Math.random() * 6,
+          vy: Math.sin(angle) * speed - 0.4,
+          size: 3 + Math.random() * 4,
           rotation: Math.random() * Math.PI,
-          spin: (Math.random() - 0.5) * 0.3,
+          spin: (Math.random() - 0.5) * 0.04,
           life: 1,
-          decay: 0.015 + Math.random() * 0.02,
+          decay: 0.012 + Math.random() * 0.01,
           color: SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)],
         });
       }
