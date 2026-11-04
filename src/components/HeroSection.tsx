@@ -21,20 +21,17 @@ export function HeroSection() {
         </div>
 
         <div className="relative mt-8 grid items-center gap-14 lg:mt-14 lg:grid-cols-12 lg:gap-6">
-          {/* Headline column: a small lead-in line, then the two big lines, then copy + CTAs */}
+          {/* Headline column: three equal uppercase lines, then copy + CTAs */}
           <div className="relative z-10 lg:col-span-7 lg:pb-6">
-            <h1 className="font-serif uppercase text-bordeaux">
-              <span data-split className="flex items-center gap-4 text-[clamp(1.05rem,4.2vw,1.9rem)] tracking-[0.14em] text-bordeaux/80">
-                <span data-line aria-hidden className="block h-px w-10 bg-bordeaux/50 sm:w-16" />
+            <h1 className="font-serif uppercase leading-[0.9] tracking-[-0.03em] text-bordeaux text-[clamp(2.2rem,9.6vw,6rem)] lg:text-[clamp(3.2rem,5.3vw,5.4rem)]">
+              <span data-split className="block">
                 <SplitWords text="Créons ensemble" />
               </span>
-              <span className="mt-3 block leading-[0.88] tracking-[-0.03em] text-[clamp(2.7rem,12.4vw,7rem)] sm:mt-5 lg:text-[clamp(3.6rem,6.3vw,6.4rem)]">
-                <span data-split className="block">
-                  <SplitWords text="Vos moments" />
-                </span>
-                <span data-split className="block">
-                  <SplitWords text="inoubliables" />
-                </span>
+              <span data-split className="block">
+                <SplitWords text="vos moments" />
+              </span>
+              <span data-split className="block">
+                <SplitWords text="inoubliables" />
               </span>
             </h1>
             <p data-fade-up className="mt-8 max-w-md text-[0.95rem] leading-relaxed text-bordeaux/75 sm:mt-10">
