@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 // Antique gold and bordeaux, kept few for a refined look and visible on the cream background.
 const SPARKLE_COLORS = ["#b8924a", "#d4b06a", "#6b1a24"];
 const SPARKLES_PER_CLICK = 7;
-const GLOW_RADIUS = 130;
+const GLOW_RADIUS = 60;
 
 type Sparkle = {
   x: number;
@@ -86,8 +86,8 @@ export function CursorEffects() {
       glow.alpha += (target - glow.alpha) * 0.08;
       if (glow.alpha > 0.01) {
         const g = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, GLOW_RADIUS);
-        g.addColorStop(0, `rgba(78, 13, 21, ${0.3 * glow.alpha})`);
-        g.addColorStop(0.4, `rgba(78, 13, 21, ${0.12 * glow.alpha})`);
+        g.addColorStop(0, `rgba(78, 13, 21, ${0.26 * glow.alpha})`);
+        g.addColorStop(0.45, `rgba(78, 13, 21, ${0.08 * glow.alpha})`);
         g.addColorStop(1, "rgba(78, 13, 21, 0)");
         ctx.fillStyle = g;
         ctx.beginPath();
