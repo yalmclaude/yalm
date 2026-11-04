@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Hurricane, Montserrat } from "next/font/google";
 import "./globals.css";
+import { CursorEffects } from "@/components/CursorEffects";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -38,7 +39,10 @@ export default function RootLayout({
       lang="fr"
       className={`${cormorant.variable} ${montserrat.variable} ${hurricane.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <CursorEffects />
+      </body>
     </html>
   );
 }
