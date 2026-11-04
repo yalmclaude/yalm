@@ -304,8 +304,9 @@ html.lenis body {
   z-index: 0;
   overflow: clip;
   transform-origin: 50% calc(100% - 50svh);
-  border-top-left-radius: var(--round, 0px);
-  border-top-right-radius: var(--round, 0px);
+  border-top-left-radius: var(--r-tl, 0px);
+  border-top-right-radius: var(--r-tr, 0px);
+  border-bottom-left-radius: var(--r-bl, 0px);
 }
 .motion [data-slides] > [data-slide]:not(:last-child) {
   position: sticky;
@@ -325,6 +326,7 @@ html.lenis body {
 .slides-measuring [data-slides] > [data-slide] {
   position: relative !important;
   transform: none !important;
+  translate: none !important;
   visibility: visible !important;
 }
 .slides-measuring [data-slides] > [data-slide] > * {

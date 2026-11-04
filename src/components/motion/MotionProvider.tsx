@@ -23,7 +23,8 @@ import Lenis from "lenis";
    data-header           hides on scroll down, shows on scroll up
    data-slides           (homepage) its [data-slide] children stack like full-screen pages:
                          each one sticks, the next slides over it while it recedes and
-                         dims, and a scroll gesture inside a transition completes it
+                         dims, and a scroll gesture inside a transition completes it;
+                         data-slide-from="right" makes a slide enter sideways instead
 
    Everything is skipped in /admin and when the visitor prefers reduced motion (the
    inline script in the root layout then never adds the `motion` class). */
@@ -415,19 +416,41 @@ function slides() {
 
   const root = document.documentElement;
   const coarse = window.matchMedia("(pointer: coarse)").matches;
-  type Zone = { start: number; end: number; out: HTMLElement; inc: HTMLElement; covers: boolean };
+  type Zone = {
+    start: number;
+    end: number;
+    out: HTMLElement;
+    inc: HTMLElement;
+    covers: boolean;
+    // "right": the next slide is held at the top of the screen and slides in sideways;
+    // "bottom": it simply rises with the scroll.
+    from: "right" | "bottom";
+  };
   let zones: Zone[] = [];
 
   const render = (scroll: number) => {
     for (const z of zones) {
       const p = gsap.utils.clamp(0, 1, (scroll - z.start) / (z.end - z.start));
       z.out.style.setProperty("--dim", (p * 0.62).toFixed(3));
-      z.out.style.transform = p > 0 ? `scale(${(1 - 0.08 * p).toFixed(4)})` : "";
+      const side = z.from === "right";
+      z.out.style.transform =
+        p > 0 ? `${side ? `translateX(${(-12 * p).toFixed(2)}%) ` : ""}scale(${(1 - 0.08 * p).toFixed(4)})` : "";
       // Once fully covered, hide it so it can't peek out behind the next receding slide.
       z.out.style.visibility = p >= 1 && z.covers ? "hidden" : "";
-      z.inc.style.setProperty("--round", `${((1 - p) * 56).toFixed(1)}px`);
+      const r = `${((1 - p) * 56).toFixed(1)}px`;
+      z.inc.style.setProperty("--r-tl", r);
+      z.inc.style.setProperty(side ? "--r-bl" : "--r-tr", r);
       const first = z.inc.firstElementChild as HTMLElement | null;
-      if (first) first.style.translate = p < 1 ? `0 ${((1 - p) * 90).toFixed(1)}px` : "";
+      if (side) {
+        // Cancel the scroll's vertical travel so the slide stays pinned to the top while it
+        // comes in from the right; its content lags a little behind for depth.
+        const lift = Math.max(0, z.end - scroll);
+        z.inc.style.translate = p > 0 && p < 1 ? `${((1 - p) * 100).toFixed(2)}% ${(-lift).toFixed(1)}px` : "";
+        z.inc.style.boxShadow = p > 0 && p < 1 ? "-40px 0 80px -20px rgba(20, 3, 6, 0.5)" : "";
+        if (first) first.style.translate = p > 0 && p < 1 ? `${(-(1 - p) * 30).toFixed(2)}% 0` : "";
+      } else if (first) {
+        first.style.translate = p < 1 ? `0 ${((1 - p) * 90).toFixed(1)}px` : "";
+      }
     }
   };
 
@@ -446,7 +469,14 @@ function slides() {
       if (i > 0) {
         const start = Math.max(0, top - vh);
         const end = Math.min(top, max);
-        if (end - start > 40) zones.push({ start, end, out: els[i - 1], inc: el, covers: h >= vh });
+        if (end - start > 40) zones.push({
+            start,
+            end,
+            out: els[i - 1],
+            inc: el,
+            covers: h >= vh,
+            from: el.dataset.slideFrom === "right" && h >= vh && end === top ? "right" : "bottom",
+          });
       }
       top += h;
     });
@@ -524,7 +554,7 @@ function slides() {
       el.style.removeProperty("transform");
       el.style.removeProperty("visibility");
       el.style.removeProperty("--dim");
-      el.style.removeProperty("--round");
+      ["--r-tl", "--r-tr", "--r-bl", "translate", "box-shadow"].forEach((prop) => el.style.removeProperty(prop));
       (el.firstElementChild as HTMLElement | null)?.style.removeProperty("translate");
     });
   };
