@@ -704,9 +704,9 @@ function renderEdit() {
         </div>
       </div>
       <div style="grid-column:1/-1">
-        <label class="field-label">Lien SwissTransfer — toutes les photos et vidéos</label>
-        <input class="field-input" id="f-transfer" placeholder="https://www.swisstransfer.com/d/..." value="${esc(c.transferLink)}">
-        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Affiché aux mariés sur l'accueil, les photos, les vidéos et les téléchargements : « Pour voir toutes les vidéos et les photos, cliquez sur le lien ». Pensez à le remplacer quand il expire.</p>
+        <label class="field-label">Lien SwissTransfer / WeTransfer — toutes les photos et vidéos</label>
+        <input class="field-input" id="f-transfer" placeholder="https://www.swisstransfer.com/d/...  ou  https://we.tl/..." value="${esc(c.transferLink)}">
+        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Collez le lien ici puis enregistrez : les mariés verront le bouton « Cliquez ici si vous voulez toutes les photos » qui ouvre ce lien (accueil, photos, vidéos, téléchargements). Pensez à le remplacer quand il expire.</p>
       </div>
     </div>
 
@@ -921,18 +921,18 @@ function renderHome(c) {
   </div>`;
 }
 
-// Link to the full set of photos and videos (SwissTransfer), shown wherever the couple
-// looks for their files. `dark` for the bordeaux video page.
-function transferBlock(c, dark) {
+// "Cliquez ici si vous voulez toutes les photos" button, opening the SwissTransfer /
+// WeTransfer link set in the admin, shown wherever the couple looks for their files.
+// Nothing is shown until a link is saved. `dark` for the bordeaux video page; `what`
+// names the files ("photos", "vidéos", "photos et vidéos").
+function transferBlock(c, dark, what = "photos et vidéos") {
   const link = (c.transferLink || "").trim();
   if (!/^https?:\/\//i.test(link)) return "";
-  const fg = dark ? "var(--blanc)" : "var(--bordeaux)";
-  const bg = dark ? "rgba(255,255,255,.06)" : "var(--beige)";
-  const border = dark ? "rgba(255,255,255,.25)" : "var(--beige-dark)";
+  const sub = dark ? "rgba(255,255,255,.7)" : "var(--texte-soft)";
   return `
-  <div style="max-width:640px;margin:0 auto 48px;padding:26px 24px;border:1px solid ${border};background:${bg};border-radius:2px;text-align:center">
-    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;color:${fg};margin-bottom:16px;line-height:1.4">Pour voir toutes les vidéos et les photos, cliquez sur le lien</p>
-    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:10px;background:${dark ? "var(--blanc)" : "var(--bordeaux)"};color:${dark ? "var(--bordeaux)" : "var(--blanc)"};padding:13px 30px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none">${ic.download} Ouvrir le lien SwissTransfer</a>
+  <div style="max-width:640px;margin:0 auto 48px;text-align:center">
+    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;background:${dark ? "var(--blanc)" : "var(--bordeaux)"};color:${dark ? "var(--bordeaux)" : "var(--blanc)"};padding:18px 34px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;box-shadow:0 14px 30px -14px rgba(61,15,31,.6);max-width:100%">${ic.download} Cliquez ici si vous voulez toutes les ${what}</a>
+    <p style="font-size:12px;color:${sub};margin-top:12px">Le lien s'ouvre dans un nouvel onglet pour tout télécharger.</p>
   </div>`;
 }
 
@@ -943,7 +943,7 @@ function emptySection(iconSvg, text) {
 function renderPhotos(c) {
   const p = state.preview;
   if (c.photos.length === 0) {
-    const block = transferBlock(c);
+    const block = transferBlock(c, false, "photos");
     return block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.cam, "Aucune photo n'a encore été ajoutée à ce coffret.");
   }
   const cats = ["Tout", ...(c.categories && c.categories.length ? c.categories : DEFAULT_CATEGORIES)];
@@ -957,7 +957,7 @@ function renderPhotos(c) {
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);margin-bottom:22px">Photos</h2>
       <button class="btn btn-primary" data-action="zip-photos">${ic.download} Télécharger toutes les photos</button>
     </header>
-    ${transferBlock(c)}
+    ${transferBlock(c, false, "photos")}
     ${favs.length > 0 ? `
     <div style="margin-bottom:56px">
       <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--bordeaux);margin-bottom:18px;display:flex;align-items:center;gap:8px">${ic.heart(true)} Les coups de cœur</h3>
@@ -997,7 +997,7 @@ function renderLightbox(c) {
 
 function renderVideos(c) {
   if (c.videos.length === 0) {
-    const block = transferBlock(c, true);
+    const block = transferBlock(c, true, "vidéos");
     return `<div style="background:var(--bordeaux-deep)">${block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.vid, "Aucune vidéo n'a encore été ajoutée à ce coffret.")}</div>`;
   }
   return `
@@ -1008,7 +1008,7 @@ function renderVideos(c) {
         <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);color:var(--blanc);margin-bottom:22px">Vidéos</h2>
         <button style="background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 30px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:inline-flex;align-items:center;gap:10px" data-action="zip-videos">${ic.download} Télécharger les vidéos</button>
       </header>
-      ${transferBlock(c, true)}
+      ${transferBlock(c, true, "vidéos")}
       <div class="video-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:26px">
         ${c.videos.map((v,i) => `
         <button class="video-card fade-in-up" data-action="open-video" data-id="${v.id}" style="animation-delay:${Math.min(i*0.08,0.5)}s">
