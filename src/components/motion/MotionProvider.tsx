@@ -181,25 +181,26 @@ function playLoader(onReveal: () => void) {
   const tl = gsap.timeline({
     onComplete: () => {
       root.classList.remove("intro");
-      try {
-        sessionStorage.setItem("yalm-intro", "1");
-      } catch {}
     },
   });
+  // The counter always runs all the way to 100 %, holds there a moment, then the curtain lifts.
   tl.fromTo(word, { y: 0, yPercent: 110 }, { y: 0, yPercent: 0, duration: 1, ease: EASE })
     .to(
       counter,
       {
         value: 100,
-        duration: 1.3,
+        duration: 1.8,
         ease: "power2.inOut",
         onUpdate: () => {
           if (count) count.textContent = String(Math.round(counter.value));
         },
+        onComplete: () => {
+          if (count) count.textContent = "100";
+        },
       },
       0
     )
-    .to(word, { yPercent: -110, duration: 0.7, ease: "expo.in" }, "+=0.1")
+    .to(word, { yPercent: -110, duration: 0.7, ease: "expo.in" }, "+=0.35")
     // The curtain lifts with a curved, arch-like bottom edge.
     .fromTo(
       loader,
