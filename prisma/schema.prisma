@@ -151,6 +151,8 @@ model Coffret {
   code       String   @default("")
   cover      String   @default("")
   final      String   @default("")
+  // SwissTransfer (or similar) link to the full set of photos and videos, shown to the couple
+  transferLink String @default("")
   showQuotes Boolean  @default(true)
   categories String[] @default(["Préparatifs", "Cérémonie", "Couple", "Cocktail", "Dîner", "Soirée", "Détails"])
   createdAt  DateTime @default(now())

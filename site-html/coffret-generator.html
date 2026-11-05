@@ -122,6 +122,7 @@ function blankCoffret() {
     slug: "", names: "", date: "", location: "", username: "", code: "",
     cover: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
     final: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1600&auto=format&fit=crop",
+    transferLink: "",
     categories: [...DEFAULT_CATEGORIES], showQuotes: true,
     photos: [], videos: [], messages: [], products: [], updatedAt: Date.now(),
   };
@@ -702,6 +703,11 @@ function renderEdit() {
           <button class="btn-ghost" data-action="pick-file" data-kind="final" data-accept="image/*">${ic.folder} Parcourir</button>
         </div>
       </div>
+      <div style="grid-column:1/-1">
+        <label class="field-label">Lien SwissTransfer — toutes les photos et vidéos</label>
+        <input class="field-input" id="f-transfer" placeholder="https://www.swisstransfer.com/d/..." value="${esc(c.transferLink)}">
+        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Affiché aux mariés sur l'accueil, les photos, les vidéos et les téléchargements : « Pour voir toutes les vidéos et les photos, cliquez sur le lien ». Pensez à le remplacer quand il expire.</p>
+      </div>
     </div>
 
     <div style="margin-bottom:40px">
@@ -768,6 +774,7 @@ function syncEditFieldsIntoState() {
   const g = (id) => document.getElementById(id)?.value ?? "";
   c.names = g("f-names"); c.username = g("f-username"); c.code = g("f-code"); c.date = g("f-date");
   c.location = g("f-location"); c.cover = g("f-cover"); c.final = g("f-final");
+  c.transferLink = g("f-transfer").trim();
   const showQuotes = document.getElementById("f-show-quotes");
   if (showQuotes) c.showQuotes = showQuotes.checked;
 }
@@ -882,6 +889,7 @@ function renderHome(c) {
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bordeaux);opacity:.7;margin-bottom:14px">Le coffret</p>
         <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px)">Vos souvenirs</h2>
       </div>
+      ${transferBlock(c)}
       <div class="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px">
         ${cards.map(cd => `
         <button class="dash-card" data-action="nav" data-view="${cd.id}">
@@ -913,13 +921,31 @@ function renderHome(c) {
   </div>`;
 }
 
+// Link to the full set of photos and videos (SwissTransfer), shown wherever the couple
+// looks for their files. `dark` for the bordeaux video page.
+function transferBlock(c, dark) {
+  const link = (c.transferLink || "").trim();
+  if (!/^https?:\/\//i.test(link)) return "";
+  const fg = dark ? "var(--blanc)" : "var(--bordeaux)";
+  const bg = dark ? "rgba(255,255,255,.06)" : "var(--beige)";
+  const border = dark ? "rgba(255,255,255,.25)" : "var(--beige-dark)";
+  return `
+  <div style="max-width:640px;margin:0 auto 48px;padding:26px 24px;border:1px solid ${border};background:${bg};border-radius:2px;text-align:center">
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;color:${fg};margin-bottom:16px;line-height:1.4">Pour voir toutes les vidéos et les photos, cliquez sur le lien</p>
+    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:10px;background:${dark ? "var(--blanc)" : "var(--bordeaux)"};color:${dark ? "var(--bordeaux)" : "var(--blanc)"};padding:13px 30px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none">${ic.download} Ouvrir le lien SwissTransfer</a>
+  </div>`;
+}
+
 function emptySection(iconSvg, text) {
   return `<div style="padding:120px 24px;text-align:center"><div style="color:var(--beige-dark);margin-bottom:16px">${iconSvg}</div><p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:var(--texte-soft)">${text}</p></div>`;
 }
 
 function renderPhotos(c) {
   const p = state.preview;
-  if (c.photos.length === 0) return emptySection(ic.cam, "Aucune photo n'a encore été ajoutée à ce coffret.");
+  if (c.photos.length === 0) {
+    const block = transferBlock(c);
+    return block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.cam, "Aucune photo n'a encore été ajoutée à ce coffret.");
+  }
   const cats = ["Tout", ...(c.categories && c.categories.length ? c.categories : DEFAULT_CATEGORIES)];
   const filtered = p.filter === "Tout" ? c.photos : c.photos.filter(x => x.category === p.filter);
   const favs = c.photos.filter(x => p.favorites.has(x.id));
@@ -931,6 +957,7 @@ function renderPhotos(c) {
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);margin-bottom:22px">Photos</h2>
       <button class="btn btn-primary" data-action="zip-photos">${ic.download} Télécharger toutes les photos</button>
     </header>
+    ${transferBlock(c)}
     ${favs.length > 0 ? `
     <div style="margin-bottom:56px">
       <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--bordeaux);margin-bottom:18px;display:flex;align-items:center;gap:8px">${ic.heart(true)} Les coups de cœur</h3>
@@ -969,7 +996,10 @@ function renderLightbox(c) {
 }
 
 function renderVideos(c) {
-  if (c.videos.length === 0) return `<div style="background:var(--bordeaux-deep)">${emptySection(ic.vid, "Aucune vidéo n'a encore été ajoutée à ce coffret.")}</div>`;
+  if (c.videos.length === 0) {
+    const block = transferBlock(c, true);
+    return `<div style="background:var(--bordeaux-deep)">${block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.vid, "Aucune vidéo n'a encore été ajoutée à ce coffret.")}</div>`;
+  }
   return `
   <div style="background:var(--bordeaux-deep);padding:70px 24px 110px">
     <div style="max-width:1180px;margin:0 auto">
@@ -978,6 +1008,7 @@ function renderVideos(c) {
         <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);color:var(--blanc);margin-bottom:22px">Vidéos</h2>
         <button style="background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 30px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:inline-flex;align-items:center;gap:10px" data-action="zip-videos">${ic.download} Télécharger les vidéos</button>
       </header>
+      ${transferBlock(c, true)}
       <div class="video-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:26px">
         ${c.videos.map((v,i) => `
         <button class="video-card fade-in-up" data-action="open-video" data-id="${v.id}" style="animation-delay:${Math.min(i*0.08,0.5)}s">
@@ -1129,6 +1160,7 @@ function renderDownloads(c) {
       <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bordeaux);opacity:.7;margin-bottom:14px">Coffret complet</p>
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px)">Vos téléchargements</h2>
     </header>
+    ${transferBlock(c)}
     <div>
       ${items.map(([label,sub,zipAction]) => `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--beige-dark)">

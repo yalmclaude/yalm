@@ -19,6 +19,7 @@ export function serializeCoffret(c: CoffretWithItems) {
     code: c.code,
     cover: c.cover,
     final: c.final,
+    transferLink: c.transferLink,
     showQuotes: c.showQuotes,
     categories: c.categories,
     updatedAt: c.updatedAt.getTime(),

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 
+// Only web links are kept (the couple's page opens it in a new tab).
+function cleanLink(value: unknown) {
+  const link = typeof value === "string" ? value.trim() : "";
+  return /^https?:\/\//i.test(link) ? link : "";
+}
+
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -21,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { slug, names, date, location, username, code, cover, final, showQuotes, categories, photos, videos, messages, products } =
+  const { slug, names, date, location, username, code, cover, final, transferLink, showQuotes, categories, photos, videos, messages, products } =
     body;
 
   if (!slug) {
@@ -40,6 +46,7 @@ export async function POST(request: NextRequest) {
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",
+        transferLink: cleanLink(transferLink),
         showQuotes: showQuotes !== false,
         categories: Array.isArray(categories) ? categories : undefined,
       },
@@ -51,6 +58,7 @@ export async function POST(request: NextRequest) {
         code: code ?? "",
         cover: cover ?? "",
         final: final ?? "",
+        transferLink: cleanLink(transferLink),
         showQuotes: showQuotes !== false,
         categories: Array.isArray(categories) ? categories : undefined,
       },
