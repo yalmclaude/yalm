@@ -505,12 +505,31 @@ function slides() {
   let last = lenis.scroll;
   let dir = 1;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  // Scroll position when the current touch gesture started (touch screens only).
+  let gestureFrom: number | null = null;
+  const snapTarget = (scroll: number) => {
+    const z = zones.find((zone) => scroll > zone.start + 2 && scroll < zone.end - 2);
+    if (z) return dir > 0 ? z.end : z.start;
+    // A fast swipe can fly through a whole transition and stop a little past it, with the
+    // new slide's title cut off at the top: settle it back onto the slide's edge.
+    if (!coarse || gestureFrom === null) return null;
+    const reach = window.innerHeight * 0.45;
+    const from = gestureFrom;
+    const past = zones.find((zone) =>
+      dir > 0
+        ? from < zone.end - 2 && scroll > zone.end + 2 && scroll - zone.end < reach
+        : from > zone.start + 2 && scroll < zone.start - 2 && zone.start - scroll < reach
+    );
+    if (!past) return null;
+    return dir > 0 ? past.end : past.start;
+  };
   const settle = (scroll: number) => {
     if (slideAuto) return;
-    const z = zones.find((zone) => scroll > zone.start + 2 && scroll < zone.end - 2);
-    if (!z) return;
+    const target = snapTarget(scroll);
+    if (target === null) return;
+    gestureFrom = null;
     slideAuto = true;
-    lenis.scrollTo(dir > 0 ? z.end : z.start, {
+    lenis.scrollTo(target, {
       duration: 1.25,
       easing: easeInOutQuart,
       lock: true,
@@ -525,6 +544,7 @@ function slides() {
   let touchY: number | null = null;
   const onTouchStart = (e: TouchEvent) => {
     touchY = e.touches[0]?.clientY ?? null;
+    if (!slideAuto) gestureFrom = window.scrollY;
   };
   const onTouchMove = (e: TouchEvent) => {
     const y = e.touches[0]?.clientY;
