@@ -72,10 +72,26 @@ export function MotionProvider() {
 
     // In-page anchors ("/#catalogue" while on "/"): glide there instead of jumping.
     const onClick = (e: MouseEvent) => {
-      const link = (e.target as Element | null)?.closest?.("a[href*='#']");
+      const link = (e.target as Element | null)?.closest?.("a[href]");
       if (!(link instanceof HTMLAnchorElement)) return;
       const url = new URL(link.href, location.href);
-      if (url.pathname !== location.pathname || !url.hash) return;
+      if (url.origin !== location.origin || url.pathname !== location.pathname) return;
+      // A link to the page we're already on (the logo on the homepage): glide back to the top.
+      if (!url.hash) {
+        if (link.target || e.metaKey || e.ctrlKey || e.shiftKey || url.search !== location.search) return;
+        e.preventDefault();
+        link.closest("details")?.removeAttribute("open");
+        slideAuto = true;
+        lenis.scrollTo(0, {
+          duration: 1.6,
+          force: true,
+          onComplete: () => {
+            slideAuto = false;
+          },
+        });
+        history.replaceState(history.state, "", url.pathname + url.search);
+        return;
+      }
       const target = document.querySelector(url.hash);
       if (!target) return;
       e.preventDefault();
