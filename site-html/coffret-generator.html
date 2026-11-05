@@ -889,7 +889,6 @@ function renderHome(c) {
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bordeaux);opacity:.7;margin-bottom:14px">Le coffret</p>
         <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px)">Vos souvenirs</h2>
       </div>
-      ${transferBlock(c)}
       <div class="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px">
         ${cards.map(cd => `
         <button class="dash-card" data-action="nav" data-view="${cd.id}">
@@ -903,6 +902,7 @@ function renderHome(c) {
           </div>
         </button>`).join("")}
       </div>
+      ${transferBlock(c)}
     </section>
     <div style="display:flex;justify-content:center;gap:28px;padding:0 24px 20px;flex-wrap:wrap">
       <button data-action="copy-link" style="background:none;border:1px solid transparent;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--texte-soft)">${ic.copy} Copier le lien</button>
@@ -921,18 +921,19 @@ function renderHome(c) {
   </div>`;
 }
 
-// "Cliquez ici si vous voulez toutes les photos" button, opening the SwissTransfer /
-// WeTransfer link set in the admin, shown wherever the couple looks for their files.
-// Nothing is shown until a link is saved. `dark` for the bordeaux video page; `what`
-// names the files ("photos", "vidéos", "photos et vidéos").
+// "Voir plus" at the very bottom of the page: "+ Cliquez ici si vous voulez toutes les
+// photos", opening the SwissTransfer / WeTransfer link set in the admin. Nothing is shown
+// until a link is saved. `dark` for the bordeaux video page; `what` names the files.
 function transferBlock(c, dark, what = "photos et vidéos") {
   const link = (c.transferLink || "").trim();
   if (!/^https?:\/\//i.test(link)) return "";
-  const sub = dark ? "rgba(255,255,255,.7)" : "var(--texte-soft)";
+  const fg = dark ? "var(--blanc)" : "var(--bordeaux)";
+  const line = dark ? "rgba(255,255,255,.25)" : "var(--beige-dark)";
   return `
-  <div style="max-width:640px;margin:0 auto 48px;text-align:center">
-    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;background:${dark ? "var(--blanc)" : "var(--bordeaux)"};color:${dark ? "var(--bordeaux)" : "var(--blanc)"};padding:18px 34px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;box-shadow:0 14px 30px -14px rgba(61,15,31,.6);max-width:100%">${ic.download} Cliquez ici si vous voulez toutes les ${what}</a>
-    <p style="font-size:12px;color:${sub};margin-top:12px">Le lien s'ouvre dans un nouvel onglet pour tout télécharger.</p>
+  <div style="display:flex;align-items:center;gap:18px;max-width:760px;margin:64px auto 0">
+    <span style="flex:1;height:1px;background:${line}"></span>
+    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:10px;border:1px solid ${fg};color:${fg};border-radius:40px;padding:13px 26px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;text-align:center">${ic.plus} Cliquez ici si vous voulez toutes les ${what}</a>
+    <span style="flex:1;height:1px;background:${line}"></span>
   </div>`;
 }
 
@@ -957,7 +958,6 @@ function renderPhotos(c) {
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);margin-bottom:22px">Photos</h2>
       <button class="btn btn-primary" data-action="zip-photos">${ic.download} Télécharger toutes les photos</button>
     </header>
-    ${transferBlock(c, false, "photos")}
     ${favs.length > 0 ? `
     <div style="margin-bottom:56px">
       <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--bordeaux);margin-bottom:18px;display:flex;align-items:center;gap:8px">${ic.heart(true)} Les coups de cœur</h3>
@@ -975,6 +975,7 @@ function renderPhotos(c) {
         <button class="fav-btn" data-action="toggle-fav" data-id="${x.id}" style="position:absolute;top:10px;right:10px;background:rgba(61,15,31,.45);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:${p.favorites.has(x.id)?'#E39A9A':'var(--blanc)'}">${ic.heart(p.favorites.has(x.id))}</button>
       </div>`).join("")}
     </div>
+    ${transferBlock(c, false, "photos")}
   </div>`;
 }
 
@@ -1008,7 +1009,6 @@ function renderVideos(c) {
         <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px);color:var(--blanc);margin-bottom:22px">Vidéos</h2>
         <button style="background:var(--blanc);color:var(--bordeaux);border:none;padding:13px 30px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:inline-flex;align-items:center;gap:10px" data-action="zip-videos">${ic.download} Télécharger les vidéos</button>
       </header>
-      ${transferBlock(c, true, "vidéos")}
       <div class="video-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:26px">
         ${c.videos.map((v,i) => `
         <button class="video-card fade-in-up" data-action="open-video" data-id="${v.id}" style="animation-delay:${Math.min(i*0.08,0.5)}s">
@@ -1021,6 +1021,7 @@ function renderVideos(c) {
           <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--blanc);margin-top:14px">${esc(v.title)}</p>
         </button>`).join("")}
       </div>
+      ${transferBlock(c, true, "vidéos")}
     </div>
   </div>`;
 }
@@ -1160,7 +1161,6 @@ function renderDownloads(c) {
       <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bordeaux);opacity:.7;margin-bottom:14px">Coffret complet</p>
       <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,42px)">Vos téléchargements</h2>
     </header>
-    ${transferBlock(c)}
     <div>
       ${items.map(([label,sub,zipAction]) => `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--beige-dark)">
@@ -1172,6 +1172,7 @@ function renderDownloads(c) {
       <button class="btn btn-primary" data-action="zip-all">${ic.download} Tout télécharger (.zip)</button>
       <p style="font-size:11px;color:var(--texte-soft);margin-top:14px">Rassemble photos, vidéos et messages audio dans une seule archive .zip.</p>
     </div>
+    ${transferBlock(c)}
   </div>`;
 }
 
