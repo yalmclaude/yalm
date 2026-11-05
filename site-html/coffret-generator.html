@@ -706,7 +706,7 @@ function renderEdit() {
       <div style="grid-column:1/-1">
         <label class="field-label">Lien SwissTransfer / WeTransfer — toutes les photos et vidéos</label>
         <input class="field-input" id="f-transfer" placeholder="https://www.swisstransfer.com/d/...  ou  https://we.tl/..." value="${esc(c.transferLink)}">
-        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Collez le lien ici puis enregistrez : les mariés verront le bouton « Cliquez ici si vous voulez toutes les photos » qui ouvre ce lien (accueil, photos, vidéos, téléchargements). Pensez à le remplacer quand il expire.</p>
+        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Collez le lien ici puis enregistrez : les mariés verront en bas de page le bouton « Cliquez ici pour accéder à toutes les photos/vidéos » qui ouvre ce lien (accueil, photos, vidéos, téléchargements). Pensez à le remplacer quand il expire.</p>
       </div>
     </div>
 
@@ -921,10 +921,10 @@ function renderHome(c) {
   </div>`;
 }
 
-// "Voir plus" at the very bottom of the page: "+ Cliquez ici si vous voulez toutes les
-// photos", opening the SwissTransfer / WeTransfer link set in the admin. Nothing is shown
-// until a link is saved. `dark` for the bordeaux video page; `what` names the files.
-function transferBlock(c, dark, what = "photos et vidéos") {
+// "Voir plus" at the very bottom of the page: "+ Cliquez ici pour accéder à toutes les
+// photos/vidéos", opening the SwissTransfer / WeTransfer link set in the admin. Nothing is shown
+// until a link is saved. `dark` for the bordeaux video page.
+function transferBlock(c, dark) {
   const link = (c.transferLink || "").trim();
   if (!/^https?:\/\//i.test(link)) return "";
   const fg = dark ? "var(--blanc)" : "var(--bordeaux)";
@@ -932,7 +932,7 @@ function transferBlock(c, dark, what = "photos et vidéos") {
   return `
   <div style="display:flex;align-items:center;gap:18px;max-width:760px;margin:64px auto 0">
     <span style="flex:1;height:1px;background:${line}"></span>
-    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:10px;border:1px solid ${fg};color:${fg};border-radius:40px;padding:13px 26px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;text-align:center">${ic.plus} Cliquez ici si vous voulez toutes les ${what}</a>
+    <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:10px;border:1px solid ${fg};color:${fg};border-radius:40px;padding:13px 26px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;text-align:center">${ic.plus} Cliquez ici pour accéder à toutes les photos/vidéos</a>
     <span style="flex:1;height:1px;background:${line}"></span>
   </div>`;
 }
@@ -944,7 +944,7 @@ function emptySection(iconSvg, text) {
 function renderPhotos(c) {
   const p = state.preview;
   if (c.photos.length === 0) {
-    const block = transferBlock(c, false, "photos");
+    const block = transferBlock(c);
     return block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.cam, "Aucune photo n'a encore été ajoutée à ce coffret.");
   }
   const cats = ["Tout", ...(c.categories && c.categories.length ? c.categories : DEFAULT_CATEGORIES)];
@@ -975,7 +975,7 @@ function renderPhotos(c) {
         <button class="fav-btn" data-action="toggle-fav" data-id="${x.id}" style="position:absolute;top:10px;right:10px;background:rgba(61,15,31,.45);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:${p.favorites.has(x.id)?'#E39A9A':'var(--blanc)'}">${ic.heart(p.favorites.has(x.id))}</button>
       </div>`).join("")}
     </div>
-    ${transferBlock(c, false, "photos")}
+    ${transferBlock(c)}
   </div>`;
 }
 
@@ -998,7 +998,7 @@ function renderLightbox(c) {
 
 function renderVideos(c) {
   if (c.videos.length === 0) {
-    const block = transferBlock(c, true, "vidéos");
+    const block = transferBlock(c, true);
     return `<div style="background:var(--bordeaux-deep)">${block ? `<div style="padding:90px 24px 110px">${block}</div>` : emptySection(ic.vid, "Aucune vidéo n'a encore été ajoutée à ce coffret.")}</div>`;
   }
   return `
@@ -1021,7 +1021,7 @@ function renderVideos(c) {
           <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--blanc);margin-top:14px">${esc(v.title)}</p>
         </button>`).join("")}
       </div>
-      ${transferBlock(c, true, "vidéos")}
+      ${transferBlock(c, true)}
     </div>
   </div>`;
 }
