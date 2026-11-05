@@ -17,7 +17,7 @@ export function HeroSection() {
         <div data-fade-up className="flex items-center justify-between gap-6 label-caps text-bordeaux/60">
           <span>YALM Events</span>
           <span className="hidden sm:inline">Photobooth · Vidéo · Décoration · Signalétique</span>
-          <span>Mariages & réceptions</span>
+          <span>Tous vos événements</span>
         </div>
 
         <div className="relative mt-8 grid items-center gap-14 lg:mt-14 lg:grid-cols-12 lg:gap-6">

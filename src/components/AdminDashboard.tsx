@@ -271,7 +271,7 @@ export function AdminDashboard() {
           href="/admin/coffrets"
           className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-bordeaux"
         >
-          Coffrets mariage
+          Coffrets souvenirs
         </a>
       </div>
 

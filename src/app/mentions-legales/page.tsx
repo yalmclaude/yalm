@@ -70,8 +70,8 @@ export default function MentionsLegalesPage() {
               interdite.
             </p>
             <p>
-              Les photos, vidéos et messages déposés dans les coffrets souvenirs restent la propriété des mariés et de leurs
-              auteurs ; ils ne sont accessibles qu&apos;avec l&apos;identifiant et le code remis aux mariés.
+              Les photos, vidéos et messages déposés dans les coffrets souvenirs restent la propriété des clients et de leurs
+              auteurs ; ils ne sont accessibles qu&apos;avec l&apos;identifiant et le code remis aux clients.
             </p>
           </Section>
 
@@ -95,7 +95,7 @@ export default function MentionsLegalesPage() {
             <p>
               Les données de commande sont conservées le temps nécessaire à la relation commerciale, puis archivées pendant
               la durée légale de conservation des pièces comptables (10 ans). Les contenus des coffrets souvenirs sont
-              conservés tant que les mariés y ont accès et supprimés à leur demande.
+              conservés tant que les clients y ont accès et supprimés à leur demande.
             </p>
             <p>
               Conformément au Règlement général sur la protection des données (RGPD) et à la loi « Informatique et

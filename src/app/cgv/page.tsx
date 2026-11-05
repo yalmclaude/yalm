@@ -320,7 +320,7 @@ export default function CgvPage() {
 
           <Article n={17} title="Coffret souvenir">
             <p>
-              Les photos, vidéos et messages du coffret souvenir sont accessibles aux mariés avec l&apos;identifiant et le
+              Les photos, vidéos et messages du coffret souvenir sont accessibles aux clients avec l&apos;identifiant et le
               code qui leur sont remis ; ils sont responsables de leur diffusion. Il leur appartient de télécharger leurs
               fichiers ; ceux-ci sont supprimés sur simple demande.
             </p>

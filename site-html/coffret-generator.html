@@ -619,7 +619,7 @@ function renderEdit() {
 
   const videoRows = c.videos.map(v => `
     <div style="border:1px solid var(--beige-dark);border-radius:2px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px" data-row="video" data-id="${v.id}">
-      <input class="field-input" placeholder="Titre (ex: Film du mariage)" data-field="title" data-id="${v.id}" data-kind="video" value="${esc(v.title)}">
+      <input class="field-input" placeholder="Titre (ex: Film de la soirée)" data-field="title" data-id="${v.id}" data-kind="video" value="${esc(v.title)}">
       <input class="field-input" placeholder="Durée (ex: 12:00)" data-field="duration" data-id="${v.id}" data-kind="video" value="${esc(v.duration)}">
       <div style="display:flex;gap:6px">
         <input class="field-input" placeholder="Miniature — URL ou fichier" data-field="thumb" data-id="${v.id}" data-kind="video" value="${esc(v.thumb)}">
@@ -660,7 +660,7 @@ function renderEdit() {
   return `
   <div style="max-width:780px;margin:0 auto;padding:60px 24px 140px">
     <button style="background:none;border:none;color:var(--texte-soft);display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:30px" data-action="cancel-edit">${ic.arrowLeft} Retour aux coffrets</button>
-    <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:30px;margin-bottom:18px">Informations du mariage</h2>
+    <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-size:30px;margin-bottom:18px">Informations de l'événement</h2>
     <p style="font-size:12px;color:var(--texte-soft);background:var(--beige);padding:12px 16px;border-radius:2px;margin-bottom:20px;line-height:1.6">
       Vous pouvez choisir vos photos, vidéos et fichiers audio directement depuis votre ordinateur avec le bouton ${ic.folder} : ils sont envoyés et hébergés de façon permanente. L'envoi peut prendre un moment pour les grosses vidéos.
     </p>
@@ -684,10 +684,10 @@ function renderEdit() {
     </div>
 
     <div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:40px">
-      <div><label class="field-label">Prénoms des mariés</label><input class="field-input" id="f-names" placeholder="Nadia &amp; Souleymane" value="${esc(c.names)}"></div>
+      <div><label class="field-label">Prénoms / nom de l'événement</label><input class="field-input" id="f-names" placeholder="Nadia &amp; Souleymane" value="${esc(c.names)}"></div>
       <div><label class="field-label">Nom d'utilisateur</label><input class="field-input" id="f-username" placeholder="nadia-souleymane" value="${esc(c.username)}"></div>
       <div><label class="field-label">Code d'accès</label><input class="field-input" id="f-code" placeholder="0808" value="${esc(c.code)}"></div>
-      <div><label class="field-label">Date du mariage</label><input class="field-input" id="f-date" placeholder="8 Août 2026" value="${esc(c.date)}"></div>
+      <div><label class="field-label">Date de l'événement</label><input class="field-input" id="f-date" placeholder="8 Août 2026" value="${esc(c.date)}"></div>
       <div><label class="field-label">Lieu</label><input class="field-input" id="f-location" placeholder="Château de Vaux-le-Vicomte" value="${esc(c.location)}"></div>
       <div style="grid-column:1/-1">
         <label class="field-label">Photo de couverture (accueil) — URL ou fichier</label>
@@ -706,13 +706,13 @@ function renderEdit() {
       <div style="grid-column:1/-1">
         <label class="field-label">Lien SwissTransfer / WeTransfer — toutes les photos et vidéos</label>
         <input class="field-input" id="f-transfer" placeholder="https://www.swisstransfer.com/d/...  ou  https://we.tl/..." value="${esc(c.transferLink)}">
-        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Collez le lien ici puis enregistrez : les mariés verront en bas de page le bouton « Cliquez ici pour accéder à toutes les photos/vidéos » qui ouvre ce lien (accueil, photos, vidéos, téléchargements). Pensez à le remplacer quand il expire.</p>
+        <p style="font-size:12px;color:var(--texte-soft);margin-top:6px;line-height:1.5">Collez le lien ici puis enregistrez : vos clients verront en bas de page le bouton « Cliquez ici pour accéder à toutes les photos/vidéos » qui ouvre ce lien (accueil, photos, vidéos, téléchargements). Pensez à le remplacer quand il expire.</p>
       </div>
     </div>
 
     <div style="margin-bottom:40px">
       <h3 style="font-family:'Playfair Display',serif;font-size:19px;color:var(--bordeaux);margin-bottom:8px">Catégories de moments</h3>
-      <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px">Chaque mariage a ses propres traditions — adaptez librement cette liste (ex: "Henné", "Cravate", "Coupe du gâteau"...).</p>
+      <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px">Chaque événement a ses propres moments — adaptez librement cette liste (ex: "Henné", "Cravate", "Coupe du gâteau"...).</p>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
         ${c.categories.map(cat => `
         <span class="chip" style="display:inline-flex;align-items:center;gap:8px;cursor:default">
@@ -754,7 +754,7 @@ function renderEdit() {
       <p style="font-size:12px;color:var(--texte-soft);margin-bottom:14px;line-height:1.6">Sélectionnez autant d'audios que vous voulez (mp3, m4a, wav, opus, mémos vocaux…), ou un seul fichier .zip qui les contient tous : chaque audio devient un message séparé, nommé d'après son fichier.</p>
       <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--texte);background:var(--beige);padding:12px 14px;border-radius:2px;margin-bottom:14px;cursor:pointer;line-height:1.5">
         <input type="checkbox" id="f-show-quotes" style="width:18px;height:18px;margin-top:1px;accent-color:var(--bordeaux);flex-shrink:0" ${c.showQuotes !== false ? "checked" : ""}>
-        <span>Afficher la section « Les mots qui resteront » (les citations des messages) sur la page des mariés</span>
+        <span>Afficher la section « Les mots qui resteront » (les citations des messages) sur la page du coffret</span>
       </label>
       <div style="display:flex;flex-direction:column;gap:12px">
         ${msgRows || `<p style="font-size:13px;color:var(--beige-dark)">Rien pour l'instant.</p>`}
@@ -787,7 +787,7 @@ function renderPublicGate() {
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bordeaux-deep),var(--bordeaux));padding:24px;text-align:center">
     <div style="max-width:420px;width:100%">
       <img src="${LOGO_SRC}" alt="Yalm Events" style="width:84px;height:84px;border-radius:50%;margin:0 auto 26px;display:block">
-      <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique de mariage</p>
+      <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique souvenir</p>
       <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:14px;line-height:1.25">Retrouvez votre<br>espace souvenir</h1>
       <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--beige);opacity:.85;margin-bottom:40px">Entrez l'identifiant et le code fournis par Yalm Events</p>
       <form id="public-gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
@@ -814,7 +814,7 @@ function renderPreview() {
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bordeaux-deep),var(--bordeaux));padding:24px;text-align:center">
       <div style="max-width:420px;width:100%">
         <img src="${LOGO_SRC}" alt="Yalm Events" style="width:84px;height:84px;border-radius:50%;margin:0 auto 26px;display:block">
-        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique de mariage</p>
+        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--beige);opacity:.7;margin-bottom:18px">Coffret numérique souvenir</p>
         <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--blanc);margin-bottom:40px;line-height:1.25">Bienvenue dans votre<br>espace souvenir</h1>
         <form id="gate-form" style="display:flex;flex-direction:column;gap:14px;align-items:center">
           <label style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--beige);opacity:.75">Entrez votre identifiant et votre code d'accès</label>

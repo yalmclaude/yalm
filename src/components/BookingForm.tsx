@@ -227,7 +227,7 @@ export function BookingForm({
             onChange={(e) => setCustomText(e.target.value)}
             maxLength={500}
             rows={3}
-            placeholder="Ex. : Bienvenue au mariage de Nadia & Souleymane — 12 juin 2027"
+            placeholder="Ex. : Joyeux anniversaire Inès — 12 juin 2027"
             className={inputClass}
           />
           <p className="mt-1 text-xs text-bordeaux/55">
