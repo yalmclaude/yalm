@@ -121,6 +121,17 @@ html.lenis body {
 .motion [data-split] .sw-inner {
   transform: translate3d(0, 115%, 0);
 }
+/* Script words: the inner box is widened to hold the swashes (Safari clips a moving
+   layer's ink to its box), and once revealed it is no longer a moving layer at all. */
+.font-script .sw-inner,
+.font-script.sw-inner {
+  padding: 0.2em 0.4em 0.3em;
+  margin: -0.2em -0.4em -0.3em;
+}
+.motion [data-split].sw-done .sw-inner {
+  transform: none !important;
+  will-change: auto;
+}
 .motion [data-fade-up] {
   opacity: 0;
   transform: translate3d(0, 40px, 0);
