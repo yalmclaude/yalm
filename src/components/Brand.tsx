@@ -207,11 +207,11 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="mt-16 border-y border-cream/15 py-5 sm:mt-24">
+      <div className="mt-16 border-y border-cream/15 py-2 sm:mt-24">
         <Marquee>
           {Array.from({ length: 4 }).map((_, i) => (
             <span key={i} className="flex items-center">
-              <span className="font-script px-8 text-5xl leading-none sm:text-6xl">Your amazing life moments</span>
+              <span className="font-script px-8 py-3 text-5xl leading-[1.35] sm:text-6xl">Your amazing life moments</span>
               <span className="text-xl text-cream/50">✦</span>
             </span>
           ))}
