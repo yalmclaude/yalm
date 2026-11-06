@@ -256,7 +256,7 @@ async function quotePack(packId: string, body: Body, date: Date): Promise<Quote>
 }
 
 // "Formule personnalisée": at least minItems distinct products, each discounted by discountPercent (admin settings).
-// The discount is never named to the client: lines simply carry the discounted prices.
+// The client sees the discount on the builder page; lines carry the discounted prices.
 async function quoteCustomFormula(items: CustomItemInput[], date: Date): Promise<Quote> {
   const { enabled, minItems, discountPercent } = await getCustomFormulaSettings();
   if (!enabled) throw new BookingError("La formule personnalisée n'est pas disponible pour le moment");

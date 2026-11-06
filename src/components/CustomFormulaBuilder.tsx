@@ -108,9 +108,11 @@ export function CustomFormulaBuilder({
     };
   }, [eventDate, rentedIds]);
 
+  const discountLabel = `-${String(discountPercent).replace(".", ",")} %`;
   const count = lines.length;
   const missing = Math.max(0, minItems - count);
   const total = lines.reduce((s, l) => s + l.discountedCents, 0);
+  const savings = lines.reduce((s, l) => s + l.priceCents, 0) - total;
   const deposit = lines.reduce((s, l) => s + l.depositCents, 0);
   const caution = lines.reduce((s, l) => s + l.cautionCents, 0);
   // When none of the chosen products takes a deposit, the formule is paid in full.
@@ -249,10 +251,17 @@ export function CustomFormulaBuilder({
                         {(() => {
                           const price = resolvePrice(p, choice ?? { mode: defaultMode(p), durationHours: p.durationOptions[0]?.hours ?? null });
                           if (!price.ok) return null;
+                          // Full price until the prestation is picked; once picked, the
+                          // discount shows: struck price, discounted price and the badge.
+                          if (!isOn || discountPercent <= 0) {
+                            return <span className="font-semibold text-bordeaux">{formatPrice(price.priceCents)}</span>;
+                          }
                           return (
-                            <>
+                            <span className="inline-flex items-center gap-2">
+                              <span className="rounded-full bg-bordeaux px-2 py-0.5 text-[0.7rem] font-semibold text-cream">{discountLabel}</span>
+                              <span className="text-bordeaux/45 line-through">{formatPrice(price.priceCents)}</span>
                               <span className="font-semibold text-bordeaux">{formatPrice(discounted(price.priceCents, discountPercent))}</span>
-                            </>
+                            </span>
                           );
                         })()}
                       </p>
@@ -285,10 +294,22 @@ export function CustomFormulaBuilder({
                     {l.choice.mode === "RENT" && l.choice.durationHours ? ` · ${formatHours(l.choice.durationHours)}` : ""}
                   </span>
                 </span>
-                <span className="shrink-0 font-medium text-bordeaux">{formatPrice(l.discountedCents)}</span>
+                <span className="shrink-0 text-right">
+                  {l.discountedCents < l.priceCents && (
+                    <span className="block text-xs text-bordeaux/45 line-through">{formatPrice(l.priceCents)}</span>
+                  )}
+                  <span className="font-medium text-bordeaux">{formatPrice(l.discountedCents)}</span>
+                </span>
               </li>
             ))}
           </ul>
+        )}
+
+        {savings > 0 && (
+          <p className="flex justify-between rounded-lg bg-bordeaux/5 px-3 py-2 text-sm text-bordeaux">
+            <span>Remise {discountLabel} par prestation</span>
+            <span className="font-semibold">-{formatPrice(savings)}</span>
+          </p>
         )}
 
         {missing > 0 ? (
