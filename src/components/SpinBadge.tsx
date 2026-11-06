@@ -1,10 +1,11 @@
 // Round bordeaux badge with "Your amazing life moments" turning around its edge, like the
-// one in the hero. `id` must be unique on the page (it names the SVG text path).
+// one in the hero, written in the same script as the footer's slogan. `id` must be unique
+// on the page (it names the SVG text path).
 export function SpinBadge({
   id,
   children,
   className = "h-20 w-20",
-  text = "Your amazing life moments ✦ ",
+  text = "Your amazing life moments",
 }: {
   id: string;
   children?: React.ReactNode;
@@ -17,14 +18,12 @@ export function SpinBadge({
     >
       <svg data-spin viewBox="0 0 100 100" className="spin-slow absolute inset-0 h-full w-full" aria-hidden>
         <defs>
-          <path id={id} d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
+          <path id={id} d="M50,50 m-31,0 a31,31 0 1,1 62,0 a31,31 0 1,1 -62,0" />
         </defs>
-        <text
-          fill="currentColor"
-          className="text-[8.4px] uppercase tracking-[0.32em]"
-          style={{ fontFamily: "var(--font-montserrat)" }}
-        >
-          <textPath href={`#${id}`}>{text}</textPath>
+        <text fill="currentColor" className="font-script text-[23px]">
+          <textPath href={`#${id}`} textLength="192" lengthAdjust="spacing">
+            {text} <tspan className="font-sans text-[8px]">✦</tspan>
+          </textPath>
         </text>
       </svg>
       <span className="text-lg" aria-hidden>

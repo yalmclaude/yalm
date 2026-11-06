@@ -101,14 +101,12 @@ export function HeroSection() {
             >
               <svg data-spin viewBox="0 0 100 100" className="spin-slow absolute inset-0 h-full w-full" aria-hidden>
                 <defs>
-                  <path id="badge-circle" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
+                  <path id="badge-circle" d="M50,50 m-31,0 a31,31 0 1,1 62,0 a31,31 0 1,1 -62,0" />
                 </defs>
-                <text
-                  fill="currentColor"
-                  className="text-[8.4px] uppercase tracking-[0.32em]"
-                  style={{ fontFamily: "var(--font-montserrat)" }}
-                >
-                  <textPath href="#badge-circle">Your amazing life moments ✦ </textPath>
+                <text fill="currentColor" className="font-script text-[23px]">
+                  <textPath href="#badge-circle" textLength="192" lengthAdjust="spacing">
+                    Your amazing life moments <tspan className="font-sans text-[8px]">✦</tspan>
+                  </textPath>
                 </text>
               </svg>
               <span className="text-2xl transition-transform duration-500 group-hover:rotate-45" aria-hidden>
