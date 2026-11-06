@@ -89,21 +89,15 @@ export function PackCard({ pack }: { pack: PackCardData }) {
 }
 
 // Entry point to the "formule personnalisée" builder, shown alongside the ready-made formules.
-export function CustomFormulaCard({ minItems, discountPercent }: { minItems: number; discountPercent: number }) {
+export function CustomFormulaCard({ minItems }: { minItems: number }) {
   return (
     <Reveal>
       <Link
         href="/formules/personnalisee"
         className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
       >
-        <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="mb-6">
           <SpinBadge id="badge-custom-formula" />
-          {discountPercent > 0 && (
-            <span className="text-right">
-              <span className="block font-serif text-5xl leading-none">-{String(discountPercent).replace(".", ",")} %</span>
-              <span className="mt-1 block label-caps opacity-70">par prestation</span>
-            </span>
-          )}
         </div>
         <h4 className="font-serif text-3xl leading-tight">Formule personnalisée</h4>
         <p className="mt-2 flex-1 text-sm opacity-75">

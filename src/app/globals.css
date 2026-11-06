@@ -104,6 +104,12 @@ html.lenis body {
   padding: 0.14em 0.1em 0.2em;
   margin: -0.14em -0.1em -0.2em;
 }
+/* Script titles have wide swashes (capitals, cedillas, "?"): give their masks more room. */
+.font-script .sw,
+.font-script.sw {
+  padding: 0.3em 0.3em 0.4em;
+  margin: -0.3em -0.3em -0.4em;
+}
 .sw-inner {
   display: inline-block;
   will-change: transform;

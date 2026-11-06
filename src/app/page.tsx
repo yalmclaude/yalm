@@ -101,7 +101,7 @@ export default async function HomePage() {
                 {packs.map((pack) => (
                   <PackCard key={pack.id} pack={pack} />
                 ))}
-                {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} discountPercent={customFormula.discountPercent} />}
+                {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
               </div>
             </div>
           </section>
