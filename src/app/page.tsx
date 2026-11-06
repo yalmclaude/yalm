@@ -25,7 +25,7 @@ export default async function HomePage() {
 
   const packs = await prisma.pack.findMany({
     where: { isAvailable: true },
-    include: { items: { include: { product: true } } },
+    include: { items: { include: { product: { include: { images: { orderBy: { order: "asc" }, take: 1 } } } } } },
     orderBy: { name: "asc" },
   });
 
@@ -101,7 +101,7 @@ export default async function HomePage() {
                 {packs.map((pack) => (
                   <PackCard key={pack.id} pack={pack} />
                 ))}
-                {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} />}
+                {customFormula.enabled && <CustomFormulaCard minItems={customFormula.minItems} discountPercent={customFormula.discountPercent} />}
               </div>
             </div>
           </section>

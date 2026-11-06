@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/Brand";
 import { QuoteContact } from "@/components/QuoteContact";
 import { BookingForm } from "@/components/BookingForm";
 import { formatPrice, formatHours, depositLabel, hasDeposit, parseDurationOptions } from "@/lib/format";
+import { SplitPhotos } from "@/components/SpinBadge";
+import { packPhotos } from "@/components/PackCard";
 import { SplitWords } from "@/components/motion/SplitWords";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +15,7 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const [pack] = await prisma.pack.findMany({
     where: { slug: decodeURIComponent(slug) },
-    include: { items: { include: { product: true } } },
+    include: { items: { include: { product: { include: { images: { orderBy: { order: "asc" }, take: 1 } } } } } },
     take: 1,
   });
 
@@ -28,14 +30,15 @@ export default async function PackPage({ params }: { params: Promise<{ slug: str
       <main className="flex-1 bg-background">
         <div className="mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:px-8 md:grid-cols-2 lg:gap-16 lg:py-20">
           <div>
-            {pack.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={pack.imageUrl}
-                alt={pack.name}
-                data-fade-up
-                className="mb-6 aspect-[4/3] w-full rounded-[1.5rem] object-cover shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
-              />
+            {packPhotos(pack).length > 0 && (
+              <div data-fade-up>
+                <SplitPhotos
+                  urls={packPhotos(pack)}
+                  alt={pack.name}
+                  badgeId="badge-pack-page"
+                  className="mb-6 rounded-[1.5rem] shadow-[0_30px_60px_-30px_rgba(78,13,21,0.45)]"
+                />
+              </div>
             )}
             <p data-fade-up className="label-caps text-bordeaux/60">Formule</p>
             <h1 data-split className="mt-3 font-serif text-5xl leading-[0.95] tracking-[-0.02em] text-bordeaux sm:text-6xl">
