@@ -96,13 +96,17 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* Words split for line-by-line reveals; padding keeps script swashes from being clipped. */
+/* Words split for line-by-line reveals. The mask only exists while a word is waiting
+   for or playing its reveal (motion on, not yet .sw-done): once shown, or without
+   motion, nothing can clip the script's swashes. */
 .sw {
   display: inline-block;
-  overflow: hidden;
   vertical-align: top;
   padding: 0.14em 0.1em 0.2em;
   margin: -0.14em -0.1em -0.2em;
+}
+.motion [data-split]:not(.sw-done) .sw {
+  overflow: hidden;
 }
 /* Script titles have wide swashes (capitals, cedillas, "?"): give their masks more room. */
 .font-script .sw,

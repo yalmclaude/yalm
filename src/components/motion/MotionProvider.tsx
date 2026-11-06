@@ -237,7 +237,13 @@ function heroIntro(hero: HTMLElement) {
   tl.fromTo(
     hero.querySelectorAll("[data-split] .sw-inner"),
     { y: 0, yPercent: 115 },
-    { y: 0, yPercent: 0, duration: 1.4, stagger: 0.07 }
+    {
+      y: 0,
+      yPercent: 0,
+      duration: 1.4,
+      stagger: 0.07,
+      onComplete: () => hero.querySelectorAll("[data-split]").forEach((el) => el.classList.add("sw-done")),
+    }
   )
     .fromTo(
       hero.querySelectorAll("[data-hero-img]"),
@@ -272,6 +278,8 @@ function scrollReveals(hero: HTMLElement | null) {
           duration: 1.2,
           ease: EASE,
           stagger: 0.06,
+          // Unmask once shown, so script swashes reaching past the word aren't clipped.
+          onComplete: () => el.classList.add("sw-done"),
           scrollTrigger: { trigger: el, start: "top 90%", once: true },
         }
       );
