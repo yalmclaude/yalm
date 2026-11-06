@@ -37,6 +37,11 @@ const HEADER_OFFSET = -90;
 // True while a scroll is driven by code (slide snap, anchor glide), so the slide snap
 // doesn't react to it.
 let slideAuto = false;
+function setSlideAuto(on: boolean) {
+  slideAuto = on;
+  // Native scroll snapping (touch screens) would fight code-driven scrolls.
+  document.documentElement.classList.toggle("slides-auto", on);
+}
 
 const easeInOutQuart = (t: number) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);
 
@@ -81,12 +86,12 @@ export function MotionProvider() {
         if (link.target || e.metaKey || e.ctrlKey || e.shiftKey || url.search !== location.search) return;
         e.preventDefault();
         link.closest("details")?.removeAttribute("open");
-        slideAuto = true;
+        setSlideAuto(true);
         lenis.scrollTo(0, {
           duration: 1.6,
           force: true,
           onComplete: () => {
-            slideAuto = false;
+            setSlideAuto(false);
           },
         });
         history.replaceState(history.state, "", url.pathname + url.search);
@@ -96,12 +101,12 @@ export function MotionProvider() {
       if (!target) return;
       e.preventDefault();
       link.closest("details")?.removeAttribute("open");
-      slideAuto = true;
+      setSlideAuto(true);
       lenis.scrollTo(anchorY(target as HTMLElement), {
         duration: 1.4,
         force: true,
         onComplete: () => {
-          slideAuto = false;
+          setSlideAuto(false);
         },
       });
       history.replaceState(null, "", url.hash);
@@ -155,12 +160,12 @@ export function MotionProvider() {
     if (lenisInstance) {
       const lenis = lenisInstance;
       const hashTarget = location.hash ? document.querySelector<HTMLElement>(location.hash) : null;
-      slideAuto = true;
+      setSlideAuto(true);
       lenis.resize();
       lenis.scrollTo(hashTarget ? anchorY(hashTarget) : 0, { immediate: true, force: true });
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          slideAuto = false;
+          setSlideAuto(false);
         })
       );
     }
@@ -474,14 +479,27 @@ function slides() {
   // Slides keep their natural flow positions (sticky doesn't move them in the layout), so
   // each transition zone runs from "next slide's top enters the viewport bottom" to "it
   // reaches the top". Tall slides stick by their bottom edge (negative top).
+  // One snap marker per slide, at its natural top (sticky slides can't carry it: they
+  // move). Used by the CSS scroll snapping on touch screens.
+  if (getComputedStyle(wrap).position === "static") wrap.style.position = "relative";
+  const markers = els.map(() => {
+    const m = document.createElement("span");
+    m.className = "slide-snap";
+    m.setAttribute("aria-hidden", "true");
+    wrap.appendChild(m);
+    return m;
+  });
+
   const measure = () => {
     const vh = window.innerHeight;
     const max = document.documentElement.scrollHeight - vh;
-    let top = wrap.getBoundingClientRect().top + window.scrollY;
+    const wrapTop = wrap.getBoundingClientRect().top + window.scrollY;
+    let top = wrapTop;
     zones = [];
     els.forEach((el, i) => {
       const h = el.offsetHeight;
       el.dataset.slideTop = String(Math.round(top));
+      markers[i].style.top = `${Math.round(top - wrapTop)}px`;
       if (i < els.length - 1) el.style.top = `${Math.min(0, vh - h)}px`;
       if (i > 0) {
         const start = Math.max(0, top - vh);
@@ -504,55 +522,43 @@ function slides() {
   // page in, up slides back to the previous one.
   let last = lenis.scroll;
   let dir = 1;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  // Scroll position when the current touch gesture started (touch screens only).
-  let gestureFrom: number | null = null;
   const snapTarget = (scroll: number) => {
     const z = zones.find((zone) => scroll > zone.start + 2 && scroll < zone.end - 2);
-    if (z) return dir > 0 ? z.end : z.start;
-    // A fast swipe can fly through a whole transition and stop a little past it, with the
-    // new slide's title cut off at the top: settle it back onto the slide's edge.
-    if (!coarse || gestureFrom === null) return null;
-    const reach = window.innerHeight * 0.45;
-    const from = gestureFrom;
-    const past = zones.find((zone) =>
-      dir > 0
-        ? from < zone.end - 2 && scroll > zone.end + 2 && scroll - zone.end < reach
-        : from > zone.start + 2 && scroll < zone.start - 2 && zone.start - scroll < reach
-    );
-    if (!past) return null;
-    return dir > 0 ? past.end : past.start;
+    return z ? (dir > 0 ? z.end : z.start) : null;
   };
   const settle = (scroll: number) => {
     if (slideAuto) return;
     const target = snapTarget(scroll);
     if (target === null) return;
-    gestureFrom = null;
-    slideAuto = true;
+    setSlideAuto(true);
     lenis.scrollTo(target, {
       duration: 1.25,
       easing: easeInOutQuart,
       lock: true,
       force: true,
       onComplete: () => {
-        slideAuto = false;
+        setSlideAuto(false);
       },
     });
   };
-  // On touch screens the finger gives the direction (native momentum and bounce make the
-  // scroll deltas unreliable); elsewhere the scroll itself does.
+  // Touch screens: the browser's own scroll snapping (CSS, on markers placed at each
+  // slide's start by measure()) stops a swipe's momentum right on a slide's edge, so its
+  // title isn't left cut off. A swipe that ends mid-transition is finished here once the
+  // page has come to rest, in the finger's direction (scroll deltas are unreliable there).
+  let timer: ReturnType<typeof setTimeout> | undefined;
   let touchY: number | null = null;
   const onTouchStart = (e: TouchEvent) => {
     touchY = e.touches[0]?.clientY ?? null;
-    if (!slideAuto) gestureFrom = window.scrollY;
   };
   const onTouchMove = (e: TouchEvent) => {
     const y = e.touches[0]?.clientY;
     if (touchY === null || y === undefined || Math.abs(y - touchY) < 6) return;
     dir = y < touchY ? 1 : -1;
   };
-  window.addEventListener("touchstart", onTouchStart, { passive: true });
-  window.addEventListener("touchmove", onTouchMove, { passive: true });
+  if (coarse) {
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+  }
 
   const offScroll = lenis.on("scroll", () => {
     const s = lenis.scroll;
@@ -561,7 +567,7 @@ function slides() {
     render(s);
     if (coarse) {
       clearTimeout(timer);
-      timer = setTimeout(() => settle(lenis.scroll), 140);
+      timer = setTimeout(() => settle(lenis.scroll), 160);
     } else {
       settle(s);
     }
@@ -583,6 +589,8 @@ function slides() {
     clearTimeout(timer);
     window.removeEventListener("touchstart", onTouchStart);
     window.removeEventListener("touchmove", onTouchMove);
+    markers.forEach((m) => m.remove());
+    wrap.style.removeProperty("position");
     ScrollTrigger.removeEventListener("refreshInit", unstick);
     ScrollTrigger.removeEventListener("refresh", restick);
     root.classList.remove("has-slides", "slides-measuring");

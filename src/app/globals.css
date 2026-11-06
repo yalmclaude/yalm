@@ -388,3 +388,22 @@ html.lenis body {
   background-color: #4e0d15;
   background-image: radial-gradient(circle at 30% 25%, #7a2030 0%, #4e0d15 55%, #2e060b 100%);
 }
+
+/* Touch screens: native scroll snapping onto each homepage slide's start (markers placed
+   by the motion system), so a swipe's momentum stops right on the edge and never leaves
+   a title cut off. Proximity only: long slides (the catalogue) still scroll freely.
+   Turned off while a scroll is driven by code (anchor glides). */
+.slide-snap {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+@media (pointer: coarse) {
+  html.has-slides:not(.slides-auto) {
+    scroll-snap-type: y proximity;
+  }
+}
