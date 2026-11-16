@@ -45,7 +45,7 @@ export function HeroSection() {
                   →
                 </span>
               </a>
-              <a href="#catalogue" data-magnetic className="btn btn-ghost">
+              <a href="#prestations" data-magnetic className="btn btn-ghost">
                 Nos prestations
               </a>
             </div>
@@ -93,7 +93,7 @@ export function HeroSection() {
 
             {/* Spinning badge linking to the catalogue */}
             <a
-              href="#catalogue"
+              href="#prestations"
               data-fade-up
               data-magnetic="0.35"
               aria-label="Découvrir nos prestations"

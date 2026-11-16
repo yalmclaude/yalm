@@ -43,7 +43,7 @@ export function HowItWorksSection({ steps }: { steps: Step[] }) {
               return (
                 <li key={step.id} data-fade-up data-delay={String(index * 0.12)}>
                   {index === 0 ? (
-                    <Link href="/#catalogue" className="block h-full cursor-pointer">
+                    <Link href="/#prestations" className="block h-full cursor-pointer">
                       {content}
                     </Link>
                   ) : (

@@ -75,7 +75,7 @@ export function MotionProvider() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
-    // In-page anchors ("/#catalogue" while on "/"): glide there instead of jumping.
+    // In-page anchors ("/#prestations" while on "/"): glide there instead of jumping.
     const onClick = (e: MouseEvent) => {
       const link = (e.target as Element | null)?.closest?.("a[href]");
       if (!(link instanceof HTMLAnchorElement)) return;

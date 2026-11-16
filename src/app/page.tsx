@@ -46,7 +46,7 @@ export default async function HomePage() {
         </div>
 
         <div data-slide className="bg-cream">
-        <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
+        <section id="prestations" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
           <SectionTitle index="01" eyebrow="Notre catalogue" title="Nos prestations" align="left" />
 
           {categories.map((category) => {
@@ -121,7 +121,7 @@ export default async function HomePage() {
       <SlideNav
         items={[
           { href: "#accueil", label: "Accueil" },
-          { href: "#catalogue", label: "Prestations" },
+          { href: "#prestations", label: "Prestations" },
           ...(packs.length > 0 || customFormula.enabled ? [{ href: "#formules", label: "Formules" }] : []),
           ...(howItWorksSteps.length > 0 ? [{ href: "#comment-ca-marche", label: "Le processus" }] : []),
           { href: "#contact", label: "Contact" },
