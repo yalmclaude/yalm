@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { href: "/#formules", label: "Formules" },
-  { href: "/#prestations", label: "Prestations" },
-  { href: "/#comment-ca-marche", label: "Comment ça marche ?" },
+  { href: "/prestations", label: "Prestations" },
+  { href: "/formules", label: "Formules" },
+  { href: "/comment-ca-marche", label: "Comment ça marche ?" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteHeader() {
@@ -42,9 +43,10 @@ export function SiteHeader() {
             </summary>
             <nav className="absolute right-0 mt-3 flex w-64 flex-col overflow-hidden rounded-2xl bg-bordeaux-rich py-3 text-cream shadow-[0_24px_50px_-20px_rgba(78,13,21,0.6)]">
               {NAV_LINKS.map((l) => (
-                <Link key={l.href} href={l.href} className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
+                // Plain links: a full page load also closes this <details> menu.
+                <a key={l.href} href={l.href} className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
                   {l.label}
-                </Link>
+                </a>
               ))}
               <a href="/coffret" className="px-6 py-3 font-serif text-2xl hover:bg-cream/10">
                 Mon coffret

@@ -39,13 +39,13 @@ export function HeroSection() {
               votre jour reste gravé.
             </p>
             <div data-fade-up className="mt-8 flex flex-wrap gap-3">
-              <a href="#formules" data-magnetic className="btn btn-primary">
+              <a href="/formules" data-magnetic className="btn btn-primary">
                 Nos formules
                 <span className="btn-arrow" aria-hidden>
                   →
                 </span>
               </a>
-              <a href="#prestations" data-magnetic className="btn btn-ghost">
+              <a href="/prestations" data-magnetic className="btn btn-ghost">
                 Nos prestations
               </a>
             </div>
@@ -93,7 +93,7 @@ export function HeroSection() {
 
             {/* Spinning badge linking to the catalogue */}
             <a
-              href="#prestations"
+              href="/prestations"
               data-fade-up
               data-magnetic="0.35"
               aria-label="Découvrir nos prestations"

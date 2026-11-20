@@ -15,7 +15,7 @@ export function HowItWorksSection({ steps }: { steps: Step[] }) {
   return (
     <section id="comment-ca-marche" className="relative overflow-hidden bg-cream py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <SectionTitle index="03" eyebrow="Le processus" title="Comment ça marche ?" align="left" />
+        <SectionTitle eyebrow="Le processus" title="Comment ça marche ?" align="left" />
 
         <div className="relative mt-14 sm:mt-16">
           <ol className="grid gap-12 sm:grid-cols-3 sm:gap-8">
@@ -43,7 +43,7 @@ export function HowItWorksSection({ steps }: { steps: Step[] }) {
               return (
                 <li key={step.id} data-fade-up data-delay={String(index * 0.12)}>
                   {index === 0 ? (
-                    <Link href="/#prestations" className="block h-full cursor-pointer">
+                    <Link href="/prestations" className="block h-full cursor-pointer">
                       {content}
                     </Link>
                   ) : (

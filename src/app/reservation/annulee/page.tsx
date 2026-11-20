@@ -12,7 +12,7 @@ export default function BookingCancelledPage() {
           reste disponible pour d&apos;autres clients.
         </p>
         <Link
-          href="/"
+          href="/prestations"
           className="mt-9 inline-block rounded-md bg-bordeaux px-7 py-3 label-caps text-cream transition-all hover:-translate-y-0.5 hover:bg-bordeaux-light"
         >
           Retour au catalogue
