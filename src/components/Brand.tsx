@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS, phoneHref } from "@/lib/contact";
-import { Marquee } from "@/components/motion/Marquee";
 import { SplitWords } from "@/components/motion/SplitWords";
 
 /* Shared pieces of the brand banner look: the "line ✷ line" divider, the white line icons,
@@ -173,83 +172,61 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
   ),
 };
 
-// Footer: an oversized call to action, a scrolling band and the contact details.
-// Arched top edge echoes the floral arch.
+// Social links as round outlined icons, shared by the footer and the contact page.
+export function SocialLinks({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      {SOCIAL_LINKS.map((s) => (
+        <a
+          key={s.name}
+          href={s.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`${s.name} — yalm.events`}
+          title={`${s.name} — yalm.events`}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-current/35 transition-colors hover:border-current"
+        >
+          {SOCIAL_ICONS[s.name]}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// Footer: a plain bordeaux band with the logo, contact details, socials and legal links.
 export function SiteFooter() {
   return (
-    <footer className="relative mt-10 overflow-hidden rounded-t-[2.5rem] bg-bordeaux-rich-alt text-cream sm:rounded-t-[5rem]">
-      <div className="mx-auto max-w-7xl px-5 pt-16 sm:px-8 sm:pt-24">
-        <p data-fade-up className="label-caps text-cream/55">
-          Votre événement commence ici
-        </p>
-        <h2 className="mt-4 font-serif uppercase leading-[0.86] tracking-[-0.03em] text-[clamp(2.9rem,9vw,8.5rem)]">
-          <span data-split className="block">
-            <SplitWords text="Parlons de" />
-          </span>
-          <span data-split className="block font-script normal-case tracking-normal text-[1.05em] leading-[0.8] sm:ml-[12%]">
-            <SplitWords text="votre événement" />
-          </span>
-        </h2>
-
-        <div data-fade-up className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <a href={phoneHref(CONTACT_PHONE)} data-magnetic className="btn btn-cream">
-            Appeler le {CONTACT_PHONE}
-            <span className="btn-arrow" aria-hidden>
-              →
-            </span>
+    <footer className="bg-bordeaux text-cream">
+      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:grid-cols-3 sm:items-center sm:px-8">
+        <a href="/" className="w-fit">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-cream.png" alt="YALM Events" width={1200} height={668} className="h-auto w-32" />
+        </a>
+        <div className="flex flex-col gap-1.5 text-sm sm:items-center">
+          <a href={phoneHref(CONTACT_PHONE)} className="hover:underline">
+            {CONTACT_PHONE}
           </a>
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="nav-link w-fit label-caps text-cream/85 hover:text-cream sm:ml-4"
-          >
+          <a href={`mailto:${CONTACT_EMAIL}`} className="hover:underline">
             {CONTACT_EMAIL}
           </a>
         </div>
+        <SocialLinks className="sm:justify-end" />
       </div>
-
-      <div className="mt-16 border-y border-cream/15 py-2 sm:mt-24">
-        <Marquee>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <span key={i} className="flex items-center">
-              <span className="font-script px-8 py-3 text-5xl leading-[1.35] sm:text-6xl">Your amazing life moments</span>
-              <span className="text-xl text-cream/50">✦</span>
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 pb-12 sm:flex-row sm:items-end sm:justify-between sm:px-8">
-        <div className="flex items-center gap-4">
-          {SOCIAL_LINKS.map((s) => (
-            <a
-              key={s.name}
-              href={s.url}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${s.name} — yalm.events`}
-              title={`${s.name} — yalm.events`}
-              data-magnetic="0.4"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-cream/35 transition-colors duration-500 hover:border-cream hover:bg-cream hover:text-bordeaux"
-            >
-              {SOCIAL_ICONS[s.name]}
-            </a>
-          ))}
-        </div>
-        <div className="text-xs text-cream/55 sm:text-right">
+      <div className="border-t border-cream/15">
+        <div className="mx-auto flex max-w-7xl flex-col gap-1 px-5 py-4 text-xs text-cream/60 sm:flex-row sm:justify-between sm:px-8">
           <p>
-            © {new Date().getFullYear()} YALM Events — Tous droits réservés ·{" "}
-            <a href="/mentions-legales" className="underline underline-offset-2 hover:text-cream">
+            © {new Date().getFullYear()} YALM Events ·{" "}
+            <a href="/mentions-legales" className="hover:text-cream">
               Mentions légales
             </a>{" "}
             ·{" "}
-            <a href="/cgv" className="underline underline-offset-2 hover:text-cream">
+            <a href="/cgv" className="hover:text-cream">
               CGV
             </a>
           </p>
-          <p className="mt-2">Site réalisé par Dololka Agency</p>
+          <p>Site réalisé par Dololka Agency</p>
         </div>
       </div>
-
     </footer>
   );
 }
