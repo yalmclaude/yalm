@@ -2,7 +2,6 @@ import Link from "next/link";
 import { formatPrice, parseDurationOptions, paymentTermsLabel } from "@/lib/format";
 import { canBuy, canRent, startingPrice } from "@/lib/pricing";
 import type { Product } from "@prisma/client";
-import { Reveal } from "@/components/Reveal";
 
 type ProductWithImages = Product & { images: { url: string }[] };
 
@@ -39,13 +38,12 @@ function priceLine(product: ProductWithImages) {
   };
 }
 
-export function ProductCard({ product, index = 0 }: { product: ProductWithImages; index?: number }) {
+export function ProductCard({ product }: { product: ProductWithImages; index?: number }) {
   const coverUrl = product.images[0]?.url;
-  const delay = (index % 3) * 110;
 
   if (!product.isAvailable) {
     return (
-      <Reveal delay={delay}>
+      <div>
         <div className="opacity-60">
           {coverUrl ? (
             <FramedPhoto src={coverUrl} alt={product.name} className="grayscale" />
@@ -61,14 +59,14 @@ export function ProductCard({ product, index = 0 }: { product: ProductWithImages
             </span>
           </div>
         </div>
-      </Reveal>
+      </div>
     );
   }
 
   const { price, terms } = priceLine(product);
 
   return (
-    <Reveal delay={delay}>
+    <div>
       <Link href={`/produits/${product.slug}`} className="group block">
         <div className="relative">
           {coverUrl ? (
@@ -98,6 +96,6 @@ export function ProductCard({ product, index = 0 }: { product: ProductWithImages
           </div>
         </div>
       </Link>
-    </Reveal>
+    </div>
   );
 }

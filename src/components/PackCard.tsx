@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { formatPrice, parseDurationOptions, paymentTermsLabel, startingPriceCents } from "@/lib/format";
-import { Reveal } from "@/components/Reveal";
 import { SpinBadge, SplitPhotos } from "@/components/SpinBadge";
 
 type PackCardProduct = { product: { name: string; images?: { url: string }[] }; quantity: number };
@@ -28,7 +27,7 @@ type PackCardData = {
 
 export function PackCard({ pack }: { pack: PackCardData }) {
   return (
-    <Reveal>
+    <div>
       <Link
         href={`/formules/${pack.slug}`}
         className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
@@ -84,14 +83,14 @@ export function PackCard({ pack }: { pack: PackCardData }) {
           )}
         </div>
       </Link>
-    </Reveal>
+    </div>
   );
 }
 
 // Entry point to the "formule personnalisée" builder, shown alongside the ready-made formules.
 export function CustomFormulaCard({ minItems }: { minItems: number }) {
   return (
-    <Reveal>
+    <div>
       <Link
         href="/formules/personnalisee"
         className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
@@ -108,6 +107,6 @@ export function CustomFormulaCard({ minItems }: { minItems: number }) {
           <span className="label-caps opacity-80 transition-transform group-hover:translate-x-1">Composer →</span>
         </div>
       </Link>
-    </Reveal>
+    </div>
   );
 }

@@ -7,7 +7,6 @@ import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { HeroSection } from "@/components/HeroSection";
 import { ServicesMarquee } from "@/components/ServicesMarquee";
 import { SectionTitle, SiteFooter } from "@/components/Brand";
-import { SlideNav } from "@/components/motion/SlideNav";
 
 // Rendered on every request so admin changes (prices, "sur devis", new offers) show up immediately.
 export const dynamic = "force-dynamic";
@@ -37,15 +36,13 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
-      {/* Each data-slide is a full-screen "page": with motion on, the next one slides over the
-          previous (see slides() in MotionProvider). The dark ground shows as pages recede. */}
-      <main data-slides className="flex-1 overflow-x-clip bg-[#1c0407]">
-        <div data-slide id="accueil" className="flex min-h-svh flex-col bg-cream">
+      <main className="flex-1 overflow-x-clip bg-cream">
+        <div id="accueil" className="flex min-h-svh flex-col bg-cream">
           <HeroSection />
           <ServicesMarquee />
         </div>
 
-        <div data-slide className="bg-cream">
+        <div className="bg-cream">
         <section id="prestations" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
           <SectionTitle index="01" eyebrow="Notre catalogue" title="Nos prestations" align="left" />
 
@@ -85,7 +82,7 @@ export default async function HomePage() {
         </div>
 
         {(packs.length > 0 || customFormula.enabled) && (
-          <div data-slide data-slide-tone="dark" className="flex min-h-svh flex-col justify-center bg-bordeaux-rich">
+          <div className="bg-bordeaux-rich">
           <section id="formules" className="relative scroll-mt-24 overflow-hidden py-24 text-cream sm:py-32">
             {/* Giant outlined word drifting behind the cards */}
             <p
@@ -109,24 +106,15 @@ export default async function HomePage() {
         )}
 
         {howItWorksSteps.length > 0 && (
-          <div data-slide className="flex min-h-svh flex-col justify-center bg-cream">
+          <div className="bg-cream">
             <HowItWorksSection steps={howItWorksSteps} />
           </div>
         )}
 
-        <div data-slide data-slide-plain data-slide-tone="dark" id="contact" className="[&>footer]:mt-0">
+        <div id="contact" className="[&>footer]:mt-0">
           <SiteFooter />
         </div>
       </main>
-      <SlideNav
-        items={[
-          { href: "#accueil", label: "Accueil" },
-          { href: "#prestations", label: "Prestations" },
-          ...(packs.length > 0 || customFormula.enabled ? [{ href: "#formules", label: "Formules" }] : []),
-          ...(howItWorksSteps.length > 0 ? [{ href: "#comment-ca-marche", label: "Le processus" }] : []),
-          { href: "#contact", label: "Contact" },
-        ]}
-      />
     </>
   );
 }

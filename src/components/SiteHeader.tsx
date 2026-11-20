@@ -6,8 +6,6 @@ const NAV_LINKS = [
   { href: "/#comment-ca-marche", label: "Comment ça marche ?" },
 ];
 
-// The bar hides while scrolling down and comes back on scroll up, turning frosted once
-// the page has moved (both driven by the motion system through `data-header`).
 export function SiteHeader() {
   return (
     <>
@@ -16,7 +14,7 @@ export function SiteHeader() {
           Acompte requis pour bloquer votre date — disponibilités limitées
         </p>
       </div>
-      <header data-header className="sticky top-0 z-50 border-b border-transparent bg-cream/0 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-cream/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-2.5 sm:px-8">
           <Link href="/" className="flex items-center" data-magnetic="0.2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
