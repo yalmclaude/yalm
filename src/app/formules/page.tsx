@@ -20,11 +20,11 @@ export default async function FormulesPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 overflow-x-clip bg-bordeaux-rich">
-        <section className="mx-auto max-w-7xl px-5 py-16 text-cream sm:px-8 sm:py-24">
-          <SectionTitle eyebrow="Des offres combinées" title="Nos formules" tone="light" align="left" />
+      <main className="flex-1 overflow-x-clip bg-cream">
+        <section className="mx-auto max-w-7xl px-5 py-16 text-bordeaux sm:px-8 sm:py-24">
+          <SectionTitle eyebrow="Des offres combinées" title="Nos formules" align="left" />
           {packs.length === 0 && !customFormula.enabled ? (
-            <p className="mt-10 text-cream/75">Nos formules arrivent bientôt. Appelez-nous pour un devis sur mesure.</p>
+            <p className="mt-10 text-bordeaux/75">Nos formules arrivent bientôt. Appelez-nous pour un devis sur mesure.</p>
           ) : (
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {packs.map((pack) => (

@@ -30,7 +30,7 @@ export function PackCard({ pack }: { pack: PackCardData }) {
     <div>
       <Link
         href={`/formules/${pack.slug}`}
-        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
+        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-bordeaux/15 bg-cream-light p-7 text-bordeaux transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-[101%] before:rounded-[2rem] before:bg-bordeaux before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-bordeaux hover:text-cream hover:before:translate-y-0 isolate"
       >
         {packPhotos(pack).length > 0 ? (
           <SplitPhotos
@@ -93,7 +93,7 @@ export function CustomFormulaCard({ minItems }: { minItems: number }) {
     <div>
       <Link
         href="/formules/personnalisee"
-        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-cream/20 p-7 text-cream transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-full before:rounded-[2rem] before:bg-cream before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-cream hover:text-bordeaux hover:before:translate-y-0 isolate"
+        className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-bordeaux/15 bg-cream-light p-7 text-bordeaux transition-[color,border-color,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-[101%] before:rounded-[2rem] before:bg-bordeaux before:transition-transform before:duration-700 before:ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-bordeaux hover:text-cream hover:before:translate-y-0 isolate"
       >
         <div className="mb-6">
           <SpinBadge id="badge-custom-formula" />
