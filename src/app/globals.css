@@ -162,12 +162,6 @@ h3,
   transform-origin: left;
 }
 
-/* Static band of services. */
-.marquee-track {
-  display: flex;
-  width: max-content;
-}
-
 /* Header: transparent over the hero, a frosted bar once the page scrolls. */
 [data-header] {
   transition: background-color 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;

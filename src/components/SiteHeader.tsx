@@ -9,12 +9,7 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   return (
-    <>
-      <div className="overflow-hidden bg-bordeaux-band py-2 text-cream">
-        <p className="px-4 text-center text-[0.65rem] font-medium uppercase tracking-[0.2em]">
-          Acompte requis pour bloquer votre date — disponibilités limitées
-        </p>
-      </div>
+    <>
       <header className="sticky top-0 z-50 border-b border-bordeaux/10 bg-cream/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-2.5 sm:px-8">
           <Link href="/" className="flex items-center" data-magnetic="0.2">

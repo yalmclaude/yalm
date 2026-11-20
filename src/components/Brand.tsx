@@ -152,7 +152,7 @@ export function ServiceIcons() {
 }
 
 // Simple line/brand marks for the social links, drawn in currentColor.
-const SOCIAL_ICONS: Record<string, ReactNode> = {
+export const SOCIAL_ICONS: Record<string, ReactNode> = {
   Instagram: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <rect x="3" y="3" width="18" height="18" rx="5" />
